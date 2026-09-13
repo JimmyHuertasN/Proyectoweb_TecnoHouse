@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | TecnoHouse</title>
+    <!-- Se reutiliza la paleta y los estilos generales del sitio. -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="register-page">
+
+    <header class="navbar">
+        <a class="logo" href="index.html">TECNO<span>HOUSE</span></a>
+        <!-- Este enlace permite volver a la página principal sin enviar el formulario. -->
+        <a class="back-link" href="index.html">← Volver al inicio</a>
+    </header>
+
+    <main class="register-main">
+        <section class="register-card" aria-labelledby="register-title">
+            <p class="subtitle">CREA TU CUENTA</p>
+            <h1 id="register-title">Regístrate en TecnoHouse</h1>
+            <p class="register-description">Completa tus datos para gestionar tus solicitudes de servicio.</p>
+
+            <!--
+                El formulario agrupa los datos del nuevo usuario.
+                La acción se podrá conectar a un servidor cuando exista el sistema de registro.
+            -->
+            <form class="register-form" action="#" method="post">
+                <div class="form-group">
+                    <label for="nombre">Nombre completo</label>
+                    <input id="nombre" name="nombre" type="text" placeholder="Ej. Ana Pérez" autocomplete="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="correo">Correo electrónico</label>
+                    <input id="correo" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" name="telefono" type="tel" placeholder="Ej. 300 123 4567" autocomplete="tel" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contrasena">Contraseña</label>
+                    <input id="contrasena" name="contrasena" type="password" placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="new-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar-contrasena">Confirmar contraseña</label>
+                    <input id="confirmar-contrasena" name="confirmar-contrasena" type="password" placeholder="Repite tu contraseña" minlength="8" autocomplete="new-password" required>
+                </div>
+
+                <!-- Envía los datos cuando se conecte el formulario a un backend. -->
+                <button class="register-submit" type="submit">Crear cuenta</button>
+            </form>
+
+            <p class="login-hint">¿Ya tienes una cuenta? <a href="#">Inicia sesión</a></p>
+        </section>
+    </main>
+
+</body>
+</html>
