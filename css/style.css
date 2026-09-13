@@ -1,0 +1,257 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #000000;
+  color: white;
+}
+
+
+
+.navbar {
+  width: 100%;
+  height: 75px;
+  background-color: #020203;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 60px;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  border-bottom: 1px solid #1e293b;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  color: white;
+}
+
+.logo span {
+  color: #00aaff;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+
+.nav-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.nav-links a:hover {
+  color: #00aaff;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.login-button,
+.register-button {
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.login-button {
+  background: transparent;
+  border: 1px solid #00aaff;
+  color: #00aaff;
+}
+
+.login-button:hover {
+  background: #00aaff;
+  color: white;
+}
+
+.register-button {
+  background: #00aaff;
+  border: 1px solid #00aaff;
+  color: white;
+}
+
+.register-button:hover {
+  background: #0088cc;
+}
+
+/* ===== HERO ===== */
+
+.hero-section {
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 10%;
+}
+
+.subtitle {
+  color: #00aaff;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.hero-section h2 {
+  font-size: 58px;
+  line-height: 1.1;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.description {
+  color: #94a3b8;
+  font-size: 18px;
+  line-height: 1.7;
+  max-width: 650px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+   
+}
+
+.primary-button,
+.secondary-button {
+  padding: 14px 25px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.primary-button {
+  background: #00aaff;
+  border: 1px solid #00aaff;
+  color: white;
+}
+
+.primary-button:hover {
+  background: #0088cc;
+}
+
+.secondary-button {
+  background: transparent;
+  border: 1px solid #475569;
+  color: white;
+}
+
+.secondary-button:hover {
+  border-color: #00aaff;
+  color: #00aaff;
+}
+
+/* ===== SERVICIOS ===== */
+
+.services-section {
+  padding: 90px 8%;
+  background-color: #050404;
+  text-align: center;
+}
+
+.services-section h2 {
+  color: #00aaff;
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.services-description {
+  color: #94a3b8;
+  margin-bottom: 50px;
+}
+
+.services-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background-color: #111c31;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: left;
+  transition: 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  border-color: #00aaff;
+  box-shadow: 0 10px 30px rgba(0, 170, 255, 0.12);
+}
+
+.service-card h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.service-card p {
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.service-card button {
+  background: transparent;
+  border: none;
+  color: #00aaff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.service-card button:hover {
+  text-decoration: underline;
+}
+
+
+
+footer {
+  background-color: #05060a;
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 1px solid #1e293b;
+}
+
+footer h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+footer h3 span {
+  color: #00aaff;
+}
+
+footer p {
+  color: #64748b;
+  margin-top: 8px;
+}
