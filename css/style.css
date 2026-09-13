@@ -38,6 +38,7 @@ body {
   font-size: 25px;
   font-weight: bold;
   color: white;
+  text-decoration: none;
 }
 
 .logo span {
@@ -90,6 +91,7 @@ body {
   background: #00aaff;
   border: 1px solid #00aaff;
   color: white;
+  text-decoration: none;
 }
 
 .register-button:hover {
@@ -254,4 +256,151 @@ footer h3 span {
 footer p {
   color: #64748b;
   margin-top: 8px;
+}
+
+/* ===== FORMULARIO DE REGISTRO ===== */
+
+/* Centra la tarjeta y conserva el fondo oscuro del sitio. */
+.register-page {
+  min-height: 100vh;
+  background: #000000;
+}
+
+/* En esta página solo se muestra el logo y el enlace de regreso. */
+.register-page .navbar {
+  padding: 0 8%;
+}
+
+.back-link {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.back-link:hover {
+  color: #00aaff;
+}
+
+/* Área que mantiene el formulario centrado vertical y horizontalmente. */
+.register-main {
+  min-height: calc(100vh - 75px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+}
+
+/* Tarjeta que agrupa la información y los campos de registro. */
+.register-card {
+  width: 100%;
+  max-width: 520px;
+  background: #111c31;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 38px;
+  box-shadow: 0 10px 30px rgba(0, 170, 255, 0.12);
+}
+
+.register-card h1 {
+  font-size: 30px;
+  margin-bottom: 12px;
+}
+
+.register-description {
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+/* Cada grupo mantiene alineadas su etiqueta y su campo. */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #05060a;
+  color: white;
+  font: inherit;
+}
+
+/* Da una señal visual clara al campo que está siendo diligenciado. */
+.form-group input:focus {
+  outline: none;
+  border-color: #00aaff;
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15);
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+.register-submit {
+  width: 100%;
+  padding: 13px;
+  margin-top: 5px;
+  border: 1px solid #00aaff;
+  border-radius: 6px;
+  background: #00aaff;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-submit:hover {
+  background: #0088cc;
+}
+
+.login-hint {
+  color: #94a3b8;
+  margin-top: 22px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.login-hint a {
+  color: #00aaff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-hint a:hover {
+  text-decoration: underline;
+}
+
+/* Ajustes para que el formulario sea cómodo de usar en pantallas pequeñas. */
+@media (max-width: 600px) {
+  .register-page .navbar {
+    padding: 0 20px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .back-link {
+    font-size: 13px;
+  }
+
+  .register-card {
+    padding: 28px 22px;
+  }
+
+  .register-card h1 {
+    font-size: 25px;
+  }
 }
