@@ -6,6 +6,8 @@
     <title>Registro | TecnoHouse</title>
     <!-- Se reutiliza la paleta y los estilos generales del sitio. -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Script compartido: valida el registro y el inicio de sesión. -->
+    <script src="js/auth.js" defer></script>
 </head>
 <body class="register-page">
 
@@ -22,10 +24,17 @@
             <p class="register-description">Completa tus datos para gestionar tus solicitudes de servicio.</p>
 
             <!--
-                El formulario agrupa los datos del nuevo usuario.
-                La acción se podrá conectar a un servidor cuando exista el sistema de registro.
+                Zona donde el JavaScript escribe los mensajes de error o de éxito.
+                Empieza oculta y se muestra solo cuando hay algo que informar.
             -->
-            <form class="register-form" action="#" method="post">
+            <p id="mensaje-registro" class="form-message" role="alert" hidden></p>
+
+            <!--
+                El formulario agrupa los datos del nuevo usuario.
+                js/auth.js intercepta el envío, valida los campos y guarda la
+                cuenta en el localStorage para poder iniciar sesión después.
+            -->
+            <form id="form-registro" class="register-form" novalidate>
                 <div class="form-group">
                     <label for="nombre">Nombre completo</label>
                     <input id="nombre" name="nombre" type="text" placeholder="Ej. Ana Pérez" autocomplete="name" required>
@@ -51,11 +60,11 @@
                     <input id="confirmar-contrasena" name="confirmar-contrasena" type="password" placeholder="Repite tu contraseña" minlength="8" autocomplete="new-password" required>
                 </div>
 
-                <!-- Envía los datos cuando se conecte el formulario a un backend. -->
+                <!-- Ejecuta la validación y guarda la cuenta en el localStorage. -->
                 <button class="register-submit" type="submit">Crear cuenta</button>
             </form>
 
-            <p class="login-hint">¿Ya tienes una cuenta? <a href="#">Inicia sesión</a></p>
+            <p class="login-hint">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a></p>
         </section>
     </main>
 
