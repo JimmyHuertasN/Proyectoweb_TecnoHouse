@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | TecnoHouse</title>
+    <!-- Se reutiliza la misma hoja de estilos del sitio para conservar la paleta. -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Script compartido: valida el registro y el inicio de sesión. -->
+    <script src="js/auth.js" defer></script>
+</head>
+<body class="register-page">
+
+    <header class="navbar">
+        <a class="logo" href="index.html">TECNO<span>HOUSE</span></a>
+        <!-- Permite regresar a la página principal sin iniciar sesión. -->
+        <a class="back-link" href="index.html">← Volver al inicio</a>
+    </header>
+
+    <main class="register-main">
+        <section class="register-card" aria-labelledby="login-title">
+            <p class="subtitle">BIENVENIDO DE NUEVO</p>
+            <h1 id="login-title">Inicia sesión</h1>
+            <p class="register-description">Ingresa con la cuenta que creaste para consultar tus solicitudes de servicio.</p>
+
+            <!--
+                Zona donde el JavaScript escribe los mensajes de error o de éxito.
+                Empieza oculta y se muestra solo cuando hay algo que informar.
+            -->
+            <p id="mensaje-login" class="form-message" role="alert" hidden></p>
+
+            <!--
+                El formulario no envía datos a un servidor todavía:
+                js/auth.js intercepta el envío y compara con los usuarios
+                guardados en el localStorage por el formulario de registro.
+            -->
+            <form id="form-login" class="register-form" novalidate>
+                <div class="form-group">
+                    <label for="correo-login">Correo electrónico</label>
+                    <input id="correo-login" name="correo" type="email" placeholder="correo@ejemplo.com" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contrasena-login">Contraseña</label>
+                    <input id="contrasena-login" name="contrasena" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+                    <!-- Casilla que alterna entre texto y puntos para revisar lo escrito. -->
+                    <label class="show-password">
+                        <input id="ver-contrasena" type="checkbox">
+                        Mostrar contraseña
+                    </label>
+                </div>
+
+                <button class="register-submit" type="submit">Entrar</button>
+            </form>
+
+            <p class="login-hint">¿Aún no tienes una cuenta? <a href="registro.html">Regístrate aquí</a></p>
+        </section>
+    </main>
+
+</body>
+</html>
