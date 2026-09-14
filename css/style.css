@@ -76,10 +76,13 @@ body {
   transition: 0.3s;
 }
 
+/* Ahora es un enlace hacia login.html, por eso se quita el subrayado. */
 .login-button {
   background: transparent;
   border: 1px solid #00aaff;
   color: #00aaff;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .login-button:hover {
@@ -427,6 +430,62 @@ footer p {
 
 .login-hint a:hover {
   text-decoration: underline;
+}
+
+/* ===== INICIO DE SESIÓN / MENSAJES DEL FORMULARIO ===== */
+
+/*
+   Recuadro de avisos usado por registro.html y login.html.
+   El JavaScript le agrega la clase "error" o "exito" según el resultado.
+*/
+.form-message {
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #05060a;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Aviso de datos incorrectos. */
+.form-message.error {
+  border-color: #ef4444;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+/* Aviso de operación exitosa. */
+.form-message.exito {
+  border-color: #22c55e;
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* Casilla "Mostrar contraseña" ubicada debajo del campo.
+   Se escribe junto a .form-group para ganarle al estilo de las etiquetas. */
+.form-group .show-password {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+/* El checkbox no debe heredar el tamaño ni el borde de los demás inputs. */
+.form-group .show-password input {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  accent-color: #00aaff;
+  cursor: pointer;
 }
 
 /* Ajustes para que el formulario sea cómodo de usar en pantallas pequeñas. */
