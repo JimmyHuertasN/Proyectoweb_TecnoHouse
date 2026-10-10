@@ -1,0 +1,63 @@
+/*
+    Único archivo de estilos del proyecto. Todo el diseño se escribe con clases
+    de Tailwind directamente en los componentes; aquí solo van los colores de
+    la marca, los estilos globales y unas pocas piezas que se repiten mucho.
+*/
+@import "tailwindcss";
+
+/* Colores de la marca TecnoHouse: se usan como bg-marca, text-marca, border-borde, etc. */
+@theme {
+    --font-sans: Arial, Helvetica, sans-serif;
+    --color-marca: #00aaff;
+    --color-marca-oscuro: #0088cc;
+    --color-tarjeta: #111c31;
+    --color-borde: #1e293b;
+    --color-fondo: #05060a;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-black text-white;
+    }
+}
+
+/* Piezas que se repiten en los formularios y botones de todo el sitio. */
+@layer components {
+    .tarjeta {
+        @apply rounded-xl border border-borde bg-tarjeta p-5 sm:p-6;
+    }
+
+    .etiqueta {
+        @apply mb-2 block text-sm font-semibold text-slate-300;
+    }
+
+    .campo {
+        @apply w-full rounded-lg border border-slate-600 bg-fondo px-3 py-2.5 text-white placeholder:text-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/15 focus:outline-none;
+    }
+
+    .boton-primario {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-marca-oscuro disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .boton-secundario {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-marca hover:text-marca;
+    }
+
+    /* Antetítulo azul en mayúsculas (ej. "SERVICIO TÉCNICO PROFESIONAL"). */
+    .antetitulo {
+        @apply mb-5 text-sm font-bold tracking-widest text-marca uppercase;
+    }
+
+    /* Tarjeta que se eleva al pasar el mouse (servicios y técnicos del inicio). */
+    .tarjeta-elevable {
+        @apply rounded-xl border border-borde bg-tarjeta p-8 text-left transition duration-300 hover:-translate-y-1 hover:border-marca hover:shadow-[0_10px_30px_rgba(0,170,255,0.12)];
+    }
+
+    .boton-peligro {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-500/40 px-4 py-2.5 text-sm font-semibold text-red-300 transition hover:bg-red-500/10;
+    }
+}
