@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BarraNavegacionAutenticacion from "../componentes/BarraNavegacionAutenticacion.jsx";
 import MensajeFormulario from "../componentes/MensajeFormulario.jsx";
-import { BuscarUsuario, CLAVE_USUARIO_ACTIVO } from "../utilidades/autenticacion.js";
+import { useAuth } from "../hooks/useAuth.js";
 
 const IniciarSesion = () => {
     const [correo, setCorreo] = useState("");
@@ -11,12 +11,13 @@ const IniciarSesion = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
+    const { iniciarSesion } = useAuth();
 
     useEffect(() => {
         return () => clearTimeout(temporizadorRef.current);
     }, []);
 
-    const manejarEnvio = (evento) => {
+    const manejarEnvio = async (evento) => {
         evento.preventDefault();
 
         const correoNormalizado = correo.trim().toLowerCase();
@@ -27,31 +28,21 @@ const IniciarSesion = () => {
             return;
         }
 
-        // Validación 2: el correo debe existir entre los usuarios registrados.
-        const usuario = BuscarUsuario(correoNormalizado);
+        try {
+            const { user } = await iniciarSesion({ correo: correoNormalizado, contrasena });
+            const nombre = user.user_metadata?.nombre || correoNormalizado;
+            setMensaje({ texto: `¡Hola ${nombre}! Entrando a TecnoHouse...`, tipo: "exito" });
 
-        if (!usuario) {
-            setMensaje({ texto: "No encontramos una cuenta con ese correo.", tipo: "error" });
-            return;
+            temporizadorRef.current = setTimeout(() => {
+                navegar("/");
+            }, 1200);
+        } catch (error) {
+            const esCredencialInvalida = error.message?.toLowerCase().includes("invalid login credentials");
+            const texto = esCredencialInvalida
+                ? "El correo o la contraseña son incorrectos."
+                : `No se pudo iniciar sesión: ${error.message}`;
+            setMensaje({ texto, tipo: "error" });
         }
-
-        // Validación 3: la contraseña debe coincidir con la guardada.
-        if (usuario.contrasena !== contrasena) {
-            setMensaje({ texto: "La contraseña es incorrecta.", tipo: "error" });
-            return;
-        }
-
-        // Sesión iniciada: se guarda el usuario activo (sin la contraseña).
-        localStorage.setItem(CLAVE_USUARIO_ACTIVO, JSON.stringify({
-            nombre: usuario.nombre,
-            correo: usuario.correo,
-        }));
-
-        setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a TecnoHouse...`, tipo: "exito" });
-
-        temporizadorRef.current = setTimeout(() => {
-            navegar("/");
-        }, 1200);
     };
 
     return (
