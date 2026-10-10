@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BarraNavegacionAutenticacion from "../componentes/BarraNavegacionAutenticacion.jsx";
-import MensajeFormulario from "../componentes/MensajeFormulario.jsx";
+import Aviso from "../componentes/Aviso.jsx";
+import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
 import { useAuth } from "../hooks/useAuth.js";
+import { validarDatosPersonales } from "../utilidades/validaciones.js";
+
+const CAMPOS = [
+    { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", placeholder: "Ej. Ana Pérez", autoComplete: "name" },
+    { nombre: "correo", etiqueta: "Correo electrónico", tipo: "email", placeholder: "correo@ejemplo.com", autoComplete: "email" },
+    { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", placeholder: "Ej. 300 123 4567", autoComplete: "tel" },
+    { nombre: "contrasena", etiqueta: "Contraseña", tipo: "password", placeholder: "Mínimo 8 caracteres", autoComplete: "new-password" },
+    { nombre: "confirmarContrasena", etiqueta: "Confirmar contraseña", tipo: "password", placeholder: "Repite tu contraseña", autoComplete: "new-password" },
+];
 
 const VALORES_INICIALES = {
     nombre: "",
@@ -37,40 +46,36 @@ const Registro = () => {
         const telefono = valores.telefono.trim();
         const { contrasena, confirmarContrasena } = valores;
 
-        // Validación 1: ningún campo puede quedar vacío.
-        if (!nombre || !correo || !telefono || !contrasena || !confirmarContrasena) {
-            setMensaje({ texto: "Por favor completa todos los campos.", tipo: "error" });
+        // Validaciones 1 a 3: campos completos, correo y teléfono con formato válido.
+        const errorDatos = validarDatosPersonales({ nombre, correo, telefono });
+        if (errorDatos || !contrasena || !confirmarContrasena) {
+            setMensaje({ texto: errorDatos ?? "Por favor completa todos los campos.", tipo: "error" });
             return;
         }
 
-        // Validación 2: el correo debe tener un formato válido.
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
-            setMensaje({ texto: "Escribe un correo electrónico válido.", tipo: "error" });
-            return;
-        }
-
-        // Validación 3: la contraseña debe tener mínimo 8 caracteres.
+        // Validación 4: la contraseña debe tener mínimo 8 caracteres.
         if (contrasena.length < 8) {
             setMensaje({ texto: "La contraseña debe tener al menos 8 caracteres.", tipo: "error" });
             return;
         }
 
-        // Validación 4: las dos contraseñas deben coincidir.
+        // Validación 5: las dos contraseñas deben coincidir.
         if (contrasena !== confirmarContrasena) {
             setMensaje({ texto: "Las contraseñas no coinciden.", tipo: "error" });
             return;
         }
 
+        // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
         try {
             const { session } = await registrar({ nombre, telefono, correo, contrasena });
             const texto = session
-                ? "¡Cuenta creada! Entrando a TecnoHouse..."
+                ? "¡Cuenta creada! Entrando a tu panel..."
                 : "Cuenta creada. Revisa tu correo para confirmar la cuenta antes de iniciar sesión.";
             setMensaje({ texto, tipo: "exito" });
             setValores(VALORES_INICIALES);
 
             temporizadorRef.current = setTimeout(() => {
-                navegar(session ? "/" : "/login");
+                navegar(session ? "/panel" : "/login");
             }, 1800);
         } catch (error) {
             const texto = error.message?.toLowerCase().includes("already registered")
@@ -81,97 +86,39 @@ const Registro = () => {
     };
 
     return (
-        <div className="register-page">
-            <BarraNavegacionAutenticacion />
+        <DisenoAutenticacion
+            antetitulo="Crea tu cuenta"
+            titulo="Regístrate en TecnoHouse"
+            descripcion="Completa tus datos para gestionar tus solicitudes de servicio."
+        >
+            <Aviso texto={mensaje.texto} tipo={mensaje.tipo} />
 
-            <main className="register-main">
-                <section className="register-card" aria-labelledby="register-title">
-                    <p className="subtitle">CREA TU CUENTA</p>
-                    <h1 id="register-title">Regístrate en TecnoHouse</h1>
-                    <p className="register-description">Completa tus datos para gestionar tus solicitudes de servicio.</p>
+            <form className="space-y-5" noValidate onSubmit={manejarEnvio}>
+                {CAMPOS.map((campo) => (
+                    <div key={campo.nombre}>
+                        <label htmlFor={campo.nombre} className="etiqueta">{campo.etiqueta}</label>
+                        <input
+                            id={campo.nombre}
+                            name={campo.nombre}
+                            type={campo.tipo}
+                            placeholder={campo.placeholder}
+                            autoComplete={campo.autoComplete}
+                            minLength={campo.tipo === "password" ? 8 : undefined}
+                            className="campo py-3"
+                            value={valores[campo.nombre]}
+                            onChange={manejarCambio}
+                            required
+                        />
+                    </div>
+                ))}
 
-                    <MensajeFormulario texto={mensaje.texto} tipo={mensaje.tipo} />
+                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit">Crear cuenta</button>
+            </form>
 
-                    <form className="register-form" noValidate onSubmit={manejarEnvio}>
-                        <div className="form-group">
-                            <label htmlFor="nombre">Nombre completo</label>
-                            <input
-                                id="nombre"
-                                name="nombre"
-                                type="text"
-                                placeholder="Ej. Ana Pérez"
-                                autoComplete="name"
-                                value={valores.nombre}
-                                onChange={manejarCambio}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="correo">Correo electrónico</label>
-                            <input
-                                id="correo"
-                                name="correo"
-                                type="email"
-                                placeholder="correo@ejemplo.com"
-                                autoComplete="email"
-                                value={valores.correo}
-                                onChange={manejarCambio}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="telefono">Teléfono</label>
-                            <input
-                                id="telefono"
-                                name="telefono"
-                                type="tel"
-                                placeholder="Ej. 300 123 4567"
-                                autoComplete="tel"
-                                value={valores.telefono}
-                                onChange={manejarCambio}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="contrasena">Contraseña</label>
-                            <input
-                                id="contrasena"
-                                name="contrasena"
-                                type="password"
-                                placeholder="Mínimo 8 caracteres"
-                                minLength={8}
-                                autoComplete="new-password"
-                                value={valores.contrasena}
-                                onChange={manejarCambio}
-                                required
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="confirmarContrasena">Confirmar contraseña</label>
-                            <input
-                                id="confirmarContrasena"
-                                name="confirmarContrasena"
-                                type="password"
-                                placeholder="Repite tu contraseña"
-                                minLength={8}
-                                autoComplete="new-password"
-                                value={valores.confirmarContrasena}
-                                onChange={manejarCambio}
-                                required
-                            />
-                        </div>
-
-                        <button className="register-submit" type="submit">Crear cuenta</button>
-                    </form>
-
-                    <p className="login-hint">¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link></p>
-                </section>
-            </main>
-        </div>
+            <p className="mt-6 text-center text-sm text-slate-400">
+                ¿Ya tienes una cuenta? <Link to="/login" className="font-bold text-marca hover:underline">Inicia sesión</Link>
+            </p>
+        </DisenoAutenticacion>
     );
 };
 

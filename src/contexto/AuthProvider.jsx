@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext.js";
 import { supabase, supabaseConfigurado } from "../utilidades/supabase.js";
 
@@ -70,8 +70,31 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
+    // useCallback mantiene la misma función entre renders: CerrarSesion.jsx la usa dentro de un useEffect.
+    const cerrarSesion = useCallback(async () => {
+        if (supabaseConfigurado) await supabase.auth.signOut();
+    }, []);
+
+    /* Actualiza nombre y teléfono en los metadatos del usuario de Supabase. */
+    const actualizarPerfil = async ({ nombre, telefono }) => {
+        const { data, error } = await supabase.auth.updateUser({ data: { nombre, telefono } });
+        if (error) throw error;
+        return data;
+    };
+
+    const usuario = sesion?.user ?? null;
+
+    // Datos del usuario en el formato que usa el panel del cliente.
+    const perfil = usuario && {
+        id: usuario.id,
+        nombre: usuario.user_metadata?.nombre || usuario.email,
+        correo: usuario.email,
+        telefono: usuario.user_metadata?.telefono ?? "",
+        creadoEn: usuario.created_at,
+    };
+
     return (
-        <AuthContext.Provider value={{ sesion, usuario: sesion?.user ?? null, cargando, registrar, iniciarSesion }}>
+        <AuthContext.Provider value={{ sesion, usuario, perfil, cargando, registrar, iniciarSesion, cerrarSesion, actualizarPerfil }}>
             {children}
         </AuthContext.Provider>
     );
