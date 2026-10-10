@@ -1,14 +1,12 @@
-const TarjetaTecnico = ({ tecnico, alEliminar }) => {
+const TarjetaTecnico = ({ tecnico }) => {
     return (
         <div className="tecnico-card">
             <h3>{tecnico.nombre}</h3>
-            <p className="especialidad">{tecnico.especialidad}</p>
-            <p>{tecnico.email}</p>
-            <p>{tecnico.telefono}</p>
+            <p className="especialidad">{tecnico.especialidad || "Técnico de TecnoHouse"}</p>
+            <p>Calificación: {Number(tecnico.calificacion_promedio).toFixed(1)} / 5</p>
             <p className={`disponibilidad ${tecnico.disponible ? "disponible" : "no-disponible"}`}>
                 {tecnico.disponible ? "Disponible" : "No disponible"}
             </p>
-            <button onClick={() => alEliminar(tecnico.id)}>Eliminar</button>
         </div>
     );
 };

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import BarraNavegacionAutenticacion from "../componentes/BarraNavegacionAutenticacion.jsx";
 import MensajeFormulario from "../componentes/MensajeFormulario.jsx";
-import { BuscarUsuario, GuardarUsuarios, ObtenerUsuarios } from "../utilidades/autenticacion.js";
+import { useAuth } from "../hooks/useAuth.js";
 
 const VALORES_INICIALES = {
     nombre: "",
@@ -17,6 +17,7 @@ const Registro = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
+    const { registrar } = useAuth();
 
     // Evita navegar a una página ya desmontada si el usuario se va antes de que termine la espera.
     useEffect(() => {
@@ -28,7 +29,7 @@ const Registro = () => {
         setValores((anteriores) => ({ ...anteriores, [name]: value }));
     };
 
-    const manejarEnvio = (evento) => {
+    const manejarEnvio = async (evento) => {
         evento.preventDefault();
 
         const nombre = valores.nombre.trim();
@@ -60,22 +61,23 @@ const Registro = () => {
             return;
         }
 
-        // Validación 5: el correo no puede estar registrado previamente.
-        if (BuscarUsuario(correo)) {
-            setMensaje({ texto: "Ese correo ya tiene una cuenta. Inicia sesión.", tipo: "error" });
-            return;
+        try {
+            const { session } = await registrar({ nombre, telefono, correo, contrasena });
+            const texto = session
+                ? "¡Cuenta creada! Entrando a TecnoHouse..."
+                : "Cuenta creada. Revisa tu correo para confirmar la cuenta antes de iniciar sesión.";
+            setMensaje({ texto, tipo: "exito" });
+            setValores(VALORES_INICIALES);
+
+            temporizadorRef.current = setTimeout(() => {
+                navegar(session ? "/" : "/login");
+            }, 1800);
+        } catch (error) {
+            const texto = error.message?.toLowerCase().includes("already registered")
+                ? "Ese correo ya tiene una cuenta. Inicia sesión."
+                : `No se pudo crear la cuenta: ${error.message}`;
+            setMensaje({ texto, tipo: "error" });
         }
-
-        const usuarios = ObtenerUsuarios();
-        usuarios.push({ nombre, correo, telefono, contrasena });
-        GuardarUsuarios(usuarios);
-
-        setMensaje({ texto: "¡Cuenta creada! Te llevamos al inicio de sesión...", tipo: "exito" });
-        setValores(VALORES_INICIALES);
-
-        temporizadorRef.current = setTimeout(() => {
-            navegar("/login");
-        }, 1500);
     };
 
     return (
