@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { estaActiva } from "../../api/solicitudes.js";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { useDispositivos } from "../../hooks/useDispositivos.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
@@ -26,7 +26,7 @@ const Indicador = ({ valor, texto, icono }) => (
 );
 
 const ResumenPanel = () => {
-    const { perfil } = useAuth();
+    const { usuario } = useSesion();
     const { dispositivos, cargando: cargandoDispositivos } = useDispositivos();
     const { solicitudes, cargando: cargandoSolicitudes } = useSolicitudes();
 
@@ -39,7 +39,7 @@ const ResumenPanel = () => {
             {/* BIENVENIDA */}
             <section className="mb-8 overflow-hidden rounded-2xl border border-borde bg-linear-to-br from-tarjeta via-tarjeta to-marca/20 p-6 sm:p-8">
                 <p className="text-sm font-semibold tracking-widest text-marca uppercase">{saludoSegunHora()}</p>
-                <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Hola, {primerNombre(perfil.nombre)} 👋</h1>
+                <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Hola, {primerNombre(usuario.nombre)} 👋</h1>
                 <p className="mt-3 max-w-xl text-slate-300">
                     {activas.length > 0
                         ? `Tienes ${activas.length} ${activas.length === 1 ? "servicio en curso" : "servicios en curso"}. Aquí puedes seguir su avance.`

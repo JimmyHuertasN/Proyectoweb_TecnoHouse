@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { registrarUsuario } from "../api/usuarios.js";
 import Aviso from "../componentes/Aviso.jsx";
 import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
-import { useAuth } from "../hooks/useAuth.js";
 import { validarDatosPersonales } from "../utilidades/validaciones.js";
 
 const CAMPOS = [
@@ -26,7 +26,6 @@ const Registro = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
-    const { registrar } = useAuth();
 
     // Evita navegar a una página ya desmontada si el usuario se va antes de que termine la espera.
     useEffect(() => {
@@ -65,24 +64,20 @@ const Registro = () => {
             return;
         }
 
-        // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
+        // Validación 6 (la hace la API): el correo no puede estar registrado previamente.
         try {
-            const { session } = await registrar({ nombre, telefono, correo, contrasena });
-            const texto = session
-                ? "¡Cuenta creada! Entrando a tu panel..."
-                : "Cuenta creada. Revisa tu correo para confirmar la cuenta antes de iniciar sesión.";
-            setMensaje({ texto, tipo: "exito" });
-            setValores(VALORES_INICIALES);
-
-            temporizadorRef.current = setTimeout(() => {
-                navegar(session ? "/panel" : "/login");
-            }, 1800);
-        } catch (error) {
-            const texto = error.message?.toLowerCase().includes("already registered")
-                ? "Ese correo ya tiene una cuenta. Inicia sesión."
-                : `No se pudo crear la cuenta: ${error.message}`;
-            setMensaje({ texto, tipo: "error" });
+            await registrarUsuario({ nombre, correo, telefono, contrasena });
+        } catch (errorApi) {
+            setMensaje({ texto: errorApi.message, tipo: "error" });
+            return;
         }
+
+        setMensaje({ texto: "¡Cuenta creada! Te llevamos al inicio de sesión...", tipo: "exito" });
+        setValores(VALORES_INICIALES);
+
+        temporizadorRef.current = setTimeout(() => {
+            navegar("/login");
+        }, 1500);
     };
 
     return (
