@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import * as api from "../api/solicitudes.js";
-import { useAuth } from "./useAuth.js";
+import { useSesion } from "../contexto/ContextoSesion.js";
 
 /* Carga las solicitudes del usuario que inició sesión y permite crear nuevas. */
 export const useSolicitudes = () => {
-    const { perfil } = useAuth();
+    const { usuario } = useSesion();
     const [solicitudes, setSolicitudes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ export const useSolicitudes = () => {
     useEffect(() => {
         let vigente = true;
 
-        api.listarSolicitudes(perfil.id)
+        api.listarSolicitudes(usuario.id)
             .then((lista) => vigente && setSolicitudes(lista))
             .catch(() => vigente && setError("No se pudieron cargar tus solicitudes."))
             .finally(() => vigente && setCargando(false));
@@ -20,10 +20,10 @@ export const useSolicitudes = () => {
         return () => {
             vigente = false;
         };
-    }, [perfil.id]);
+    }, [usuario.id]);
 
     const crearSolicitud = async (datos) => {
-        const nueva = await api.crearSolicitud(perfil.id, datos);
+        const nueva = await api.crearSolicitud(usuario.id, datos);
         setSolicitudes((actuales) => [nueva, ...actuales]);
         return nueva;
     };

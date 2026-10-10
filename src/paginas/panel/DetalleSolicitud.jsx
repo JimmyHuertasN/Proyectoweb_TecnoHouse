@@ -4,7 +4,7 @@ import { cancelarSolicitud, obtenerSolicitud } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, ESTADOS_SOLICITUD, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha, formatearFechaHora } from "../../utilidades/formato.js";
 
@@ -33,7 +33,7 @@ const BarraProgreso = ({ estado }) => {
 
 const DetalleSolicitud = () => {
     const { codigo } = useParams();
-    const { perfil } = useAuth();
+    const { usuario } = useSesion();
     const ubicacion = useLocation();
     const [solicitud, setSolicitud] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -47,7 +47,7 @@ const DetalleSolicitud = () => {
     useEffect(() => {
         let vigente = true;
 
-        obtenerSolicitud(perfil.id, codigo)
+        obtenerSolicitud(usuario.id, codigo)
             .then((encontrada) => vigente && setSolicitud(encontrada))
             .catch((errorApi) => vigente && setError(errorApi.message))
             .finally(() => vigente && setCargando(false));
@@ -55,13 +55,13 @@ const DetalleSolicitud = () => {
         return () => {
             vigente = false;
         };
-    }, [perfil.id, codigo]);
+    }, [usuario.id, codigo]);
 
     const cancelar = async () => {
         if (!window.confirm("¿Seguro que quieres cancelar esta solicitud?")) return;
 
         try {
-            setSolicitud(await cancelarSolicitud(perfil.id, codigo));
+            setSolicitud(await cancelarSolicitud(usuario.id, codigo));
             setAviso({ texto: "La solicitud fue cancelada.", tipo: "info" });
         } catch (errorApi) {
             setAviso({ texto: errorApi.message, tipo: "error" });

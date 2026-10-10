@@ -1,26 +1,25 @@
 import { useState } from "react";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 import { useDispositivos } from "../../hooks/useDispositivos.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 import { validarDatosPersonales } from "../../utilidades/validaciones.js";
 
-/* El correo es la cuenta de Supabase: cambiarlo exige confirmación por email, por eso no se edita aquí. */
 const CAMPOS = [
-    { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", autoComplete: "name", editable: true },
-    { nombre: "correo", etiqueta: "Correo electrónico", tipo: "email", autoComplete: "email", editable: false },
-    { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", autoComplete: "tel", editable: true },
+    { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", autoComplete: "name" },
+    { nombre: "correo", etiqueta: "Correo electrónico", tipo: "email", autoComplete: "email" },
+    { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", autoComplete: "tel" },
 ];
 
 const Perfil = () => {
-    const { perfil, actualizarPerfil } = useAuth();
+    const { usuario, actualizarPerfil } = useSesion();
     const { dispositivos } = useDispositivos();
     const { solicitudes } = useSolicitudes();
 
     const [editando, setEditando] = useState(false);
-    const [valores, setValores] = useState({ nombre: perfil.nombre, telefono: perfil.telefono });
+    const [valores, setValores] = useState({ nombre: usuario.nombre, correo: usuario.correo, telefono: usuario.telefono ?? "" });
     const [aviso, setAviso] = useState({ texto: "", tipo: "" });
     const [guardando, setGuardando] = useState(false);
 
@@ -35,7 +34,7 @@ const Perfil = () => {
     };
 
     const cancelarEdicion = () => {
-        setValores({ nombre: perfil.nombre, telefono: perfil.telefono });
+        setValores({ nombre: usuario.nombre, correo: usuario.correo, telefono: usuario.telefono ?? "" });
         setAviso({ texto: "", tipo: "" });
         setEditando(false);
     };
@@ -45,10 +44,11 @@ const Perfil = () => {
 
         const datos = {
             nombre: valores.nombre.trim(),
+            correo: valores.correo.trim().toLowerCase(),
             telefono: valores.telefono.trim(),
         };
 
-        const errorValidacion = validarDatosPersonales({ ...datos, correo: perfil.correo });
+        const errorValidacion = validarDatosPersonales(datos);
         if (errorValidacion) {
             setAviso({ texto: errorValidacion, tipo: "error" });
             return;
@@ -74,11 +74,11 @@ const Perfil = () => {
                 {/* TARJETA DE PRESENTACIÓN */}
                 <section className="tarjeta text-center">
                     <span className="mx-auto flex size-20 items-center justify-center rounded-full bg-marca/15 text-2xl font-bold text-marca">
-                        {iniciales(perfil.nombre)}
+                        {iniciales(usuario.nombre)}
                     </span>
-                    <h2 className="mt-4 text-xl font-semibold">{perfil.nombre}</h2>
-                    <p className="text-sm text-slate-400">{perfil.correo}</p>
-                    {perfil.creadoEn && <p className="mt-1 text-xs text-slate-500">Cliente desde {formatearFecha(perfil.creadoEn)}</p>}
+                    <h2 className="mt-4 text-xl font-semibold">{usuario.nombre}</h2>
+                    <p className="text-sm text-slate-400">{usuario.correo}</p>
+                    {usuario.creadoEn && <p className="mt-1 text-xs text-slate-500">Cliente desde {formatearFecha(usuario.creadoEn)}</p>}
 
                     <div className="mt-6 grid grid-cols-2 gap-3 border-t border-borde pt-6">
                         <p>
@@ -108,7 +108,7 @@ const Perfil = () => {
                     <div className="grid gap-5 sm:grid-cols-2">
                         {CAMPOS.map((campo) => (
                             <div key={campo.nombre} className={campo.nombre === "nombre" ? "sm:col-span-2" : ""}>
-                                {editando && campo.editable ? (
+                                {editando ? (
                                     <>
                                         <label htmlFor={`perfil-${campo.nombre}`} className="etiqueta">{campo.etiqueta}</label>
                                         <input
@@ -125,7 +125,7 @@ const Perfil = () => {
                                     <>
                                         <p className="etiqueta">{campo.etiqueta}</p>
                                         <p className="border border-transparent py-2.5">
-                                            {perfil[campo.nombre] || <span className="text-slate-500">Sin registrar</span>}
+                                            {usuario[campo.nombre] || <span className="text-slate-500">Sin registrar</span>}
                                         </p>
                                     </>
                                 )}

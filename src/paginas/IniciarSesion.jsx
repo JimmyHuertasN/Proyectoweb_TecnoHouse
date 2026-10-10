@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Aviso from "../componentes/Aviso.jsx";
 import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
-import { useAuth } from "../hooks/useAuth.js";
+import { useSesion } from "../contexto/ContextoSesion.js";
 
 const IniciarSesion = () => {
     const [correo, setCorreo] = useState("");
     const [contrasena, setContrasena] = useState("");
     const [verContrasena, setVerContrasena] = useState(false);
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
+    const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
     const ubicacion = useLocation();
     const temporizadorRef = useRef(null);
-    const { iniciarSesion } = useAuth();
 
     // Si RutaProtegida nos trajo aquí, al entrar volvemos a la página que se pidió.
     const destino = ubicacion.state?.desde ?? "/panel";
@@ -24,26 +24,19 @@ const IniciarSesion = () => {
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
 
-        const correoNormalizado = correo.trim().toLowerCase();
-
         // Validación del formulario: los dos campos son obligatorios.
-        if (!correoNormalizado || !contrasena) {
+        if (!correo.trim() || !contrasena) {
             setMensaje({ texto: "Escribe tu correo y tu contraseña.", tipo: "error" });
             return;
         }
 
-        // La verificación de la cuenta y la contraseña la hace Supabase.
+        // La verificación de la cuenta y la contraseña la hace la API (src/api/usuarios.js).
         try {
-            const { user } = await iniciarSesion({ correo: correoNormalizado, contrasena });
-            const nombre = user.user_metadata?.nombre || correoNormalizado;
-            setMensaje({ texto: `¡Hola ${nombre}! Entrando a tu panel...`, tipo: "exito" });
+            const usuario = await iniciarSesion(correo, contrasena);
+            setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });
             temporizadorRef.current = setTimeout(() => navegar(destino, { replace: true }), 1200);
-        } catch (error) {
-            const esCredencialInvalida = error.message?.toLowerCase().includes("invalid login credentials");
-            const texto = esCredencialInvalida
-                ? "El correo o la contraseña son incorrectos."
-                : `No se pudo iniciar sesión: ${error.message}`;
-            setMensaje({ texto, tipo: "error" });
+        } catch (errorApi) {
+            setMensaje({ texto: errorApi.message, tipo: "error" });
         }
     };
 

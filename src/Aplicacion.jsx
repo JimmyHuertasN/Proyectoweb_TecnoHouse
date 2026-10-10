@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
 import RutaProtegida from "./componentes/panel/RutaProtegida.jsx";
-import { AuthProvider } from "./contexto/AuthProvider.jsx";
+import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
 import CerrarSesion from "./paginas/CerrarSesion.jsx";
 import IniciarSesion from "./paginas/IniciarSesion.jsx";
 import Inicio from "./paginas/Inicio.jsx";
@@ -15,7 +15,7 @@ import ResumenPanel from "./paginas/panel/ResumenPanel.jsx";
 
 const Aplicacion = () => {
     return (
-        <AuthProvider>
+        <ProveedorSesion>
             <BrowserRouter>
                 <Routes>
                     {/* Sitio público */}
@@ -44,7 +44,7 @@ const Aplicacion = () => {
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
-        </AuthProvider>
+        </ProveedorSesion>
     );
 };
 

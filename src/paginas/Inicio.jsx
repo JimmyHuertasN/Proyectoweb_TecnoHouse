@@ -6,7 +6,7 @@ import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
 
 const Inicio = () => {
-    const { tecnicos, cargando, error } = useTecnicos();
+    const { tecnicos, cargando, error, eliminarTecnico } = useTecnicos();
 
     return (
         <>
@@ -58,7 +58,7 @@ const Inicio = () => {
                         {cargando && <p className="text-slate-400">Cargando técnicos...</p>}
                         {error && <p className="text-slate-400">{error}</p>}
                         {!cargando && !error && tecnicos.map((tecnico) => (
-                            <TarjetaTecnico key={tecnico.id} tecnico={tecnico} />
+                            <TarjetaTecnico key={tecnico.id} tecnico={tecnico} alEliminar={eliminarTecnico} />
                         ))}
                     </div>
                 </section>

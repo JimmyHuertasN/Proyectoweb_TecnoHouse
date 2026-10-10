@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
 
 const ENLACES = [
@@ -19,7 +19,7 @@ const clasesEnlace = ({ isActive }) =>
     oculta fuera de la pantalla y se desliza cuando "abierto" es true.
 */
 const MenuLateral = ({ abierto, alCerrar }) => {
-    const { perfil } = useAuth();
+    const { usuario } = useSesion();
 
     return (
         <>
@@ -62,11 +62,11 @@ const MenuLateral = ({ abierto, alCerrar }) => {
                 <div className="border-t border-borde p-4">
                     <div className="mb-3 flex items-center gap-3">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-marca/15 text-sm font-bold text-marca">
-                            {iniciales(perfil.nombre)}
+                            {iniciales(usuario.nombre)}
                         </span>
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold">{perfil.nombre}</p>
-                            <p className="truncate text-xs text-slate-400">{perfil.correo}</p>
+                            <p className="truncate text-sm font-semibold">{usuario.nombre}</p>
+                            <p className="truncate text-xs text-slate-400">{usuario.correo}</p>
                         </div>
                     </div>
                     <Link to="/salir" className="boton-secundario w-full">
