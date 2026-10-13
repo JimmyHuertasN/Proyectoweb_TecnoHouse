@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Aviso from "../componentes/Aviso.jsx";
 import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
 import { useSesion } from "../contexto/ContextoSesion.js";
@@ -11,11 +11,7 @@ const IniciarSesion = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
-    const ubicacion = useLocation();
     const temporizadorRef = useRef(null);
-
-    // Si RutaProtegida nos trajo aquí, al entrar volvemos a la página que se pidió.
-    const destino = ubicacion.state?.desde ?? "/panel";
 
     useEffect(() => {
         return () => clearTimeout(temporizadorRef.current);
@@ -34,6 +30,7 @@ const IniciarSesion = () => {
         try {
             const usuario = await iniciarSesion(correo, contrasena);
             setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });
+            const destino = { cliente: "/cliente", tecnico: "/tecnico", admin: "/admin" }[usuario.rol] ?? "/";
             temporizadorRef.current = setTimeout(() => navegar(destino, { replace: true }), 1200);
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });

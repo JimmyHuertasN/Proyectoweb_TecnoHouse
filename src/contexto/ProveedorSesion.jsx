@@ -6,8 +6,8 @@ import { ContextoSesion } from "./ContextoSesion.js";
 /* Las sesiones guardadas por la versión anterior no tienen id: se descartan y el usuario vuelve a entrar. */
 const leerSesionGuardada = () => {
     const sesion = leer(CLAVES.sesion, null);
-    return sesion?.id ? sesion : null;
-};
+    return sesion?.id ? { ...sesion, rol: sesion.rol ?? "cliente" } : null; /*Verifica si el rol marcado por el usuario pertece a esa cuenta*/
+}; 
 
 const ProveedorSesion = ({ children }) => {
     const [usuario, setUsuario] = useState(leerSesionGuardada);
