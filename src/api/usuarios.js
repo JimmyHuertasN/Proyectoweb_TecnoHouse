@@ -12,7 +12,7 @@
 import { CLAVES, generarId, guardar, leer } from "./almacenamiento.js";
 
 /* Lo que se puede mostrar del usuario: nunca se devuelve la contraseña. */
-const datosPublicos = ({ id, nombre, correo, telefono, creadoEn }) => ({ id, nombre, correo, telefono, creadoEn });
+const datosPublicos = ({ id, nombre, correo, telefono, rol = "cliente", creadoEn }) => ({ id, nombre, correo, telefono, rol, creadoEn });
 
 /* Los usuarios creados antes de esta versión no tenían id; se les asigna uno la primera vez. */
 const obtenerUsuarios = () => {
@@ -39,6 +39,7 @@ export const registrarUsuario = async ({ nombre, correo, telefono, contrasena })
         nombre: nombre.trim(),
         correo: correoNormalizado,
         telefono: telefono.trim(),
+        rol: "cliente",
         // Solo para la práctica: un backend real guarda la contraseña cifrada (hash), nunca en texto plano.
         contrasena,
         creadoEn: new Date().toISOString(),

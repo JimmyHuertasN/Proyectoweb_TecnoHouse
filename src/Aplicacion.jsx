@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
-import RutaProtegida from "./componentes/panel/RutaProtegida.jsx";
+import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
 import CerrarSesion from "./paginas/CerrarSesion.jsx";
 import IniciarSesion from "./paginas/IniciarSesion.jsx";
@@ -26,9 +26,9 @@ const Aplicacion = () => {
 
                     {/* Panel del cliente: todas estas rutas comparten el menú lateral y exigen sesión. */}
                     <Route
-                        path="/panel"
+                        path="/cliente"
                         element={
-                            <RutaProtegida>
+                            <RutaProtegida rolesPermitidos={["cliente"]}>
                                 <DisenoPanel />
                             </RutaProtegida>
                         }
@@ -40,6 +40,13 @@ const Aplicacion = () => {
                         <Route path="solicitudes/:codigo" element={<DetalleSolicitud />} />
                         <Route path="perfil" element={<Perfil />} />
                     </Route>
+
+                    {/* Conserva el enlace al panel del cliente. */}
+                    <Route path="/panel" element={<Navigate to="/cliente" replace />} />
+
+                    {/* Destinos protegidos para los otros roles; los paneles se pueden añadir después. */}
+                    <Route path="/tecnico" element={<RutaProtegida rolesPermitidos={["tecnico"]}><Inicio /></RutaProtegida>} />
+                    <Route path="/admin" element={<RutaProtegida rolesPermitidos={["admin"]}><Inicio /></RutaProtegida>} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
