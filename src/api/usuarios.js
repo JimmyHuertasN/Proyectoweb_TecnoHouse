@@ -1,86 +1,101 @@
 /*
     usuarios.js
-    Registro, inicio de sesión y perfil. Todas las funciones son async para que
-    tengan la misma forma que tendrán con la API real (fetch devuelve promesas).
-    Si algo falla lanzan un Error con un mensaje listo para mostrar al usuario.
-
-    Ejemplo de cómo quedaría iniciarSesion con el backend:
-        const res = await fetch(`${URL_API}/auth/login`, { method: "POST", ... });
-        if (!res.ok) throw new Error("Correo o contraseña incorrectos.");
-        return res.json();
+    Registro, inicio de sesión y perfil con Supabase Auth.
+    - Las cuentas (correo y contraseña) las maneja Supabase Auth.
+    - Los datos del usuario (nombre, teléfono y rol) viven en la tabla "perfiles".
+      Un trigger de la base de datos crea el perfil al registrarse, con rol "cliente".
 */
-import { CLAVES, generarId, guardar, leer } from "./almacenamiento.js";
+import { obtenerCliente, verificar } from "./supabase.js";
 
-/* Lo que se puede mostrar del usuario: nunca se devuelve la contraseña. */
-const datosPublicos = ({ id, nombre, correo, telefono, rol = "cliente", creadoEn }) => ({ id, nombre, correo, telefono, rol, creadoEn });
-
-/* Los usuarios creados antes de esta versión no tenían id; se les asigna uno la primera vez. */
-const obtenerUsuarios = () => {
-    const usuarios = leer(CLAVES.usuarios, []);
-    if (usuarios.every((usuario) => usuario.id)) return usuarios;
-
-    const conId = usuarios.map((usuario) => (usuario.id ? usuario : { ...usuario, id: generarId() }));
-    guardar(CLAVES.usuarios, conId);
-    return conId;
-};
-
-const normalizarCorreo = (correo) => correo.trim().toLowerCase();
+/*
+    Páginas de la aplicación a las que llevan los enlaces de los correos de Supabase.
+    Deben estar permitidas en Supabase: Authentication → URL Configuration → Redirect URLs.
+*/
+const urlDeLaApp = (ruta) => `${window.location.origin}${ruta}`;
 
 export const registrarUsuario = async ({ nombre, correo, telefono, contrasena }) => {
-    const usuarios = obtenerUsuarios();
-    const correoNormalizado = normalizarCorreo(correo);
+    const data = verificar(
+        await obtenerCliente().auth.signUp({
+            email: correo,
+            password: contrasena,
+            options: {
+                // El trigger de la base de datos copia estos datos a la tabla "perfiles".
+                data: { nombre, telefono },
+                emailRedirectTo: urlDeLaApp("/correo-confirmado"),
+            },
+        })
+    );
 
-    if (usuarios.some((usuario) => usuario.correo === correoNormalizado)) {
+    // Con la confirmación por correo activa, Supabase no da error si el correo ya existe:
+    // devuelve un usuario sin identidades. Así se detecta ese caso.
+    if (data.user?.identities?.length === 0) {
         throw new Error("Ese correo ya tiene una cuenta. Inicia sesión.");
     }
 
-    const nuevoUsuario = {
-        id: generarId(),
-        nombre: nombre.trim(),
-        correo: correoNormalizado,
-        telefono: telefono.trim(),
-        rol: "cliente",
-        // Solo para la práctica: un backend real guarda la contraseña cifrada (hash), nunca en texto plano.
-        contrasena,
-        creadoEn: new Date().toISOString(),
-    };
+    return { requiereConfirmacion: !data.session };
+};
 
-    guardar(CLAVES.usuarios, [...usuarios, nuevoUsuario]);
-    return datosPublicos(nuevoUsuario);
+/* Une la cuenta de Supabase Auth con su fila de "perfiles" en un solo objeto para la aplicación. */
+export const obtenerPerfil = async (usuarioAuth) => {
+    const { data: perfil, error } = await obtenerCliente()
+        .from("perfiles")
+        .select("nombre, telefono, rol, creado_en")
+        .eq("id", usuarioAuth.id)
+        .maybeSingle();
+
+    if (error) console.error("No se pudo leer el perfil:", error.message);
+
+    const metadatos = usuarioAuth.user_metadata ?? {};
+    return {
+        id: usuarioAuth.id,
+        correo: usuarioAuth.email,
+        nombre: perfil?.nombre ?? metadatos.nombre ?? usuarioAuth.email,
+        telefono: perfil?.telefono ?? metadatos.telefono ?? "",
+        rol: perfil?.rol ?? "cliente",
+        creadoEn: perfil?.creado_en ?? usuarioAuth.created_at,
+    };
 };
 
 export const iniciarSesion = async (correo, contrasena) => {
-    const usuario = obtenerUsuarios().find((guardado) => guardado.correo === normalizarCorreo(correo));
-
-    if (!usuario) {
-        throw new Error("No encontramos una cuenta con ese correo.");
-    }
-
-    if (usuario.contrasena !== contrasena) {
-        throw new Error("La contraseña es incorrecta.");
-    }
-
-    return datosPublicos(usuario);
+    const { user } = verificar(await obtenerCliente().auth.signInWithPassword({ email: correo, password: contrasena }));
+    return obtenerPerfil(user);
 };
 
-export const actualizarUsuario = async (id, { nombre, correo, telefono }) => {
-    const usuarios = obtenerUsuarios();
-    const correoNormalizado = normalizarCorreo(correo);
+export const cerrarSesion = async () => {
+    verificar(await obtenerCliente().auth.signOut());
+};
 
-    if (!usuarios.some((usuario) => usuario.id === id)) {
-        throw new Error("Tu cuenta ya no existe. Vuelve a iniciar sesión.");
-    }
+/* Vuelve a enviar el correo para confirmar la cuenta (por si no llegó o el enlace expiró). */
+export const reenviarConfirmacion = async (correo) => {
+    verificar(
+        await obtenerCliente().auth.resend({
+            type: "signup",
+            email: correo,
+            options: { emailRedirectTo: urlDeLaApp("/correo-confirmado") },
+        })
+    );
+};
 
-    if (usuarios.some((usuario) => usuario.id !== id && usuario.correo === correoNormalizado)) {
-        throw new Error("Ese correo ya está en uso por otra cuenta.");
-    }
+/*
+    Envía el correo con el enlace para crear una contraseña nueva.
+    Por seguridad Supabase no avisa si el correo no existe: siempre responde igual.
+*/
+export const enviarRecuperacion = async (correo) => {
+    verificar(await obtenerCliente().auth.resetPasswordForEmail(correo, { redirectTo: urlDeLaApp("/nueva-contrasena") }));
+};
 
-    const actualizados = usuarios.map((usuario) =>
-        usuario.id === id
-            ? { ...usuario, nombre: nombre.trim(), correo: correoNormalizado, telefono: telefono.trim() }
-            : usuario
+/* Cambia la contraseña del usuario que abrió el enlace de recuperación (o que ya inició sesión). */
+export const cambiarContrasena = async (contrasenaNueva) => {
+    verificar(await obtenerCliente().auth.updateUser({ password: contrasenaNueva }));
+};
+
+export const actualizarPerfil = async (id, { nombre, telefono }) => {
+    const filas = verificar(
+        await obtenerCliente().from("perfiles").update({ nombre, telefono }).eq("id", id).select("id")
     );
 
-    guardar(CLAVES.usuarios, actualizados);
-    return datosPublicos(actualizados.find((usuario) => usuario.id === id));
+    // Si las reglas de seguridad (RLS) no permiten el cambio, Supabase no da error: simplemente no actualiza nada.
+    if (filas.length === 0) {
+        throw new Error("No se pudieron guardar los cambios. Vuelve a iniciar sesión e inténtalo de nuevo.");
+    }
 };

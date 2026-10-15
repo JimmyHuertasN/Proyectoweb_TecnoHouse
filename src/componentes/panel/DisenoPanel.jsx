@@ -25,7 +25,7 @@ const DisenoPanel = () => {
                     >
                         ☰
                     </button>
-                    <Link to="/panel" className="text-lg font-bold">
+                    <Link to="/cliente" className="text-lg font-bold">
                         TECNO<span className="text-marca">HOUSE</span>
                     </Link>
                     <span className="w-10" />

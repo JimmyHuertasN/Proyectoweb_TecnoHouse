@@ -7,10 +7,11 @@ import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 import { validarDatosPersonales } from "../../utilidades/validaciones.js";
 
+/* El correo es la cuenta de Supabase: cambiarlo exige confirmación por email, por eso no se edita aquí. */
 const CAMPOS = [
-    { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", autoComplete: "name" },
-    { nombre: "correo", etiqueta: "Correo electrónico", tipo: "email", autoComplete: "email" },
-    { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", autoComplete: "tel" },
+    { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", autoComplete: "name", editable: true },
+    { nombre: "correo", etiqueta: "Correo electrónico", tipo: "email", autoComplete: "email", editable: false },
+    { nombre: "telefono", etiqueta: "Teléfono", tipo: "tel", autoComplete: "tel", editable: true },
 ];
 
 const Perfil = () => {
@@ -19,7 +20,7 @@ const Perfil = () => {
     const { solicitudes } = useSolicitudes();
 
     const [editando, setEditando] = useState(false);
-    const [valores, setValores] = useState({ nombre: usuario.nombre, correo: usuario.correo, telefono: usuario.telefono ?? "" });
+    const [valores, setValores] = useState({ nombre: usuario.nombre, telefono: usuario.telefono ?? "" });
     const [aviso, setAviso] = useState({ texto: "", tipo: "" });
     const [guardando, setGuardando] = useState(false);
 
@@ -34,7 +35,7 @@ const Perfil = () => {
     };
 
     const cancelarEdicion = () => {
-        setValores({ nombre: usuario.nombre, correo: usuario.correo, telefono: usuario.telefono ?? "" });
+        setValores({ nombre: usuario.nombre, telefono: usuario.telefono ?? "" });
         setAviso({ texto: "", tipo: "" });
         setEditando(false);
     };
@@ -44,11 +45,10 @@ const Perfil = () => {
 
         const datos = {
             nombre: valores.nombre.trim(),
-            correo: valores.correo.trim().toLowerCase(),
             telefono: valores.telefono.trim(),
         };
 
-        const errorValidacion = validarDatosPersonales(datos);
+        const errorValidacion = validarDatosPersonales({ ...datos, correo: usuario.correo });
         if (errorValidacion) {
             setAviso({ texto: errorValidacion, tipo: "error" });
             return;
@@ -108,7 +108,7 @@ const Perfil = () => {
                     <div className="grid gap-5 sm:grid-cols-2">
                         {CAMPOS.map((campo) => (
                             <div key={campo.nombre} className={campo.nombre === "nombre" ? "sm:col-span-2" : ""}>
-                                {editando ? (
+                                {editando && campo.editable ? (
                                     <>
                                         <label htmlFor={`perfil-${campo.nombre}`} className="etiqueta">{campo.etiqueta}</label>
                                         <input

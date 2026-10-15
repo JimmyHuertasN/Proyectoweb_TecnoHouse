@@ -3,10 +3,10 @@ import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
 
 const ENLACES = [
-    { ruta: "/panel", texto: "Resumen", icono: "🏠", exacta: true },
-    { ruta: "/panel/dispositivos", texto: "Mis dispositivos", icono: "💻" },
-    { ruta: "/panel/solicitudes", texto: "Solicitudes", icono: "🛠️" },
-    { ruta: "/panel/perfil", texto: "Mi perfil", icono: "👤" },
+    { ruta: "/cliente", texto: "Resumen", icono: "🏠", exacta: true },
+    { ruta: "/cliente/dispositivos", texto: "Mis dispositivos", icono: "💻" },
+    { ruta: "/cliente/solicitudes", texto: "Solicitudes", icono: "🛠️" },
+    { ruta: "/cliente/perfil", texto: "Mi perfil", icono: "👤" },
 ];
 
 const clasesEnlace = ({ isActive }) =>
@@ -54,7 +54,7 @@ const MenuLateral = ({ abierto, alCerrar }) => {
                         </NavLink>
                     ))}
 
-                    <Link to="/panel/solicitudes/nueva" onClick={alCerrar} className="boton-primario mt-6 w-full">
+                    <Link to="/cliente/solicitudes/nueva" onClick={alCerrar} className="boton-primario mt-6 w-full">
                         + Solicitar reparación
                     </Link>
                 </nav>

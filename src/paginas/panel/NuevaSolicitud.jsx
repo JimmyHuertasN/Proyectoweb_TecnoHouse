@@ -49,7 +49,7 @@ const NuevaSolicitud = () => {
 
         try {
             const nueva = await crearSolicitud({ dispositivoId: seleccionado, gravedad, descripcion });
-            navegar(`/panel/solicitudes/${nueva.codigo}`, { state: { recienCreada: true } });
+            navegar(`/cliente/solicitudes/${nueva.id}`, { state: { recienCreada: true } });
         } catch (errorApi) {
             setError(errorApi.message);
             setEnviando(false);
@@ -69,7 +69,7 @@ const NuevaSolicitud = () => {
                     titulo="Primero registra un dispositivo"
                     descripcion="Para crear una solicitud necesitamos saber qué equipo vas a traer."
                 >
-                    <Link to="/panel/dispositivos" className="boton-primario">Ir a Mis dispositivos</Link>
+                    <Link to="/cliente/dispositivos" className="boton-primario">Ir a Mis dispositivos</Link>
                 </EstadoVacio>
             </>
         );
@@ -111,7 +111,7 @@ const NuevaSolicitud = () => {
                         })}
                     </div>
                     <p className="mt-3 text-sm text-slate-400">
-                        ¿No está en la lista? <Link to="/panel/dispositivos" className="font-semibold text-marca hover:underline">Regístralo aquí</Link>.
+                        ¿No está en la lista? <Link to="/cliente/dispositivos" className="font-semibold text-marca hover:underline">Regístralo aquí</Link>.
                     </p>
                 </fieldset>
 
@@ -154,7 +154,7 @@ const NuevaSolicitud = () => {
                 </div>
 
                 <div className="flex flex-col-reverse gap-3 border-t border-borde pt-6 sm:flex-row sm:justify-end">
-                    <Link to="/panel/solicitudes" className="boton-secundario">Cancelar</Link>
+                    <Link to="/cliente/solicitudes" className="boton-secundario">Cancelar</Link>
                     <button type="submit" disabled={enviando} className="boton-primario">
                         {enviando ? "Enviando..." : "Crear solicitud"}
                     </button>

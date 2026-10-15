@@ -11,7 +11,7 @@ const FilaSolicitud = ({ solicitud }) => {
     return (
         <li>
             <Link
-                to={`/panel/solicitudes/${solicitud.codigo}`}
+                to={`/cliente/solicitudes/${solicitud.id}`}
                 className="flex flex-col gap-3 rounded-lg border border-borde bg-fondo/60 p-4 transition hover:border-marca/60 sm:flex-row sm:items-center"
             >
                 <span className="hidden text-2xl sm:block" aria-hidden="true">{tipo.icono}</span>

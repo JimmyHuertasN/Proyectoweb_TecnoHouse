@@ -31,7 +31,7 @@ const TarjetaDispositivo = ({ dispositivo, alEditar, alEliminar }) => {
             </dl>
 
             <div className="mt-5 flex flex-wrap gap-2 border-t border-borde pt-4">
-                <Link to={`/panel/solicitudes/nueva?dispositivo=${dispositivo.id}`} className="boton-primario flex-1 px-3 py-2">
+                <Link to={`/cliente/solicitudes/nueva?dispositivo=${dispositivo.id}`} className="boton-primario flex-1 px-3 py-2">
                     Solicitar reparación
                 </Link>
                 <button type="button" onClick={() => alEditar(dispositivo)} className="boton-secundario px-3 py-2">

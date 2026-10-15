@@ -12,18 +12,23 @@ export const GRAVEDADES = [
     { valor: "alta", etiqueta: "Alta", descripcion: "No enciende o no se puede usar." },
 ];
 
-/* El orden de este arreglo es el recorrido normal de una reparación. */
+/*
+    Estados del tipo "estado_servicio" de la base de datos. El orden de este
+    arreglo es el recorrido normal de una reparación.
+*/
 export const ESTADOS_SOLICITUD = [
-    { valor: "pendiente", etiqueta: "Pendiente" },
-    { valor: "en_revision", etiqueta: "En diagnóstico" },
+    { valor: "solicitado", etiqueta: "Solicitado" },
+    { valor: "asignado", etiqueta: "Técnico asignado" },
+    { valor: "en_diagnostico", etiqueta: "En diagnóstico" },
+    { valor: "cotizado", etiqueta: "Cotizado" },
+    { valor: "aprobado", etiqueta: "Cotización aprobada" },
     { valor: "en_reparacion", etiqueta: "En reparación" },
-    { valor: "lista", etiqueta: "Lista para entregar" },
-    { valor: "entregada", etiqueta: "Entregada" },
-    { valor: "cancelada", etiqueta: "Cancelada" },
+    { valor: "finalizado", etiqueta: "Finalizado" },
+    { valor: "calificado", etiqueta: "Calificado" },
 ];
 
 /* Una solicitud en estos estados ya no está en curso. */
-export const ESTADOS_FINALES = ["entregada", "cancelada"];
+export const ESTADOS_FINALES = ["finalizado", "calificado"];
 
 /* Busca la opción de un catálogo por su valor (ej. buscarOpcion(GRAVEDADES, "alta")). */
 export const buscarOpcion = (catalogo, valor) => {

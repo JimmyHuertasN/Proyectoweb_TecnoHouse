@@ -23,7 +23,7 @@ const MisSolicitudes = () => {
     return (
         <>
             <EncabezadoPagina titulo="Solicitudes de servicio" descripcion="Consulta el estado y el historial de cada reparación.">
-                <Link to="/panel/solicitudes/nueva" className="boton-primario">+ Nueva solicitud</Link>
+                <Link to="/cliente/solicitudes/nueva" className="boton-primario">+ Nueva solicitud</Link>
             </EncabezadoPagina>
 
             <Aviso texto={error} tipo="error" />
@@ -36,7 +36,7 @@ const MisSolicitudes = () => {
                     titulo="Aún no has solicitado ningún servicio"
                     descripcion="Elige uno de tus dispositivos, cuéntanos qué le pasa y un técnico lo revisará."
                 >
-                    <Link to="/panel/solicitudes/nueva" className="boton-primario">Solicitar mi primera reparación</Link>
+                    <Link to="/cliente/solicitudes/nueva" className="boton-primario">Solicitar mi primera reparación</Link>
                 </EstadoVacio>
             )}
 
