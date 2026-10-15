@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { registrarUsuario } from "../api/usuarios.js";
 import Aviso from "../componentes/Aviso.jsx";
 import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../componentes/ReenviarConfirmacion.jsx";
 import { validarDatosPersonales } from "../utilidades/validaciones.js";
 
 const CAMPOS = [
@@ -24,6 +25,8 @@ const VALORES_INICIALES = {
 const Registro = () => {
     const [valores, setValores] = useState(VALORES_INICIALES);
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
+    // Correo de la cuenta recién creada que falta confirmar (para poder reenviarle el correo).
+    const [correoPorConfirmar, setCorreoPorConfirmar] = useState("");
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
 
@@ -64,20 +67,26 @@ const Registro = () => {
             return;
         }
 
-        // Validación 6 (la hace la API): el correo no puede estar registrado previamente.
+        // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
         try {
-            await registrarUsuario({ nombre, correo, telefono, contrasena });
+            const { requiereConfirmacion } = await registrarUsuario({ nombre, correo, telefono, contrasena });
+            setValores(VALORES_INICIALES);
+
+            // Supabase puede exigir confirmar el correo antes de dejar entrar (configuración del proyecto).
+            if (requiereConfirmacion) {
+                setCorreoPorConfirmar(correo);
+                setMensaje({
+                    texto: `¡Cuenta creada! Te enviamos un correo a ${correo}. Confírmalo y luego inicia sesión.`,
+                    tipo: "exito",
+                });
+                return;
+            }
+
+            setMensaje({ texto: "¡Cuenta creada! Entrando a tu panel...", tipo: "exito" });
+            temporizadorRef.current = setTimeout(() => navegar("/cliente"), 1500);
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
-            return;
         }
-
-        setMensaje({ texto: "¡Cuenta creada! Te llevamos al inicio de sesión...", tipo: "exito" });
-        setValores(VALORES_INICIALES);
-
-        temporizadorRef.current = setTimeout(() => {
-            navegar("/login");
-        }, 1500);
     };
 
     return (
@@ -87,6 +96,7 @@ const Registro = () => {
             descripcion="Completa tus datos para gestionar tus solicitudes de servicio."
         >
             <Aviso texto={mensaje.texto} tipo={mensaje.tipo} />
+            {correoPorConfirmar && <ReenviarConfirmacion correo={correoPorConfirmar} />}
 
             <form className="space-y-5" noValidate onSubmit={manejarEnvio}>
                 {CAMPOS.map((campo) => (

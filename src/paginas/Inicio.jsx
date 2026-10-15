@@ -6,7 +6,7 @@ import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
 
 const Inicio = () => {
-    const { tecnicos, cargando, error, eliminarTecnico } = useTecnicos();
+    const { tecnicos, cargando, error } = useTecnicos();
 
     return (
         <>
@@ -57,8 +57,11 @@ const Inicio = () => {
                     <div id="contenedor-tecnicos" className="flex flex-wrap justify-center gap-6">
                         {cargando && <p className="text-slate-400">Cargando técnicos...</p>}
                         {error && <p className="text-slate-400">{error}</p>}
+                        {!cargando && !error && tecnicos.length === 0 && (
+                            <p className="text-slate-400">Pronto conocerás a nuestro equipo de técnicos.</p>
+                        )}
                         {!cargando && !error && tecnicos.map((tecnico) => (
-                            <TarjetaTecnico key={tecnico.id} tecnico={tecnico} alEliminar={eliminarTecnico} />
+                            <TarjetaTecnico key={tecnico.id} tecnico={tecnico} />
                         ))}
                     </div>
                 </section>

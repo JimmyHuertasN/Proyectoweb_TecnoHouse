@@ -1,12 +1,14 @@
 import { buscarOpcion, ESTADOS_SOLICITUD, GRAVEDADES } from "../../datos/opciones.js";
 
 const COLORES_ESTADO = {
-    pendiente: "bg-amber-500/15 text-amber-300",
-    en_revision: "bg-sky-500/15 text-sky-300",
+    solicitado: "bg-amber-500/15 text-amber-300",
+    asignado: "bg-sky-500/15 text-sky-300",
+    en_diagnostico: "bg-sky-500/15 text-sky-300",
+    cotizado: "bg-orange-500/15 text-orange-300",
+    aprobado: "bg-indigo-500/15 text-indigo-300",
     en_reparacion: "bg-violet-500/15 text-violet-300",
-    lista: "bg-emerald-500/15 text-emerald-300",
-    entregada: "bg-slate-500/20 text-slate-300",
-    cancelada: "bg-red-500/15 text-red-300",
+    finalizado: "bg-emerald-500/15 text-emerald-300",
+    calificado: "bg-slate-500/20 text-slate-300",
 };
 
 const COLORES_GRAVEDAD = {
@@ -21,8 +23,13 @@ export const EtiquetaEstado = ({ estado }) => (
     </span>
 );
 
-export const EtiquetaGravedad = ({ gravedad }) => (
-    <span className={`text-xs font-semibold whitespace-nowrap ${COLORES_GRAVEDAD[gravedad]}`}>
-        ● Gravedad {buscarOpcion(GRAVEDADES, gravedad).etiqueta.toLowerCase()}
-    </span>
-);
+/* Las solicitudes creadas fuera de la aplicación pueden no tener gravedad: en ese caso no se muestra nada. */
+export const EtiquetaGravedad = ({ gravedad }) => {
+    if (!gravedad) return null;
+
+    return (
+        <span className={`text-xs font-semibold whitespace-nowrap ${COLORES_GRAVEDAD[gravedad]}`}>
+            ● Gravedad {buscarOpcion(GRAVEDADES, gravedad).etiqueta.toLowerCase()}
+        </span>
+    );
+};

@@ -1,16 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Aviso from "../componentes/Aviso.jsx";
 import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../componentes/ReenviarConfirmacion.jsx";
 import { useSesion } from "../contexto/ContextoSesion.js";
+import { rutaInicio } from "../utilidades/rutas.js";
 
 const IniciarSesion = () => {
     const [correo, setCorreo] = useState("");
     const [contrasena, setContrasena] = useState("");
     const [verContrasena, setVerContrasena] = useState(false);
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
+    // Si la cuenta existe pero no ha confirmado el correo, se ofrece reenviarlo.
+    const [sinConfirmar, setSinConfirmar] = useState(false);
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
+    const ubicacion = useLocation();
     const temporizadorRef = useRef(null);
 
     useEffect(() => {
@@ -26,14 +31,20 @@ const IniciarSesion = () => {
             return;
         }
 
-        // La verificación de la cuenta y la contraseña la hace la API (src/api/usuarios.js).
+        // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
         try {
-            const usuario = await iniciarSesion(correo, contrasena);
+            const usuario = await iniciarSesion(correo.trim().toLowerCase(), contrasena);
             setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });
-            const destino = { cliente: "/cliente", tecnico: "/tecnico", admin: "/admin" }[usuario.rol] ?? "/";
+
+            // Se va a la página principal de su rol; si RutaProtegida lo trajo desde una página de
+            // esa misma sección (ej. /cliente/perfil), se le devuelve allí.
+            const inicio = rutaInicio(usuario.rol);
+            const pedida = ubicacion.state?.desde;
+            const destino = pedida?.startsWith(inicio) && inicio !== "/" ? pedida : inicio;
             temporizadorRef.current = setTimeout(() => navegar(destino, { replace: true }), 1200);
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
+            setSinConfirmar(errorApi.codigo === "email_not_confirmed");
         }
     };
 
@@ -44,6 +55,7 @@ const IniciarSesion = () => {
             descripcion="Ingresa con la cuenta que creaste para consultar tus solicitudes de servicio."
         >
             <Aviso texto={mensaje.texto} tipo={mensaje.tipo} />
+            {sinConfirmar && <ReenviarConfirmacion correo={correo.trim().toLowerCase()} />}
 
             <form className="space-y-5" noValidate onSubmit={manejarEnvio}>
                 <div>
@@ -74,16 +86,21 @@ const IniciarSesion = () => {
                         onChange={(evento) => setContrasena(evento.target.value)}
                         required
                     />
-                    <label className="mt-2.5 flex cursor-pointer items-center gap-2 text-[13px] text-slate-400">
-                        <input
-                            id="ver-contrasena"
-                            type="checkbox"
-                            className="size-4 cursor-pointer accent-marca"
-                            checked={verContrasena}
-                            onChange={(evento) => setVerContrasena(evento.target.checked)}
-                        />
-                        Mostrar contraseña
-                    </label>
+                    <div className="mt-2.5 flex items-center justify-between gap-3">
+                        <label className="flex cursor-pointer items-center gap-2 text-[13px] text-slate-400">
+                            <input
+                                id="ver-contrasena"
+                                type="checkbox"
+                                className="size-4 cursor-pointer accent-marca"
+                                checked={verContrasena}
+                                onChange={(evento) => setVerContrasena(evento.target.checked)}
+                            />
+                            Mostrar contraseña
+                        </label>
+                        <Link to="/recuperar" className="text-[13px] font-semibold text-marca hover:underline">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
                 </div>
 
                 <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit">Entrar</button>

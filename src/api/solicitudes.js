@@ -1,52 +1,83 @@
 /*
     solicitudes.js
-    Solicitudes de servicio técnico. Cada solicitud guarda una copia de los datos
-    del dispositivo para que el historial se conserve aunque el cliente lo
-    edite o lo elimine después.
+    Solicitudes de servicio técnico sobre la tabla "servicios".
+
+    La tabla no tiene columna de gravedad, así que se guarda al inicio del
+    texto del problema, por ejemplo: "[Gravedad: alta] La pantalla no enciende".
+    Si el equipo agrega una columna "gravedad", solo hay que cambiar
+    componerProblema y separarProblema.
 */
 import { ESTADOS_FINALES, GRAVEDADES } from "../datos/opciones.js";
-import { CLAVES, generarId, guardar, leer } from "./almacenamiento.js";
+import { obtenerCliente, verificar } from "./supabase.js";
 
 export const LONGITUD_MINIMA_DESCRIPCION = 15;
 
-const obtenerTodas = () => leer(CLAVES.solicitudes, []);
+// "dispositivo:dispositivos(...)" trae los datos del equipo en la misma consulta (relación por dispositivo_id).
+const COLUMNAS = "id, cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en, dispositivo:dispositivos(tipo, marca, modelo, serial)";
 
-/* Código legible y consecutivo, por ejemplo TH-2026-0007. */
-const generarCodigo = (solicitudes) => {
-    const ultimoConsecutivo = solicitudes.reduce((mayor, solicitud) => {
-        const numero = Number(solicitud.codigo.split("-").pop());
-        return Number.isNaN(numero) ? mayor : Math.max(mayor, numero);
-    }, 0);
+const PATRON_GRAVEDAD = /^\[Gravedad: (baja|media|alta)\]\s*/;
 
-    const anio = new Date().getFullYear();
-    return `TH-${anio}-${String(ultimoConsecutivo + 1).padStart(4, "0")}`;
+const componerProblema = (gravedad, descripcion) => `[Gravedad: ${gravedad}] ${descripcion}`;
+
+const separarProblema = (problema = "") => {
+    const coincidencia = problema.match(PATRON_GRAVEDAD);
+    return coincidencia
+        ? { gravedad: coincidencia[1], descripcion: problema.slice(coincidencia[0].length) }
+        : { gravedad: null, descripcion: problema };
 };
+
+/* Código legible a partir del id, por ejemplo TH-0007. */
+export const formatearCodigo = (id) => `TH-${String(id).padStart(4, "0")}`;
 
 export const estaActiva = (solicitud) => !ESTADOS_FINALES.includes(solicitud.estado);
 
-/* Devuelve las solicitudes del usuario, de la más reciente a la más antigua. */
-export const listarSolicitudes = async (usuarioId) => {
-    return obtenerTodas()
-        .filter((solicitud) => solicitud.usuarioId === usuarioId)
-        .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
+/* Convierte una fila de "servicios" al formato que usa la aplicación. */
+const aSolicitud = (fila) => {
+    const { gravedad, descripcion } = separarProblema(fila.problema);
+    const dispositivo = fila.dispositivo ?? {};
+
+    return {
+        id: String(fila.id),
+        codigo: formatearCodigo(fila.id),
+        usuarioId: fila.cliente_id,
+        dispositivoId: String(fila.dispositivo_id),
+        tieneTecnico: Boolean(fila.tecnico_id),
+        dispositivo: {
+            tipo: dispositivo.tipo,
+            marca: dispositivo.marca ?? "",
+            modelo: dispositivo.modelo ?? "",
+            numeroSerie: dispositivo.serial ?? "",
+        },
+        descripcion,
+        gravedad,
+        estado: fila.estado,
+        creadaEn: fila.creado_en,
+    };
 };
 
-export const obtenerSolicitud = async (usuarioId, codigo) => {
-    const solicitud = obtenerTodas().find((item) => item.codigo === codigo && item.usuarioId === usuarioId);
-    if (!solicitud) throw new Error("No encontramos esa solicitud.");
-    return solicitud;
+/* Devuelve las solicitudes del usuario, de la más reciente a la más antigua. */
+export const listarSolicitudes = async (usuarioId) => {
+    const filas = verificar(
+        await obtenerCliente()
+            .from("servicios")
+            .select(COLUMNAS)
+            .eq("cliente_id", usuarioId)
+            .order("creado_en", { ascending: false })
+    );
+    return filas.map(aSolicitud);
+};
+
+export const obtenerSolicitud = async (usuarioId, id) => {
+    const fila = verificar(
+        await obtenerCliente().from("servicios").select(COLUMNAS).eq("id", id).eq("cliente_id", usuarioId).maybeSingle()
+    );
+    if (!fila) throw new Error("No encontramos esa solicitud.");
+    return aSolicitud(fila);
 };
 
 export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gravedad }) => {
-    const solicitudes = obtenerTodas();
-    const dispositivo = leer(CLAVES.dispositivos, []).find(
-        (item) => item.id === dispositivoId && item.usuarioId === usuarioId
-    );
+    const cliente = obtenerCliente();
     const descripcionLimpia = descripcion.trim();
-
-    if (!dispositivo) {
-        throw new Error("Elige uno de tus dispositivos registrados.");
-    }
 
     if (!GRAVEDADES.some((opcion) => opcion.valor === gravedad)) {
         throw new Error("Indica qué tan grave es la falla.");
@@ -56,55 +87,76 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
         throw new Error(`Describe la falla con al menos ${LONGITUD_MINIMA_DESCRIPCION} caracteres.`);
     }
 
-    if (solicitudes.some((item) => item.dispositivoId === dispositivoId && estaActiva(item))) {
+    const enCurso = await cliente
+        .from("servicios")
+        .select("id", { count: "exact", head: true })
+        .eq("dispositivo_id", dispositivoId)
+        .not("estado", "in", `(${ESTADOS_FINALES.join(",")})`);
+    verificar(enCurso);
+
+    if (enCurso.count > 0) {
         throw new Error("Ese dispositivo ya tiene una solicitud en curso.");
     }
 
-    const ahora = new Date().toISOString();
-    const nueva = {
-        id: generarId(),
-        codigo: generarCodigo(solicitudes),
-        usuarioId,
-        dispositivoId,
-        dispositivo: {
-            tipo: dispositivo.tipo,
-            marca: dispositivo.marca,
-            modelo: dispositivo.modelo,
-            numeroSerie: dispositivo.numeroSerie,
-        },
-        descripcion: descripcionLimpia,
-        gravedad,
-        estado: "pendiente",
-        creadaEn: ahora,
-        historial: [{ estado: "pendiente", fecha: ahora, nota: "Solicitud creada por el cliente." }],
-    };
-
-    guardar(CLAVES.solicitudes, [...solicitudes, nueva]);
-    return nueva;
+    const fila = verificar(
+        await cliente
+            .from("servicios")
+            .insert({
+                cliente_id: usuarioId,
+                dispositivo_id: Number(dispositivoId),
+                problema: componerProblema(gravedad, descripcionLimpia),
+            })
+            .select(COLUMNAS)
+            .single()
+    );
+    return aSolicitud(fila);
 };
 
-/* El cliente solo puede cancelar mientras el taller no haya empezado a trabajar. */
-export const cancelarSolicitud = async (usuarioId, codigo) => {
-    const solicitudes = obtenerTodas();
-    const solicitud = solicitudes.find((item) => item.codigo === codigo && item.usuarioId === usuarioId);
-
-    if (!solicitud) {
-        throw new Error("No encontramos esa solicitud.");
+/* Lee una tabla relacionada con el servicio; si las reglas de seguridad no la dejan leer, la omite. */
+const leerRelacionadas = async (tabla, columnas, servicioId) => {
+    const { data, error } = await obtenerCliente().from(tabla).select(columnas).eq("servicio_id", servicioId);
+    if (error) {
+        console.warn(`No se pudo leer ${tabla}:`, error.message);
+        return [];
     }
+    return data;
+};
 
-    if (solicitud.estado !== "pendiente") {
-        throw new Error("Solo puedes cancelar solicitudes que aún están pendientes.");
-    }
+const formatoPesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
-    const cancelada = {
-        ...solicitud,
-        estado: "cancelada",
-        historial: [
-            ...solicitud.historial,
-            { estado: "cancelada", fecha: new Date().toISOString(), nota: "Solicitud cancelada por el cliente." },
-        ],
-    };
+const ESTADOS_COTIZACION = { pendiente: "pendiente de tu respuesta", aprobada: "aprobada", rechazada: "rechazada" };
 
-    guardar(CLAVES.solicitudes, solicitudes.map((item) => (item.codigo === codigo ? cancelada : item)));
-    return cancelada;
+/*
+    Arma el historial de una solicitud con lo que registra el taller:
+    la creación, los diagnósticos, las cotizaciones y la calificación.
+*/
+export const obtenerHistorial = async (solicitud) => {
+    const [diagnosticos, cotizaciones, calificaciones] = await Promise.all([
+        leerRelacionadas("diagnosticos", "hallazgos, recomendaciones, creado_en", solicitud.id),
+        leerRelacionadas("cotizaciones", "total, estado, creado_en", solicitud.id),
+        leerRelacionadas("calificaciones", "puntuacion, comentario, creado_en", solicitud.id),
+    ]);
+
+    const eventos = [
+        { fecha: solicitud.creadaEn, titulo: "Solicitud creada", detalle: "Registraste la solicitud de servicio." },
+        ...diagnosticos.map((diagnostico) => ({
+            fecha: diagnostico.creado_en,
+            titulo: "Diagnóstico del técnico",
+            detalle: [diagnostico.hallazgos, diagnostico.recomendaciones && `Recomendación: ${diagnostico.recomendaciones}`]
+                .filter(Boolean)
+                .join(" "),
+        })),
+        ...cotizaciones.map((cotizacion) => ({
+            fecha: cotizacion.creado_en,
+            titulo: `Cotización por ${formatoPesos.format(cotizacion.total)}`,
+            detalle: `Estado: ${ESTADOS_COTIZACION[cotizacion.estado] ?? cotizacion.estado}.`,
+        })),
+        ...calificaciones.map((calificacion) => ({
+            fecha: calificacion.creado_en,
+            titulo: `Calificaste el servicio con ${calificacion.puntuacion}/5`,
+            detalle: calificacion.comentario ?? "",
+        })),
+    ];
+
+    return eventos.sort((a, b) => b.fecha.localeCompare(a.fecha));
 };

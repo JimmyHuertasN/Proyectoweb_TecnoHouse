@@ -31,7 +31,7 @@ const ResumenPanel = () => {
     const { solicitudes, cargando: cargandoSolicitudes } = useSolicitudes();
 
     const activas = solicitudes.filter(estaActiva);
-    const finalizadas = solicitudes.filter((solicitud) => solicitud.estado === "entregada");
+    const finalizadas = solicitudes.filter((solicitud) => !estaActiva(solicitud));
     const cargando = cargandoDispositivos || cargandoSolicitudes;
 
     return (
@@ -46,8 +46,8 @@ const ResumenPanel = () => {
                         : "Desde aquí gestionas tus equipos y sigues cada reparación paso a paso."}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                    <Link to="/panel/solicitudes/nueva" className="boton-primario">+ Solicitar reparación</Link>
-                    <Link to="/panel/dispositivos" className="boton-secundario">Registrar un dispositivo</Link>
+                    <Link to="/cliente/solicitudes/nueva" className="boton-primario">+ Solicitar reparación</Link>
+                    <Link to="/cliente/dispositivos" className="boton-secundario">Registrar un dispositivo</Link>
                 </div>
             </section>
 
@@ -55,7 +55,7 @@ const ResumenPanel = () => {
             <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Resumen">
                 <Indicador icono="💻" valor={cargando ? "–" : dispositivos.length} texto="Dispositivos registrados" />
                 <Indicador icono="🛠️" valor={cargando ? "–" : activas.length} texto="Servicios en curso" />
-                <Indicador icono="✅" valor={cargando ? "–" : finalizadas.length} texto="Servicios entregados" />
+                <Indicador icono="✅" valor={cargando ? "–" : finalizadas.length} texto="Servicios finalizados" />
             </section>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
@@ -63,7 +63,7 @@ const ResumenPanel = () => {
                 <section className="tarjeta lg:col-span-3">
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">Solicitudes recientes</h2>
-                        <Link to="/panel/solicitudes" className="text-sm font-semibold text-marca hover:underline">Ver todas</Link>
+                        <Link to="/cliente/solicitudes" className="text-sm font-semibold text-marca hover:underline">Ver todas</Link>
                     </div>
                     {!cargando && solicitudes.length === 0 ? (
                         <EstadoVacio icono="🛠️" titulo="Aún no tienes solicitudes" descripcion="Cuando pidas una reparación podrás ver aquí su estado." />
@@ -80,7 +80,7 @@ const ResumenPanel = () => {
                 <section className="tarjeta lg:col-span-2">
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold">Tus dispositivos</h2>
-                        <Link to="/panel/dispositivos" className="text-sm font-semibold text-marca hover:underline">Gestionar</Link>
+                        <Link to="/cliente/dispositivos" className="text-sm font-semibold text-marca hover:underline">Gestionar</Link>
                     </div>
                     {!cargando && dispositivos.length === 0 ? (
                         <EstadoVacio icono="💻" titulo="Sin dispositivos" descripcion="Registra tu computador, celular o consola para pedir servicio más rápido." />

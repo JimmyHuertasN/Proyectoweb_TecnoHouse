@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useSesion } from "../contexto/ContextoSesion.js";
 import { primerNombre } from "../utilidades/formato.js";
+import { rutaInicio } from "../utilidades/rutas.js";
 
 const ENLACES = [
     { href: "#inicio", texto: "Inicio" },
@@ -37,7 +38,7 @@ const BarraNavegacion = () => {
 
             <div className="flex gap-2 sm:gap-3">
                 {usuario ? (
-                    <Link to="/panel" className={`boton-primario ${TAMANO_BOTON}`}>Mi panel ({primerNombre(usuario.nombre)})</Link>
+                    <Link to={rutaInicio(usuario.rol)} className={`boton-primario ${TAMANO_BOTON}`}>Mi panel ({primerNombre(usuario.nombre)})</Link>
                 ) : (
                     <>
                         <Link to="/login" className={`boton-secundario border-marca text-marca hover:bg-marca hover:text-white ${TAMANO_BOTON}`}>

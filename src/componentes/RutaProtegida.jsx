@@ -3,10 +3,13 @@ import { useSesion } from "../contexto/ContextoSesion.js";
 
 /* Protege una ruta y, si se indican roles, limita el acceso a esos roles. */
 const RutaProtegida = ({ children, rolesPermitidos = [] }) => {
-    const { usuario } = useSesion();
+    const { usuario, cargando } = useSesion();
     const ubicacion = useLocation();
-    
-    
+
+    // Supabase tarda un instante en recuperar la sesión guardada: no hay que redirigir antes de tiempo.
+    if (cargando) {
+        return <p className="p-10 text-center text-slate-400">Cargando...</p>;
+    }
 
     if (!usuario) {
         return <Navigate to="/login" replace state={{ desde: ubicacion.pathname }} />;

@@ -1,39 +1,51 @@
-import { useCallback, useState } from "react";
-import { CLAVES, eliminar, guardar, leer } from "../api/almacenamiento.js";
+import { useCallback, useEffect, useState } from "react";
+import { supabase, supabaseConfigurado } from "../api/supabase.js";
 import * as apiUsuarios from "../api/usuarios.js";
 import { ContextoSesion } from "./ContextoSesion.js";
 
-/* Las sesiones guardadas por la versión anterior no tienen id: se descartan y el usuario vuelve a entrar. */
-const leerSesionGuardada = () => {
-    const sesion = leer(CLAVES.sesion, null);
-    return sesion?.id ? { ...sesion, rol: sesion.rol ?? "cliente" } : null; /*Verifica si el rol marcado por el usuario pertece a esa cuenta*/
-}; 
-
+/*
+    Mantiene en un solo lugar quién inició sesión. Supabase guarda la sesión en
+    el navegador y avisa cada vez que cambia (entrar, salir, renovar el token);
+    con cada aviso se vuelve a leer el perfil, que es donde está el rol.
+*/
 const ProveedorSesion = ({ children }) => {
-    const [usuario, setUsuario] = useState(leerSesionGuardada);
+    const [usuario, setUsuario] = useState(null);
+    // Mientras Supabase recupera la sesión guardada no se sabe si hay usuario: RutaProtegida espera.
+    const [cargando, setCargando] = useState(supabaseConfigurado);
 
-    const recordarUsuario = (datos) => {
-        guardar(CLAVES.sesion, datos);
-        setUsuario(datos);
-        return datos;
-    };
+    useEffect(() => {
+        if (!supabase) return;
+
+        const { data } = supabase.auth.onAuthStateChange((_evento, sesion) => {
+            // Supabase pide no esperar otras consultas dentro de este aviso: por eso se agenda aparte.
+            setTimeout(async () => {
+                setUsuario(sesion ? await apiUsuarios.obtenerPerfil(sesion.user) : null);
+                setCargando(false);
+            }, 0);
+        });
+
+        return () => data.subscription.unsubscribe();
+    }, []);
 
     const iniciarSesion = async (correo, contrasena) => {
-        return recordarUsuario(await apiUsuarios.iniciarSesion(correo, contrasena));
+        const perfil = await apiUsuarios.iniciarSesion(correo, contrasena);
+        setUsuario(perfil);
+        return perfil;
     };
 
     const actualizarPerfil = async (datos) => {
-        return recordarUsuario(await apiUsuarios.actualizarUsuario(usuario.id, datos));
+        await apiUsuarios.actualizarPerfil(usuario.id, datos);
+        setUsuario((actual) => ({ ...actual, ...datos }));
     };
 
     // useCallback mantiene la misma función entre renders: CerrarSesion.jsx la usa dentro de un useEffect.
-    const cerrarSesion = useCallback(() => {
-        eliminar(CLAVES.sesion);
+    const cerrarSesion = useCallback(async () => {
+        await apiUsuarios.cerrarSesion();
         setUsuario(null);
     }, []);
 
     return (
-        <ContextoSesion.Provider value={{ usuario, iniciarSesion, actualizarPerfil, cerrarSesion }}>
+        <ContextoSesion.Provider value={{ usuario, cargando, iniciarSesion, actualizarPerfil, cerrarSesion }}>
             {children}
         </ContextoSesion.Provider>
     );
