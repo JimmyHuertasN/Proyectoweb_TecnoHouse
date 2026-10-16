@@ -19,3 +19,8 @@ export const MENU_TECNICO = {
         { ruta: "/tecnico/perfil", texto: "Mi perfil", icono: "👤" },
     ],
 };
+
+export const MENU_ADMIN = {
+    inicio: "/admin",
+    enlaces: [{ ruta: "/admin", texto: "Dashboard", icono: "📊", exacta: true }],
+};
