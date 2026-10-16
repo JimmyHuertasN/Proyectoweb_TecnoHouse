@@ -5,6 +5,9 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioDispositivo from "../../componentes/panel/FormularioDispositivo.jsx";
 import TarjetaDispositivo from "../../componentes/panel/TarjetaDispositivo.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
+import useToast from "../../hooks/useToast.js";
 import { useDispositivos } from "../../hooks/useDispositivos.js";
 
 /*
@@ -16,10 +19,10 @@ import { useDispositivos } from "../../hooks/useDispositivos.js";
 const MisDispositivos = () => {
     const { dispositivos, cargando, error, crearDispositivo, actualizarDispositivo, eliminarDispositivo } = useDispositivos();
     const [formulario, setFormulario] = useState(null);
-    const [aviso, setAviso] = useState({ texto: "", tipo: "" });
+    const confirmar = useConfirmar();
+    const toast = useToast();
 
     const abrirFormulario = (estado) => {
-        setAviso({ texto: "", tipo: "" });
         setFormulario(estado);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -27,24 +30,24 @@ const MisDispositivos = () => {
     const guardar = async (datos) => {
         if (formulario.modo === "editar") {
             await actualizarDispositivo(formulario.dispositivo.id, datos);
-            setAviso({ texto: "Los cambios se guardaron correctamente.", tipo: "exito" });
+            toast.exito("Los cambios se guardaron correctamente.");
         } else {
             await crearDispositivo(datos);
-            setAviso({ texto: "¡Dispositivo registrado!", tipo: "exito" });
+            toast.exito("¡Dispositivo registrado!");
         }
         setFormulario(null);
     };
 
     const eliminar = async (dispositivo) => {
-        const confirmado = window.confirm(`¿Eliminar "${dispositivo.marca} ${dispositivo.modelo}"? Esta acción no se puede deshacer.`);
+        const confirmado = await confirmar({ titulo: "Eliminar dispositivo", mensaje: `¿Eliminar "${dispositivo.marca} ${dispositivo.modelo}"? Esta acción no se puede deshacer.` });
         if (!confirmado) return;
 
         try {
             await eliminarDispositivo(dispositivo.id);
-            setAviso({ texto: "Dispositivo eliminado.", tipo: "exito" });
+            toast.exito("Dispositivo eliminado.");
             if (formulario?.dispositivo?.id === dispositivo.id) setFormulario(null);
         } catch (errorApi) {
-            setAviso({ texto: errorApi.message, tipo: "error" });
+            toast.error(errorApi.message);
         }
     };
 
@@ -58,7 +61,6 @@ const MisDispositivos = () => {
                 )}
             </EncabezadoPagina>
 
-            <Aviso texto={aviso.texto} tipo={aviso.tipo} />
             <Aviso texto={error} tipo="error" />
 
             {formulario && (
@@ -71,7 +73,7 @@ const MisDispositivos = () => {
                 />
             )}
 
-            {cargando && <p className="text-slate-400">Cargando dispositivos...</p>}
+            {cargando && <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando dispositivos" />}
 
             {!cargando && !error && dispositivos.length === 0 && !formulario && (
                 <EstadoVacio

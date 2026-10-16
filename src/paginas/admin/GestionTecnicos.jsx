@@ -6,6 +6,8 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioTecnico from "../../componentes/panel/FormularioTecnico.jsx";
 import TarjetaGestionTecnico from "../../componentes/panel/TarjetaGestionTecnico.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import useToast from "../../hooks/useToast.js";
 
 const GrupoTecnicos = ({ titulo, tecnicos, alCambiarEstado }) => (
     <section className="mb-10">
@@ -24,7 +26,7 @@ const GestionTecnicos = () => {
     const [tecnicos, setTecnicos] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
     const [formularioAbierto, setFormularioAbierto] = useState(false);
     // Cada vez que aumenta, el useEffect vuelve a pedir la lista a Supabase.
     const [recargas, setRecargas] = useState(0);
@@ -43,7 +45,7 @@ const GestionTecnicos = () => {
     }, [recargas]);
 
     const terminarAccion = (mensaje) => {
-        setAviso(mensaje);
+        toast.exito(mensaje);
         setRecargas((anterior) => anterior + 1);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -69,7 +71,6 @@ const GestionTecnicos = () => {
                     <button
                         type="button"
                         onClick={() => {
-                            setAviso("");
                             setFormularioAbierto(true);
                         }}
                         className="boton-primario"
@@ -79,12 +80,11 @@ const GestionTecnicos = () => {
                 )}
             </EncabezadoPagina>
 
-            <Aviso texto={aviso} tipo="exito" />
             <Aviso texto={error} tipo="error" />
 
             {formularioAbierto && <FormularioTecnico alCrear={manejarCreacion} alCancelar={() => setFormularioAbierto(false)} />}
 
-            {cargando && <p className="text-slate-400">Cargando técnicos...</p>}
+            {cargando && <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando técnicos" />}
 
             {!cargando && !error && tecnicos.length === 0 && (
                 <EstadoVacio icono={BriefcaseBusiness} titulo="Todavía no hay técnicos" descripcion="Crea el primero con el botón “Nuevo técnico”." />

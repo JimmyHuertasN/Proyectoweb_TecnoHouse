@@ -1,22 +1,22 @@
-import { useState } from "react";
 import { CircleCheck } from "lucide-react";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import TarjetaPendiente from "../../componentes/panel/TarjetaPendiente.jsx";
 import { usePendientes } from "../../hooks/usePendientes.js";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import useToast from "../../hooks/useToast.js";
 
 const SolicitudesPendientes = () => {
     const { pendientes, cargando, error, recargar, tomarServicio } = usePendientes();
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
 
     const manejarToma = async (solicitud) => {
         await tomarServicio(solicitud.id);
-        setAviso(`Tomaste el servicio ${solicitud.codigo}. Lo encuentras en "Mis servicios".`);
+        toast.exito(`Tomaste el servicio ${solicitud.codigo}. Lo encuentras en "Mis servicios".`);
     };
 
     const actualizar = () => {
-        setAviso("");
         recargar();
     };
 
@@ -28,10 +28,9 @@ const SolicitudesPendientes = () => {
                 </button>
             </EncabezadoPagina>
 
-            <Aviso texto={aviso} tipo="exito" />
             <Aviso texto={error} tipo="error" />
 
-            {cargando && <p className="text-slate-400">Cargando solicitudes...</p>}
+            {cargando && <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando solicitudes" />}
 
             {!cargando && !error && pendientes.length === 0 && (
                 <EstadoVacio

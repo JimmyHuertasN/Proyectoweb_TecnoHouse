@@ -3,17 +3,19 @@ import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
 import Aviso from "../Aviso.jsx";
 import { EtiquetaGravedad } from "./Etiquetas.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 /* "alTomar" la recibe del padre, que llama a la API. Si falla, el error se muestra en la tarjeta. */
 const TarjetaPendiente = ({ solicitud, alTomar }) => {
     const [error, setError] = useState("");
     const [tomando, setTomando] = useState(false);
+    const confirmar = useConfirmar();
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
     const Icono = tipo.icono;
 
     const tomar = async () => {
-        if (!window.confirm(`¿Tomar el servicio ${solicitud.codigo}? Quedará asignado a ti.`)) return;
+        if (!await confirmar({ titulo: "Tomar servicio", mensaje: `¿Tomar el servicio ${solicitud.codigo}? Quedará asignado a ti.` })) return;
 
         setError("");
         setTomando(true);

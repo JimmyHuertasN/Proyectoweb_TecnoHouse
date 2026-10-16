@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import BarraNavegacion from "../componentes/BarraNavegacion.jsx";
 import TarjetaServicio from "../componentes/TarjetaServicio.jsx";
 import TarjetaTecnico from "../componentes/TarjetaTecnico.jsx";
+import Skeleton from "../componentes/panel/Skeleton.jsx";
 import ComoFunciona from "../componentes/inicio/ComoFunciona.jsx";
 import PiePagina from "../componentes/inicio/PiePagina.jsx";
 import PreguntasFrecuentes from "../componentes/inicio/PreguntasFrecuentes.jsx";
@@ -73,7 +74,7 @@ const Inicio = () => {
                     <h2 id="titulo-tecnicos" className="mb-4 text-4xl font-bold text-marca">NUESTROS TÉCNICOS</h2>
                     <p className="mb-12 text-slate-400">Profesionales certificados listos para resolver cualquier problema tecnológico que se te presente.</p>
                     <div id="contenedor-tecnicos" className="flex flex-wrap justify-center gap-6">
-                        {cargando && <p className="text-slate-400">Cargando técnicos...</p>}
+                        {cargando && <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando técnicos" className="w-full max-w-5xl" />}
                         {error && <p className="text-slate-400">{error}</p>}
                         {!cargando && !error && tecnicos.length === 0 && <p className="text-slate-400">Pronto conocerás a nuestro equipo de técnicos.</p>}
                         {!cargando && !error && tecnicos.map((tecnico) => <TarjetaTecnico key={tecnico.id} tecnico={tecnico} />)}

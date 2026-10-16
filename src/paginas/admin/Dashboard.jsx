@@ -6,6 +6,7 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
 import ResumenIngresos from "../../componentes/panel/ResumenIngresos.jsx";
 import TarjetaMetrica from "../../componentes/panel/TarjetaMetrica.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 
 const formatoNumero = new Intl.NumberFormat("es-CO");
 
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
             <Aviso texto={error} tipo="error" />
 
-            {!metricas && !error && <p className="text-slate-400">Cargando métricas...</p>}
+            {!metricas && !error && <Skeleton tipo="metrica" cantidad={3} etiqueta="Cargando métricas" className="mb-6" />}
 
             {metricas && (
                 <>

@@ -3,7 +3,6 @@ import { Phone, Search } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { listarCotizaciones } from "../../api/solicitudes.js";
 import { avanzarEstado, crearCotizacion, listarDiagnosticos, obtenerAsignado, registrarDiagnostico } from "../../api/tecnico.js";
-import Aviso from "../../componentes/Aviso.jsx";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
@@ -15,6 +14,7 @@ import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
+import useToast from "../../hooks/useToast.js";
 
 const DetalleServicio = () => {
     const { id } = useParams();
@@ -24,7 +24,7 @@ const DetalleServicio = () => {
     const [cotizaciones, setCotizaciones] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
     // Cada vez que aumenta, el useEffect vuelve a pedir los datos a Supabase.
     const [recargas, setRecargas] = useState(0);
 
@@ -57,7 +57,7 @@ const DetalleServicio = () => {
     }, [usuario.id, id, recargas]);
 
     const terminarAccion = (mensaje) => {
-        setAviso(mensaje);
+        toast.exito(mensaje);
         setRecargas((anterior) => anterior + 1);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -98,8 +98,6 @@ const DetalleServicio = () => {
             <Link to="/tecnico/servicios" className="mb-6 inline-block text-sm text-slate-400 hover:text-marca">
                 ← Volver a mis servicios
             </Link>
-
-            <Aviso texto={aviso} tipo="exito" />
 
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>

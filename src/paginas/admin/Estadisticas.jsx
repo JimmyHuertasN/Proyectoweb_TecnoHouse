@@ -4,6 +4,7 @@ import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
 import GraficoColumnas from "../../componentes/panel/GraficoColumnas.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 
 const plural = (cantidad, singular, varios) => `${cantidad} ${cantidad === 1 ? singular : varios}`;
 
@@ -34,7 +35,7 @@ const Estadisticas = () => {
     }, []);
 
     if (error) return <Aviso texto={error} tipo="error" />;
-    if (!estadisticas) return <p className="text-slate-400">Cargando estadísticas...</p>;
+    if (!estadisticas) return <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando estadísticas" />;
 
     const { serviciosPorMes, problemasFrecuentes, mejoresTecnicos } = estadisticas;
 

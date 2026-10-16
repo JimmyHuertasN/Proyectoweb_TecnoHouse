@@ -2,6 +2,7 @@ import { useState } from "react";
 import { formatearFecha, formatearPesos } from "../../utilidades/formato.js";
 import Aviso from "../Aviso.jsx";
 import { EtiquetaCotizacion } from "./Etiquetas.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 const preguntaConfirmacion = (aprobar, total) =>
     aprobar
@@ -41,9 +42,10 @@ const TarjetaCotizacion = ({ cotizacion, alResponder }) => {
     const [error, setError] = useState("");
     const [respondiendo, setRespondiendo] = useState(false);
     const pendiente = cotizacion.estado === "pendiente" && Boolean(alResponder);
+    const confirmar = useConfirmar();
 
     const responder = async (aprobar) => {
-        if (!window.confirm(preguntaConfirmacion(aprobar, cotizacion.total))) return;
+        if (!await confirmar({ titulo: aprobar ? "Aprobar cotización" : "Rechazar cotización", mensaje: preguntaConfirmacion(aprobar, cotizacion.total) })) return;
 
         setError("");
         setRespondiendo(true);

@@ -8,6 +8,7 @@ import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { useDispositivos } from "../../hooks/useDispositivos.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 import { primerNombre } from "../../utilidades/formato.js";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 
 const saludoSegunHora = () => {
     const hora = new Date().getHours();
@@ -53,11 +54,13 @@ const ResumenPanel = () => {
             </section>
 
             {/* RESUMEN EN NÚMEROS */}
-            <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Resumen">
-                <Indicador icono={Laptop} valor={cargando ? "–" : dispositivos.length} texto="Dispositivos registrados" />
-                <Indicador icono={Wrench} valor={cargando ? "–" : activas.length} texto="Servicios en curso" />
-                <Indicador icono={CircleCheck} valor={cargando ? "–" : finalizadas.length} texto="Servicios finalizados" />
-            </section>
+            {cargando ? <Skeleton tipo="metrica" cantidad={3} etiqueta="Cargando resumen" className="mb-8" /> : (
+                <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Resumen">
+                    <Indicador icono={Laptop} valor={dispositivos.length} texto="Dispositivos registrados" />
+                    <Indicador icono={Wrench} valor={activas.length} texto="Servicios en curso" />
+                    <Indicador icono={CircleCheck} valor={finalizadas.length} texto="Servicios finalizados" />
+                </section>
+            )}
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
                 {/* SOLICITUDES RECIENTES */}
@@ -66,7 +69,7 @@ const ResumenPanel = () => {
                         <h2 className="text-lg font-semibold">Solicitudes recientes</h2>
                         <Link to="/cliente/solicitudes" className="text-sm font-semibold text-marca hover:underline">Ver todas</Link>
                     </div>
-                    {!cargando && solicitudes.length === 0 ? (
+                    {cargando ? <Skeleton tipo="fila" cantidad={3} etiqueta="Cargando solicitudes recientes" /> : solicitudes.length === 0 ? (
                         <EstadoVacio icono={Wrench} titulo="Aún no tienes solicitudes" descripcion="Cuando pidas una reparación podrás ver aquí su estado." />
                     ) : (
                         <ul className="space-y-3">
@@ -83,7 +86,7 @@ const ResumenPanel = () => {
                         <h2 className="text-lg font-semibold">Tus dispositivos</h2>
                         <Link to="/cliente/dispositivos" className="text-sm font-semibold text-marca hover:underline">Gestionar</Link>
                     </div>
-                    {!cargando && dispositivos.length === 0 ? (
+                    {cargando ? <Skeleton tipo="fila" cantidad={3} etiqueta="Cargando dispositivos" /> : dispositivos.length === 0 ? (
                         <EstadoVacio icono={Laptop} titulo="Sin dispositivos" descripcion="Registra tu computador, celular o consola para pedir servicio más rápido." />
                     ) : (
                         <ul className="divide-y divide-borde">

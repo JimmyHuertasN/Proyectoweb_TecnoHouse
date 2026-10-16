@@ -3,12 +3,12 @@ import { Search } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { obtenerFichaCliente } from "../../api/admin.js";
 import { actualizarPerfil } from "../../api/usuarios.js";
-import Aviso from "../../componentes/Aviso.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
 import FormularioDatosCliente from "../../componentes/panel/FormularioDatosCliente.jsx";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
+import useToast from "../../hooks/useToast.js";
 
 const ListaDispositivos = ({ dispositivos }) => {
     if (dispositivos.length === 0) {
@@ -38,7 +38,7 @@ const DetalleCliente = () => {
     const { id } = useParams();
     const [ficha, setFicha] = useState(null);
     const [error, setError] = useState("");
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
 
     useEffect(() => {
         let vigente = true;
@@ -55,7 +55,7 @@ const DetalleCliente = () => {
     const manejarCambioDatos = async (datos) => {
         await actualizarPerfil(ficha.id, datos);
         setFicha((actual) => ({ ...actual, ...datos }));
-        setAviso("Los datos del cliente se guardaron correctamente.");
+        toast.exito("Los datos del cliente se guardaron correctamente.");
     };
 
     if (error) {
@@ -75,8 +75,6 @@ const DetalleCliente = () => {
             <Link to="/admin/clientes" className="mb-6 inline-block text-sm text-slate-400 hover:text-marca">
                 ← Volver a clientes
             </Link>
-
-            <Aviso texto={aviso} tipo="exito" />
 
             <div className="mb-8 flex items-center gap-4">
                 <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-marca/15 text-lg font-bold text-marca">

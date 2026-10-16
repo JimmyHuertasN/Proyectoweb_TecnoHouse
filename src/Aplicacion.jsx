@@ -2,12 +2,15 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
 import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
+import ProveedorConfirmacion from "./contexto/ProveedorConfirmacion.jsx";
+import ProveedorToast from "./contexto/ProveedorToast.jsx";
 import { MENU_ADMIN, MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
 import CerrarSesion from "./paginas/CerrarSesion.jsx";
 import CorreoConfirmado from "./paginas/CorreoConfirmado.jsx";
 import IniciarSesion from "./paginas/IniciarSesion.jsx";
 import Inicio from "./paginas/Inicio.jsx";
 import NuevaContrasena from "./paginas/NuevaContrasena.jsx";
+import NoEncontrada from "./paginas/NoEncontrada.jsx";
 import RecuperarContrasena from "./paginas/RecuperarContrasena.jsx";
 import Registro from "./paginas/Registro.jsx";
 import Dashboard from "./paginas/admin/Dashboard.jsx";
@@ -37,6 +40,8 @@ const Aplicacion = () => {
     return (
         <ProveedorSesion>
             <BrowserRouter>
+                <ProveedorToast>
+                <ProveedorConfirmacion>
                 <Routes>
                     {/* Sitio público */}
                     <Route path="/" element={<Inicio />} />
@@ -101,8 +106,10 @@ const Aplicacion = () => {
                         <Route path="estadisticas" element={<Estadisticas />} />
                     </Route>
 
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<NoEncontrada />} />
                 </Routes>
+                </ProveedorConfirmacion>
+                </ProveedorToast>
             </BrowserRouter>
         </ProveedorSesion>
     );
