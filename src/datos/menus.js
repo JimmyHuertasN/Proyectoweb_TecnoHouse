@@ -22,5 +22,8 @@ export const MENU_TECNICO = {
 
 export const MENU_ADMIN = {
     inicio: "/admin",
-    enlaces: [{ ruta: "/admin", texto: "Dashboard", icono: "📊", exacta: true }],
+    enlaces: [
+        { ruta: "/admin", texto: "Dashboard", icono: "📊", exacta: true },
+        { ruta: "/admin/servicios", texto: "Servicios", icono: "🛠️" },
+    ],
 };

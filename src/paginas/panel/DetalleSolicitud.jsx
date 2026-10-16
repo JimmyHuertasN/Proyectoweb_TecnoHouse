@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { calificarServicio, listarCotizaciones, obtenerHistorial, obtenerSolicitud, responderCotizacion } from "../../api/solicitudes.js";
+import {
+    calificarServicio,
+    listarCotizaciones,
+    obtenerHistorial,
+    obtenerSolicitud,
+    obtenerTecnicoAsignado,
+    responderCotizacion,
+} from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
@@ -18,6 +25,7 @@ const DetalleSolicitud = () => {
     const [solicitud, setSolicitud] = useState(null);
     const [historial, setHistorial] = useState([]);
     const [cotizaciones, setCotizaciones] = useState([]);
+    const [tecnico, setTecnico] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
     const [aviso, setAviso] = useState("");
@@ -31,14 +39,16 @@ const DetalleSolicitud = () => {
         const cargar = async () => {
             try {
                 const encontrada = await obtenerSolicitud(usuario.id, id);
-                const [eventos, listaCotizaciones] = await Promise.all([
+                const [eventos, listaCotizaciones, tecnicoAsignado] = await Promise.all([
                     obtenerHistorial(encontrada),
                     listarCotizaciones(encontrada.id),
+                    encontrada.tecnicoId ? obtenerTecnicoAsignado(encontrada.tecnicoId) : null,
                 ]);
                 if (vigente) {
                     setSolicitud(encontrada);
                     setHistorial(eventos);
                     setCotizaciones(listaCotizaciones);
+                    setTecnico(tecnicoAsignado);
                 }
             } catch (errorApi) {
                 if (vigente) setError(errorApi.message);
@@ -127,7 +137,17 @@ const DetalleSolicitud = () => {
                     {dispositivo.numeroSerie && <p className="mt-1 text-sm text-slate-400">N.º de serie: {dispositivo.numeroSerie}</p>}
 
                     <h3 className="mt-6 mb-2 text-sm font-semibold text-slate-400">Técnico</h3>
-                    <p className="text-sm">{solicitud.tieneTecnico ? "Ya hay un técnico asignado a tu solicitud." : "Aún no se ha asignado un técnico."}</p>
+                    {tecnico ? (
+                        <p className="flex items-center gap-2">
+                            <span aria-hidden="true">🧑‍🔧</span>
+                            <span>
+                                <span className="font-medium">{tecnico.nombre}</span>
+                                {tecnico.especialidad && <span className="block text-sm text-slate-400">{tecnico.especialidad}</span>}
+                            </span>
+                        </p>
+                    ) : (
+                        <p className="text-sm text-slate-400">Aún no se ha asignado un técnico.</p>
+                    )}
                 </section>
 
                 <section className="tarjeta">

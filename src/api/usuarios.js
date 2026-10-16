@@ -8,6 +8,18 @@
 import { obtenerCliente, verificar } from "./supabase.js";
 
 /*
+    Devuelve { id: { nombre, telefono } } de varios usuarios a la vez, para mostrar
+    nombres en las listas. Las reglas de seguridad deciden qué perfiles se pueden leer.
+*/
+export const obtenerPerfiles = async (ids) => {
+    const unicos = [...new Set(ids.filter(Boolean))];
+    if (unicos.length === 0) return {};
+
+    const perfiles = verificar(await obtenerCliente().from("perfiles").select("id, nombre, telefono").in("id", unicos));
+    return Object.fromEntries(perfiles.map((perfil) => [perfil.id, { nombre: perfil.nombre, telefono: perfil.telefono ?? "" }]));
+};
+
+/*
     Páginas de la aplicación a las que llevan los enlaces de los correos de Supabase.
     Deben estar permitidas en Supabase: Authentication → URL Configuration → Redirect URLs.
 */

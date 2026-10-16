@@ -4,7 +4,9 @@
     leer todas las tablas.
 */
 import { ESTADOS_FINALES, ESTADOS_SOLICITUD } from "../datos/opciones.js";
+import { aSolicitud, COLUMNAS_SOLICITUD } from "./solicitudes.js";
 import { obtenerCliente, verificar } from "./supabase.js";
+import { obtenerPerfiles } from "./usuarios.js";
 
 /* Con head: true no se traen filas, solo el conteo. */
 const contar = async (consulta) => {
@@ -53,4 +55,67 @@ export const obtenerMetricas = async () => {
         serviciosPorEstado: contarPorEstado(servicios),
         ingresos: calcularIngresos(cotizacionesAprobadas),
     };
+};
+
+const SIN_PERFIL = { nombre: "", telefono: "" };
+
+/* Agrega a cada servicio el nombre del cliente y del técnico (si tiene). */
+const conPersonas = async (filas) => {
+    const perfiles = await obtenerPerfiles(filas.flatMap((fila) => [fila.cliente_id, fila.tecnico_id]));
+    return filas.map((fila) => ({
+        ...aSolicitud(fila),
+        cliente: perfiles[fila.cliente_id] ?? SIN_PERFIL,
+        tecnico: fila.tecnico_id ? (perfiles[fila.tecnico_id] ?? SIN_PERFIL) : null,
+    }));
+};
+
+export const listarServicios = async () => {
+    const filas = verificar(
+        await obtenerCliente().from("servicios").select(COLUMNAS_SOLICITUD).order("creado_en", { ascending: false })
+    );
+    return conPersonas(filas);
+};
+
+export const obtenerServicio = async (id) => {
+    const fila = verificar(await obtenerCliente().from("servicios").select(COLUMNAS_SOLICITUD).eq("id", id).maybeSingle());
+    if (!fila) throw new Error("No encontramos ese servicio.");
+
+    const [servicio] = await conPersonas([fila]);
+    return servicio;
+};
+
+/* Técnicos con su nombre (tabla "perfiles") y su ficha (tabla "tecnicos"). */
+export const listarTecnicos = async () => {
+    const cliente = obtenerCliente();
+    const [perfiles, fichas] = await Promise.all([
+        cliente.from("perfiles").select("id, nombre").eq("rol", "tecnico").order("nombre").then(verificar),
+        cliente.from("tecnicos").select("perfil_id, especialidad, disponible").then(verificar),
+    ]);
+
+    return perfiles.map((perfil) => {
+        const ficha = fichas.find((fila) => fila.perfil_id === perfil.id);
+        return {
+            id: perfil.id,
+            nombre: perfil.nombre,
+            especialidad: ficha?.especialidad ?? "",
+            disponible: ficha?.disponible ?? false,
+        };
+    });
+};
+
+/*
+    Cambia el técnico de un servicio activo. Si aún no tenía técnico ("solicitado"),
+    pasa a "asignado", igual que cuando un técnico lo toma.
+*/
+export const reasignarTecnico = async (servicio, tecnicoId) => {
+    if (ESTADOS_FINALES.includes(servicio.estado)) {
+        throw new Error("No se puede cambiar el técnico de un servicio terminado.");
+    }
+
+    const cambios = servicio.estado === "solicitado" ? { tecnico_id: tecnicoId, estado: "asignado" } : { tecnico_id: tecnicoId };
+    const filas = verificar(
+        await obtenerCliente().from("servicios").update(cambios).eq("id", servicio.id).eq("estado", servicio.estado).select("id")
+    );
+
+    if (filas.length === 0) throw new Error("El servicio cambió de estado. Actualiza la página e inténtalo de nuevo.");
 };

@@ -53,7 +53,7 @@ export const aSolicitud = (fila) => {
         codigo: formatearCodigo(fila.id),
         usuarioId: fila.cliente_id,
         dispositivoId: String(fila.dispositivo_id),
-        tieneTecnico: Boolean(fila.tecnico_id),
+        tecnicoId: fila.tecnico_id,
         dispositivo: {
             tipo: dispositivo.tipo,
             marca: dispositivo.marca ?? "",
@@ -122,6 +122,16 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
             .single()
     );
     return aSolicitud(fila);
+};
+
+/* Cualquier usuario con sesión puede leer el nombre y la especialidad de los técnicos. */
+export const obtenerTecnicoAsignado = async (tecnicoId) => {
+    const cliente = obtenerCliente();
+    const [perfil, ficha] = await Promise.all([
+        cliente.from("perfiles").select("nombre").eq("id", tecnicoId).maybeSingle().then(verificar),
+        cliente.from("tecnicos").select("especialidad").eq("perfil_id", tecnicoId).maybeSingle().then(verificar),
+    ]);
+    return { nombre: perfil?.nombre ?? "Técnico de TecnoHouse", especialidad: ficha?.especialidad ?? "" };
 };
 
 /* Lee una tabla relacionada con el servicio; si las reglas de seguridad no la dejan leer, la omite. */
