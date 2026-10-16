@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BriefcaseBusiness } from "lucide-react";
 import { Link } from "react-router-dom";
 import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
@@ -22,7 +23,7 @@ const MisServicios = () => {
             {cargando && <p className="text-slate-400">Cargando servicios...</p>}
 
             {!cargando && !error && servicios.length === 0 && (
-                <EstadoVacio icono="🧰" titulo="Todavía no tienes servicios asignados" descripcion="Toma una solicitud pendiente para empezar a trabajar.">
+                <EstadoVacio icono={BriefcaseBusiness} titulo="Todavía no tienes servicios asignados" descripcion="Toma una solicitud pendiente para empezar a trabajar.">
                     <Link to="/tecnico/pendientes" className="boton-primario">Ver solicitudes pendientes</Link>
                 </EstadoVacio>
             )}

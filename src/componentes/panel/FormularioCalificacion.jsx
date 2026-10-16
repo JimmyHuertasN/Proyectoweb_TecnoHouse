@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Star } from "lucide-react";
 import { buscarOpcion, NIVELES_CALIFICACION } from "../../datos/opciones.js";
 import Aviso from "../Aviso.jsx";
 
@@ -22,7 +23,7 @@ const SelectorEstrellas = ({ puntuacion, alElegir }) => (
                     onChange={() => alElegir(nivel.valor)}
                     className="sr-only"
                 />
-                <span aria-hidden="true">★</span>
+                <Star size={30} fill="currentColor" strokeWidth={1.5} aria-hidden="true" />
                 <span className="sr-only">{nivel.valor} de 5: {nivel.etiqueta}</span>
             </label>
         ))}

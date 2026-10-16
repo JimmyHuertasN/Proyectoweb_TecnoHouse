@@ -1,9 +1,9 @@
 /* Catálogos fijos que usan los formularios y las tarjetas del panel del cliente. */
 
 export const TIPOS_DISPOSITIVO = [
-    { valor: "computador", etiqueta: "Computador", icono: "💻" },
-    { valor: "celular", etiqueta: "Celular", icono: "📱" },
-    { valor: "consola", etiqueta: "Consola", icono: "🎮" },
+    { valor: "computador", etiqueta: "Computador", icono: Laptop },
+    { valor: "celular", etiqueta: "Celular", icono: Smartphone },
+    { valor: "consola", etiqueta: "Consola", icono: Gamepad2 },
 ];
 
 export const GRAVEDADES = [
@@ -58,5 +58,6 @@ export const ESTADOS_FINALES = ["finalizado", "calificado"];
 
 /* Busca la opción de un catálogo por su valor (ej. buscarOpcion(GRAVEDADES, "alta")). */
 export const buscarOpcion = (catalogo, valor) => {
-    return catalogo.find((opcion) => opcion.valor === valor) ?? { valor, etiqueta: valor };
+    return catalogo.find((opcion) => opcion.valor === valor) ?? { valor, etiqueta: valor, icono: Laptop };
 };
+import { Gamepad2, Laptop, Smartphone } from "lucide-react";

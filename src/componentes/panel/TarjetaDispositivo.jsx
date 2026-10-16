@@ -4,12 +4,13 @@ import { formatearFecha } from "../../utilidades/formato.js";
 
 const TarjetaDispositivo = ({ dispositivo, alEditar, alEliminar }) => {
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+    const Icono = tipo.icono;
 
     return (
         <article className="tarjeta flex flex-col transition hover:border-marca/60">
             <div className="flex items-start gap-4">
                 <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-marca/10 text-2xl" aria-hidden="true">
-                    {tipo.icono}
+                    <Icono size={23} strokeWidth={1.8} />
                 </span>
                 <div className="min-w-0">
                     <p className="text-xs font-semibold tracking-wider text-marca uppercase">{tipo.etiqueta}</p>

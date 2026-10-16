@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Wrench } from "lucide-react";
 import { listarServicios } from "../../api/admin.js";
 import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
@@ -39,7 +40,7 @@ const TodosLosServicios = () => {
             {cargando && <p className="text-slate-400">Cargando servicios...</p>}
 
             {!cargando && !error && servicios.length === 0 && (
-                <EstadoVacio icono="🛠️" titulo="Todavía no hay servicios" descripcion="Aparecerán aquí cuando los clientes los soliciten." />
+                <EstadoVacio icono={Wrench} titulo="Todavía no hay servicios" descripcion="Aparecerán aquí cuando los clientes los soliciten." />
             )}
 
             {servicios.length > 0 && (

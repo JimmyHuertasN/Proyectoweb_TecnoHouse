@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CircleCheck } from "lucide-react";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
@@ -34,7 +35,7 @@ const SolicitudesPendientes = () => {
 
             {!cargando && !error && pendientes.length === 0 && (
                 <EstadoVacio
-                    icono="✅"
+                    icono={CircleCheck}
                     titulo="No hay solicitudes pendientes"
                     descripcion="Cuando un cliente pida un servicio, aparecerá aquí. Usa “Actualizar” para revisar de nuevo."
                 />

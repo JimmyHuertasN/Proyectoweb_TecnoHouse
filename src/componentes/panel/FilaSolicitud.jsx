@@ -10,6 +10,7 @@ import { EtiquetaEstado, EtiquetaGravedad } from "./Etiquetas.jsx";
 const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes", subtitulo = solicitud.descripcion }) => {
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+    const Icono = tipo.icono;
 
     return (
         <li>
@@ -17,7 +18,7 @@ const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes", subtitulo
                 to={`${rutaBase}/${solicitud.id}`}
                 className="flex flex-col gap-3 rounded-lg border border-borde bg-fondo/60 p-4 transition hover:border-marca/60 sm:flex-row sm:items-center"
             >
-                <span className="hidden text-2xl sm:block" aria-hidden="true">{tipo.icono}</span>
+                <Icono className="hidden size-6 text-marca sm:block" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-marca">{solicitud.codigo}</p>
                     <p className="truncate font-medium">

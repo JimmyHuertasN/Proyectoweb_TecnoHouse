@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Laptop } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { estaActiva, LONGITUD_MINIMA_DESCRIPCION } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
@@ -65,7 +66,7 @@ const NuevaSolicitud = () => {
             <div className="mx-auto max-w-3xl">
                 <EncabezadoPagina titulo="Solicitar reparación" />
                 <EstadoVacio
-                    icono="💻"
+                    icono={Laptop}
                     titulo="Primero registra un dispositivo"
                     descripcion="Para crear una solicitud necesitamos saber qué equipo vas a traer."
                 >
@@ -88,6 +89,7 @@ const NuevaSolicitud = () => {
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {dispositivos.map((dispositivo) => {
                             const ocupado = ocupados.has(dispositivo.id);
+                            const Icono = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo).icono;
                             return (
                                 <label key={dispositivo.id} className={CLASES_OPCION}>
                                     <input
@@ -99,7 +101,7 @@ const NuevaSolicitud = () => {
                                         disabled={ocupado}
                                         className="sr-only"
                                     />
-                                    <span className="text-2xl" aria-hidden="true">{buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo).icono}</span>
+                                    <Icono className="size-6 text-marca" aria-hidden="true" />
                                     <span className="min-w-0">
                                         <span className="block truncate font-medium">{dispositivo.marca} {dispositivo.modelo}</span>
                                         <span className="block text-xs text-slate-400">

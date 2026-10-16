@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BriefcaseBusiness } from "lucide-react";
 import { cambiarEstadoTecnico, crearTecnico, listarTecnicos } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
@@ -86,7 +87,7 @@ const GestionTecnicos = () => {
             {cargando && <p className="text-slate-400">Cargando técnicos...</p>}
 
             {!cargando && !error && tecnicos.length === 0 && (
-                <EstadoVacio icono="🧑‍🔧" titulo="Todavía no hay técnicos" descripcion="Crea el primero con el botón “Nuevo técnico”." />
+                <EstadoVacio icono={BriefcaseBusiness} titulo="Todavía no hay técnicos" descripcion="Crea el primero con el botón “Nuevo técnico”." />
             )}
 
             {activos.length > 0 && <GrupoTecnicos titulo="Activos" tecnicos={activos} alCambiarEstado={manejarCambioEstado} />}
