@@ -2,6 +2,7 @@ import { useState } from "react";
 import { prepararItems } from "../../api/tecnico.js";
 import { formatearPesos } from "../../utilidades/formato.js";
 import Aviso from "../Aviso.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 // "clave" solo sirve para que React identifique cada fila al agregar o quitar ítems.
 const itemVacio = () => ({ clave: crypto.randomUUID(), concepto: "", precio: "" });
@@ -45,6 +46,7 @@ const FormularioCotizacion = ({ alEnviar }) => {
     const [items, setItems] = useState(() => [itemVacio()]);
     const [error, setError] = useState("");
     const [enviando, setEnviando] = useState(false);
+    const confirmar = useConfirmar();
     const total = calcularTotal(items);
 
     const cambiarItem = (clave, campo, valor) => {
@@ -63,7 +65,7 @@ const FormularioCotizacion = ({ alEnviar }) => {
             return;
         }
 
-        if (!window.confirm(`¿Enviar la cotización por ${formatearPesos(total)} al cliente?`)) return;
+        if (!await confirmar({ titulo: "Enviar cotización", mensaje: `¿Enviar la cotización por ${formatearPesos(total)} al cliente?` })) return;
 
         setError("");
         setEnviando(true);

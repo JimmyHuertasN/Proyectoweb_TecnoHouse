@@ -5,6 +5,7 @@ import { listarClientes } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 
 const coincideBusqueda = (cliente, busqueda) => {
@@ -72,7 +73,7 @@ const GestionClientes = () => {
 
             <Aviso texto={error} tipo="error" />
 
-            {cargando && <p className="text-slate-400">Cargando clientes...</p>}
+            {cargando && <Skeleton tipo="fila" cantidad={4} etiqueta="Cargando clientes" />}
 
             {!cargando && !error && clientes.length === 0 && (
                 <EstadoVacio icono={UsersRound} titulo="Todavía no hay clientes" descripcion="Aparecerán aquí cuando se registren en la página." />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Aviso from "../Aviso.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 const describirTecnico = (tecnico) =>
     `${tecnico.nombre} · ${tecnico.especialidad || "Sin especialidad"}${tecnico.disponible ? "" : " (no disponible)"}`;
@@ -9,6 +10,7 @@ const SelectorTecnico = ({ tecnicos, tecnicoActualId, alAsignar }) => {
     const [elegido, setElegido] = useState("");
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
+    const confirmar = useConfirmar();
     const opciones = tecnicos.filter((tecnico) => tecnico.id !== tecnicoActualId);
 
     const manejarEnvio = async (evento) => {
@@ -20,7 +22,7 @@ const SelectorTecnico = ({ tecnicos, tecnicoActualId, alAsignar }) => {
         }
 
         const tecnico = tecnicos.find((opcion) => opcion.id === elegido);
-        if (!window.confirm(`¿Asignar el servicio a ${tecnico.nombre}?`)) return;
+        if (!await confirmar({ titulo: "Asignar técnico", mensaje: `¿Asignar el servicio a ${tecnico.nombre}?` })) return;
 
         setError("");
         setGuardando(true);

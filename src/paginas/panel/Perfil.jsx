@@ -6,6 +6,7 @@ import { useDispositivos } from "../../hooks/useDispositivos.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 import { validarDatosPersonales } from "../../utilidades/validaciones.js";
+import useToast from "../../hooks/useToast.js";
 
 /* El correo es la cuenta de Supabase: cambiarlo exige confirmación por email, por eso no se edita aquí. */
 const CAMPOS = [
@@ -18,6 +19,7 @@ const Perfil = () => {
     const { usuario, actualizarPerfil } = useSesion();
     const { dispositivos } = useDispositivos();
     const { solicitudes } = useSolicitudes();
+    const toast = useToast();
 
     const [editando, setEditando] = useState(false);
     const [valores, setValores] = useState({ nombre: usuario.nombre, telefono: usuario.telefono ?? "" });
@@ -57,7 +59,8 @@ const Perfil = () => {
         setGuardando(true);
         try {
             await actualizarPerfil(datos);
-            setAviso({ texto: "Tus datos se actualizaron correctamente.", tipo: "exito" });
+            setAviso({ texto: "", tipo: "" });
+            toast.exito("Tus datos se actualizaron correctamente.");
             setEditando(false);
         } catch (errorApi) {
             setAviso({ texto: errorApi.message, tipo: "error" });

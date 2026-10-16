@@ -7,6 +7,7 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
 import FiltroSolicitudes from "../../componentes/panel/FiltroSolicitudes.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 
 const describirPersonas = (servicio) =>
     `Cliente: ${servicio.cliente.nombre} · ${servicio.tecnico ? `Técnico: ${servicio.tecnico.nombre}` : "Sin técnico"}`;
@@ -37,7 +38,7 @@ const TodosLosServicios = () => {
 
             <Aviso texto={error} tipo="error" />
 
-            {cargando && <p className="text-slate-400">Cargando servicios...</p>}
+            {cargando && <Skeleton tipo="fila" cantidad={4} etiqueta="Cargando servicios" />}
 
             {!cargando && !error && servicios.length === 0 && (
                 <EstadoVacio icono={Wrench} titulo="Todavía no hay servicios" descripcion="Aparecerán aquí cuando los clientes los soliciten." />

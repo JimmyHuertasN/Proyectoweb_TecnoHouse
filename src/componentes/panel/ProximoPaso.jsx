@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AVANCES_TECNICO, buscarOpcion, ESTADOS_SOLICITUD } from "../../datos/opciones.js";
 import Aviso from "../Aviso.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 /* Qué decirle al técnico cuando el siguiente paso no depende de un botón. */
 const ESPERAS = {
@@ -15,10 +16,11 @@ const ProximoPaso = ({ estado, alAvanzar }) => {
     const [error, setError] = useState("");
     const [avanzando, setAvanzando] = useState(false);
     const avance = AVANCES_TECNICO[estado];
+    const confirmar = useConfirmar();
 
     const avanzar = async () => {
         const destino = buscarOpcion(ESTADOS_SOLICITUD, avance.siguiente).etiqueta;
-        if (!window.confirm(`¿Pasar el servicio a "${destino}"? El cliente recibirá una notificación.`)) return;
+        if (!await confirmar({ titulo: "Actualizar estado", mensaje: `¿Pasar el servicio a "${destino}"? El cliente recibirá una notificación.` })) return;
 
         setError("");
         setAvanzando(true);

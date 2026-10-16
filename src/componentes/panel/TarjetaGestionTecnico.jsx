@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { iniciales } from "../../utilidades/formato.js";
 import Aviso from "../Aviso.jsx";
+import useConfirmar from "../../hooks/useConfirmar.js";
 
 const preguntaConfirmacion = (tecnico) =>
     tecnico.activo
@@ -11,9 +12,11 @@ const preguntaConfirmacion = (tecnico) =>
 const TarjetaGestionTecnico = ({ tecnico, alCambiarEstado }) => {
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
+    const confirmar = useConfirmar();
 
     const cambiarEstado = async () => {
-        if (!window.confirm(preguntaConfirmacion(tecnico))) return;
+        const accion = tecnico.activo ? "Desactivar técnico" : "Activar técnico";
+        if (!await confirmar({ titulo: accion, mensaje: preguntaConfirmacion(tecnico) })) return;
 
         setError("");
         setGuardando(true);

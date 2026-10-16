@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MessageSquareQuote } from "lucide-react";
 import { listarResenasPublicas } from "../../api/resenas.js";
 import Estrellas from "../panel/Estrellas.jsx";
+import Skeleton from "../panel/Skeleton.jsx";
 
 const fechaLegible = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "long", year: "numeric" });
 
@@ -30,7 +31,7 @@ const SeccionResenas = () => {
                 <h2 id="titulo-resenas" className="mb-4 text-center text-3xl font-bold sm:text-4xl">LO QUE DICEN NUESTROS CLIENTES</h2>
                 <p className="mx-auto mb-12 max-w-2xl text-center text-slate-400">La confianza se construye con cada equipo que vuelve a funcionar.</p>
 
-                {cargando && <p className="text-center text-slate-400" role="status">Cargando reseñas...</p>}
+                {cargando && <Skeleton tipo="tarjeta" cantidad={3} etiqueta="Cargando reseñas" />}
                 {!cargando && error && <p className="text-center text-slate-400" role="status">{error}</p>}
                 {!cargando && !error && resenas.length === 0 && (
                     <div className="tarjeta mx-auto max-w-xl text-center">

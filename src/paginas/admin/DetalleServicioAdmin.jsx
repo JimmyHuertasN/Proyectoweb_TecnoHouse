@@ -4,7 +4,6 @@ import { Link, useParams } from "react-router-dom";
 import { listarTecnicos, obtenerServicio, reasignarTecnico } from "../../api/admin.js";
 import { estaActiva, listarCotizaciones } from "../../api/solicitudes.js";
 import { listarDiagnosticos } from "../../api/tecnico.js";
-import Aviso from "../../componentes/Aviso.jsx";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
@@ -13,6 +12,7 @@ import SelectorTecnico from "../../componentes/panel/SelectorTecnico.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
+import useToast from "../../hooks/useToast.js";
 
 const DatosPersona = ({ titulo, persona, textoSinPersona }) => (
     <div>
@@ -32,7 +32,7 @@ const DetalleServicioAdmin = () => {
     const { id } = useParams();
     const [datos, setDatos] = useState(null);
     const [error, setError] = useState("");
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
     // Cada vez que aumenta, el useEffect vuelve a pedir los datos a Supabase.
     const [recargas, setRecargas] = useState(0);
 
@@ -61,7 +61,7 @@ const DetalleServicioAdmin = () => {
 
     const manejarAsignacion = async (tecnico) => {
         await reasignarTecnico(datos.servicio, tecnico.id);
-        setAviso(`El servicio quedó asignado a ${tecnico.nombre}.`);
+        toast.exito(`El servicio quedó asignado a ${tecnico.nombre}.`);
         setRecargas((anterior) => anterior + 1);
     };
 
@@ -86,8 +86,6 @@ const DetalleServicioAdmin = () => {
             <Link to="/admin/servicios" className="mb-6 inline-block text-sm text-slate-400 hover:text-marca">
                 ← Volver a servicios
             </Link>
-
-            <Aviso texto={aviso} tipo="exito" />
 
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>

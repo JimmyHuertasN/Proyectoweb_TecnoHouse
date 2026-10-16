@@ -7,6 +7,7 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
 import FiltroSolicitudes from "../../componentes/panel/FiltroSolicitudes.jsx";
+import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 
 const MisSolicitudes = () => {
@@ -22,7 +23,7 @@ const MisSolicitudes = () => {
 
             <Aviso texto={error} tipo="error" />
 
-            {cargando && <p className="text-slate-400">Cargando solicitudes...</p>}
+            {cargando && <Skeleton tipo="fila" cantidad={4} etiqueta="Cargando solicitudes" />}
 
             {!cargando && !error && solicitudes.length === 0 && (
                 <EstadoVacio

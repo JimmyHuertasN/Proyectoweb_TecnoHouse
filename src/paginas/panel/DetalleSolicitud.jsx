@@ -18,6 +18,7 @@ import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha, formatearFechaHora } from "../../utilidades/formato.js";
+import useToast from "../../hooks/useToast.js";
 
 const DetalleSolicitud = () => {
     const { id } = useParams();
@@ -29,7 +30,7 @@ const DetalleSolicitud = () => {
     const [tecnico, setTecnico] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
-    const [aviso, setAviso] = useState("");
+    const toast = useToast();
     // Cada vez que aumenta, el useEffect vuelve a pedir los datos a Supabase.
     const [recargas, setRecargas] = useState(0);
     const recienCreada = ubicacion.state?.recienCreada;
@@ -67,13 +68,13 @@ const DetalleSolicitud = () => {
     // Se recarga todo porque responder la cotización también cambia el estado del servicio.
     const manejarRespuestaCotizacion = async (cotizacion, aprobar) => {
         await responderCotizacion(cotizacion.id, aprobar);
-        setAviso(aprobar ? "Aprobaste la cotización. El técnico empezará la reparación." : "Rechazaste la cotización.");
+        toast.exito(aprobar ? "Aprobaste la cotización. El técnico empezará la reparación." : "Rechazaste la cotización.");
         setRecargas((anterior) => anterior + 1);
     };
 
     const manejarCalificacion = async (datos) => {
         await calificarServicio(solicitud.id, datos);
-        setAviso("¡Gracias por calificar el servicio!");
+        toast.exito("¡Gracias por calificar el servicio!");
         setRecargas((anterior) => anterior + 1);
     };
 
@@ -101,8 +102,6 @@ const DetalleSolicitud = () => {
             {recienCreada && (
                 <Aviso texto={`¡Listo! Registramos tu solicitud ${solicitud.codigo}. Te contactaremos cuando un técnico la revise.`} tipo="exito" />
             )}
-            <Aviso texto={aviso} tipo="exito" />
-
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-marca">{solicitud.codigo}</p>
