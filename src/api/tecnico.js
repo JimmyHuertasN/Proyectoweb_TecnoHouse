@@ -130,6 +130,43 @@ export const crearCotizacion = async (servicioId, items) => {
     }
 };
 
+/* Especialidad y disponibilidad del técnico (tabla "tecnicos"). */
+export const obtenerFichaTecnico = async (tecnicoId) => {
+    const fila = verificar(
+        await obtenerCliente().from("tecnicos").select("especialidad, disponible").eq("perfil_id", tecnicoId).maybeSingle()
+    );
+    return { especialidad: fila?.especialidad ?? "", disponible: fila?.disponible ?? false };
+};
+
+export const cambiarDisponibilidad = async (tecnicoId, disponible) => {
+    const filas = verificar(
+        await obtenerCliente().from("tecnicos").update({ disponible }).eq("perfil_id", tecnicoId).select("perfil_id")
+    );
+    if (filas.length === 0) throw new Error("No encontramos tu ficha de técnico. Pídele al administrador que la revise.");
+};
+
+/* "!inner" deja solo las calificaciones cuyo servicio cumple el filtro (los servicios de este técnico). */
+export const listarCalificaciones = async (tecnicoId) => {
+    const filas = verificar(
+        await obtenerCliente()
+            .from("calificaciones")
+            .select("id, puntuacion, comentario, creado_en, servicio:servicios!inner(id, cliente_id, tecnico_id, dispositivo:dispositivos(marca, modelo))")
+            .eq("servicio.tecnico_id", tecnicoId)
+            .order("creado_en", { ascending: false })
+    );
+
+    const clientes = await obtenerClientes(filas.map((fila) => fila.servicio.cliente_id));
+    return filas.map((fila) => ({
+        id: String(fila.id),
+        puntuacion: fila.puntuacion,
+        comentario: fila.comentario ?? "",
+        creadaEn: fila.creado_en,
+        servicioId: String(fila.servicio.id),
+        equipo: `${fila.servicio.dispositivo?.marca ?? ""} ${fila.servicio.dispositivo?.modelo ?? ""}`.trim(),
+        nombreCliente: clientes[fila.servicio.cliente_id]?.nombre ?? "Cliente",
+    }));
+};
+
 /*
     Pasa el servicio al siguiente estado. El filtro por el estado actual evita
     avanzar dos veces si el servicio cambió en otra pestaña o lo cambió el cliente.
