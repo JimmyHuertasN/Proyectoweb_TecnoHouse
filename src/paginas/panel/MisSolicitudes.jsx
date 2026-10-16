@@ -1,24 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { estaActiva } from "../../api/solicitudes.js";
+import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
+import FiltroSolicitudes from "../../componentes/panel/FiltroSolicitudes.jsx";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
-
-const FILTROS = [
-    { valor: "todas", etiqueta: "Todas", cumple: () => true },
-    { valor: "activas", etiqueta: "En curso", cumple: estaActiva },
-    { valor: "finalizadas", etiqueta: "Finalizadas", cumple: (solicitud) => !estaActiva(solicitud) },
-];
 
 const MisSolicitudes = () => {
     const { solicitudes, cargando, error } = useSolicitudes();
     const [filtro, setFiltro] = useState("todas");
-
-    const filtroActual = FILTROS.find((opcion) => opcion.valor === filtro);
-    const visibles = solicitudes.filter(filtroActual.cumple);
+    const visibles = filtrarSolicitudes(solicitudes, filtro);
 
     return (
         <>
@@ -42,21 +35,7 @@ const MisSolicitudes = () => {
 
             {solicitudes.length > 0 && (
                 <>
-                    <div className="mb-5 inline-flex rounded-lg border border-borde bg-fondo p-1" role="group" aria-label="Filtrar solicitudes">
-                        {FILTROS.map((opcion) => (
-                            <button
-                                key={opcion.valor}
-                                type="button"
-                                onClick={() => setFiltro(opcion.valor)}
-                                aria-pressed={filtro === opcion.valor}
-                                className={`cursor-pointer rounded-md px-4 py-1.5 text-sm font-medium transition ${
-                                    filtro === opcion.valor ? "bg-marca text-white" : "text-slate-400 hover:text-white"
-                                }`}
-                            >
-                                {opcion.etiqueta} ({solicitudes.filter(opcion.cumple).length})
-                            </button>
-                        ))}
-                    </div>
+                    <FiltroSolicitudes solicitudes={solicitudes} filtro={filtro} alCambiar={setFiltro} />
 
                     {visibles.length === 0 ? (
                         <p className="py-8 text-center text-slate-400">No hay solicitudes en esta categoría.</p>

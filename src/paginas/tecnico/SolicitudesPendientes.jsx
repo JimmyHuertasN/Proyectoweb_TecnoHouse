@@ -11,7 +11,7 @@ const SolicitudesPendientes = () => {
 
     const manejarToma = async (solicitud) => {
         await tomarServicio(solicitud.id);
-        setAviso(`Tomaste el servicio ${solicitud.codigo}. Ya está asignado a ti.`);
+        setAviso(`Tomaste el servicio ${solicitud.codigo}. Lo encuentras en "Mis servicios".`);
     };
 
     const actualizar = () => {
