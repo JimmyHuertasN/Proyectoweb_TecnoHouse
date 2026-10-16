@@ -11,6 +11,8 @@ import NuevaContrasena from "./paginas/NuevaContrasena.jsx";
 import RecuperarContrasena from "./paginas/RecuperarContrasena.jsx";
 import Registro from "./paginas/Registro.jsx";
 import Dashboard from "./paginas/admin/Dashboard.jsx";
+import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
+import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 import DetalleSolicitud from "./paginas/panel/DetalleSolicitud.jsx";
 import MisDispositivos from "./paginas/panel/MisDispositivos.jsx";
 import MisSolicitudes from "./paginas/panel/MisSolicitudes.jsx";
@@ -87,6 +89,8 @@ const Aplicacion = () => {
                         }
                     >
                         <Route index element={<Dashboard />} />
+                        <Route path="servicios" element={<TodosLosServicios />} />
+                        <Route path="servicios/:id" element={<DetalleServicioAdmin />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -3,8 +3,11 @@ import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
 import { EtiquetaEstado, EtiquetaGravedad } from "./Etiquetas.jsx";
 
-/* Una solicitud dentro de una lista; toda la fila lleva al detalle. "rutaBase" cambia según el panel. */
-const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes" }) => {
+/*
+    Una solicitud dentro de una lista; toda la fila lleva al detalle. "rutaBase" cambia según
+    el panel, y "subtitulo" reemplaza la descripción de la falla (el admin muestra cliente y técnico).
+*/
+const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes", subtitulo = solicitud.descripcion }) => {
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
 
@@ -20,7 +23,7 @@ const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes" }) => {
                     <p className="truncate font-medium">
                         {dispositivo.marca} {dispositivo.modelo}
                     </p>
-                    <p className="truncate text-sm text-slate-400">{solicitud.descripcion}</p>
+                    <p className="truncate text-sm text-slate-400">{subtitulo}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
                     <EtiquetaEstado estado={solicitud.estado} />

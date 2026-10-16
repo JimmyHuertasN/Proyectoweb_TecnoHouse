@@ -6,19 +6,10 @@
 import { AVANCES_TECNICO } from "../datos/opciones.js";
 import { aSolicitud, COLUMNAS_SOLICITUD } from "./solicitudes.js";
 import { obtenerCliente, verificar } from "./supabase.js";
-
-/* Devuelve { idCliente: { nombre, telefono } } para mostrar quién pidió cada servicio. */
-const obtenerClientes = async (idsClientes) => {
-    if (idsClientes.length === 0) return {};
-
-    const perfiles = verificar(
-        await obtenerCliente().from("perfiles").select("id, nombre, telefono").in("id", [...new Set(idsClientes)])
-    );
-    return Object.fromEntries(perfiles.map((perfil) => [perfil.id, { nombre: perfil.nombre, telefono: perfil.telefono ?? "" }]));
-};
+import { obtenerPerfiles } from "./usuarios.js";
 
 const conClientes = async (filas) => {
-    const clientes = await obtenerClientes(filas.map((fila) => fila.cliente_id));
+    const clientes = await obtenerPerfiles(filas.map((fila) => fila.cliente_id));
     return filas.map((fila) => ({
         ...aSolicitud(fila),
         cliente: clientes[fila.cliente_id] ?? { nombre: "Cliente", telefono: "" },
@@ -155,7 +146,7 @@ export const listarCalificaciones = async (tecnicoId) => {
             .order("creado_en", { ascending: false })
     );
 
-    const clientes = await obtenerClientes(filas.map((fila) => fila.servicio.cliente_id));
+    const clientes = await obtenerPerfiles(filas.map((fila) => fila.servicio.cliente_id));
     return filas.map((fila) => ({
         id: String(fila.id),
         puntuacion: fila.puntuacion,
