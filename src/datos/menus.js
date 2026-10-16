@@ -27,5 +27,6 @@ export const MENU_ADMIN = {
         { ruta: "/admin/servicios", texto: "Servicios", icono: "🛠️" },
         { ruta: "/admin/tecnicos", texto: "Técnicos", icono: "🧑‍🔧" },
         { ruta: "/admin/clientes", texto: "Clientes", icono: "👥" },
+        { ruta: "/admin/estadisticas", texto: "Estadísticas", icono: "📈" },
     ],
 };

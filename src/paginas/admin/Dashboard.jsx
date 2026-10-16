@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { obtenerMetricas } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
-import GraficoEstados from "../../componentes/panel/GraficoEstados.jsx";
+import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
 import ResumenIngresos from "../../componentes/panel/ResumenIngresos.jsx";
 import TarjetaMetrica from "../../componentes/panel/TarjetaMetrica.jsx";
 
@@ -60,7 +60,15 @@ const Dashboard = () => {
                         <section className="tarjeta lg:col-span-3">
                             <h2 className="mb-1 text-lg font-semibold">Servicios por estado</h2>
                             <p className="mb-5 text-sm text-slate-400">En el orden del proceso de reparación</p>
-                            <GraficoEstados estados={metricas.serviciosPorEstado} total={metricas.totalServicios} />
+                            <GraficoBarras
+                                etiquetaAria="Servicios por estado"
+                                datos={metricas.serviciosPorEstado.map((estado) => ({
+                                    clave: estado.valor,
+                                    etiqueta: estado.etiqueta,
+                                    valor: estado.cantidad,
+                                    descripcion: `${estado.etiqueta}: ${estado.cantidad} de ${metricas.totalServicios} servicios`,
+                                }))}
+                            />
                         </section>
 
                         <div className="lg:col-span-2">

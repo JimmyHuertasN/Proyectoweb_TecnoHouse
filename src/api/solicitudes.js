@@ -20,7 +20,7 @@ const PATRON_GRAVEDAD = /^\[Gravedad: (baja|media|alta)\]\s*/;
 
 const componerProblema = (gravedad, descripcion) => `[Gravedad: ${gravedad}] ${descripcion}`;
 
-const separarProblema = (problema = "") => {
+export const separarProblema = (problema = "") => {
     const coincidencia = problema.match(PATRON_GRAVEDAD);
     return coincidencia
         ? { gravedad: coincidencia[1], descripcion: problema.slice(coincidencia[0].length) }
