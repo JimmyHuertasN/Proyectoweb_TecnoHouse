@@ -1,3 +1,5 @@
+import { BriefcaseBusiness, ChartNoAxesCombined, House, Inbox, Laptop, LayoutDashboard, UserRound, UsersRound, Wrench } from "lucide-react";
+
 /* Menú lateral de cada rol. "accion" es el botón destacado debajo de los enlaces (opcional). */
 
 export const MENU_CLIENTE = {
@@ -30,4 +32,3 @@ export const MENU_ADMIN = {
         { ruta: "/admin/estadisticas", texto: "Estadísticas", icono: ChartNoAxesCombined },
     ],
 };
-import { BriefcaseBusiness, ChartNoAxesCombined, House, Inbox, Laptop, LayoutDashboard, UserRound, UsersRound, Wrench } from "lucide-react";
