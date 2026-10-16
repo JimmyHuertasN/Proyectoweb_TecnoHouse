@@ -84,23 +84,72 @@ export const obtenerServicio = async (id) => {
     return servicio;
 };
 
-/* Técnicos con su nombre (tabla "perfiles") y su ficha (tabla "tecnicos"). */
+/*
+    Todos los que tienen ficha en "tecnicos". Un técnico desactivado conserva su ficha,
+    pero su rol vuelve a "cliente": por eso "activo" se lee del rol de su perfil.
+*/
 export const listarTecnicos = async () => {
     const cliente = obtenerCliente();
-    const [perfiles, fichas] = await Promise.all([
-        cliente.from("perfiles").select("id, nombre").eq("rol", "tecnico").order("nombre").then(verificar),
-        cliente.from("tecnicos").select("perfil_id, especialidad, disponible").then(verificar),
+    const [fichas, serviciosEnCurso] = await Promise.all([
+        cliente.from("tecnicos").select("perfil_id, especialidad, disponible, calificacion_promedio").then(verificar),
+        cliente.from("servicios").select("tecnico_id").not("tecnico_id", "is", null).not("estado", "in", `(${ESTADOS_FINALES.join(",")})`).then(verificar),
     ]);
+    const perfiles = verificar(
+        await cliente.from("perfiles").select("id, nombre, telefono, rol").in("id", fichas.map((ficha) => ficha.perfil_id))
+    );
 
-    return perfiles.map((perfil) => {
-        const ficha = fichas.find((fila) => fila.perfil_id === perfil.id);
-        return {
-            id: perfil.id,
-            nombre: perfil.nombre,
-            especialidad: ficha?.especialidad ?? "",
-            disponible: ficha?.disponible ?? false,
-        };
-    });
+    return fichas
+        .map((ficha) => {
+            const perfil = perfiles.find((fila) => fila.id === ficha.perfil_id);
+            return {
+                id: ficha.perfil_id,
+                nombre: perfil?.nombre ?? "Sin nombre",
+                telefono: perfil?.telefono ?? "",
+                activo: perfil?.rol === "tecnico",
+                especialidad: ficha.especialidad ?? "",
+                disponible: ficha.disponible,
+                calificacion: Number(ficha.calificacion_promedio ?? 0),
+                serviciosEnCurso: serviciosEnCurso.filter((servicio) => servicio.tecnico_id === ficha.perfil_id).length,
+            };
+        })
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+};
+
+/*
+    La función crear_tecnico de Supabase (supabase/crear_tecnico.sql) crea la cuenta ya
+    confirmada, le pone el rol "tecnico" y guarda la especialidad en un solo paso.
+*/
+export const crearTecnico = async ({ nombre, correo, telefono, especialidad, contrasena }) => {
+    verificar(
+        await obtenerCliente().rpc("crear_tecnico", {
+            p_nombre: nombre,
+            p_correo: correo,
+            p_telefono: telefono,
+            p_especialidad: especialidad,
+            p_contrasena: contrasena,
+        })
+    );
+};
+
+/*
+    Desactivar devuelve el rol a "cliente" (ya no entra al panel del técnico) y lo deja no disponible.
+    No se permite si tiene servicios en curso: primero hay que reasignarlos.
+*/
+export const cambiarEstadoTecnico = async (tecnico, activo) => {
+    if (!activo && tecnico.serviciosEnCurso > 0) {
+        throw new Error(`${tecnico.nombre} tiene ${tecnico.serviciosEnCurso} servicio(s) en curso. Reasígnalos antes de desactivarlo.`);
+    }
+
+    // Si las reglas de seguridad bloquean el cambio, Supabase no da error: solo no actualiza filas.
+    const cliente = obtenerCliente();
+    const filas = verificar(
+        await cliente.from("perfiles").update({ rol: activo ? "tecnico" : "cliente" }).eq("id", tecnico.id).select("rol")
+    );
+    if (filas.length === 0) throw new Error("No se pudo cambiar el estado del técnico. Revisa los permisos del administrador.");
+
+    if (!activo) {
+        verificar(await cliente.from("tecnicos").update({ disponible: false }).eq("perfil_id", tecnico.id));
+    }
 };
 
 /*

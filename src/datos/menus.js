@@ -25,5 +25,6 @@ export const MENU_ADMIN = {
     enlaces: [
         { ruta: "/admin", texto: "Dashboard", icono: "📊", exacta: true },
         { ruta: "/admin/servicios", texto: "Servicios", icono: "🛠️" },
+        { ruta: "/admin/tecnicos", texto: "Técnicos", icono: "🧑‍🔧" },
     ],
 };
