@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Search, Wrench } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import {
     calificarServicio,
@@ -82,7 +83,7 @@ const DetalleSolicitud = () => {
 
     if (error) {
         return (
-            <EstadoVacio icono="🔍" titulo={error} descripcion="Vuelve a tu lista de solicitudes y elige una.">
+            <EstadoVacio icono={Search} titulo={error} descripcion="Vuelve a tu lista de solicitudes y elige una.">
                 <Link to="/cliente/solicitudes" className="boton-primario">Ver mis solicitudes</Link>
             </EstadoVacio>
         );
@@ -131,7 +132,7 @@ const DetalleSolicitud = () => {
 
                     <h3 className="mt-6 mb-2 text-sm font-semibold text-slate-400">Dispositivo</h3>
                     <p className="flex items-center gap-2">
-                        <span aria-hidden="true">{tipo.icono}</span>
+                        <tipo.icono className="size-5 text-marca" aria-hidden="true" />
                         {tipo.etiqueta} · {dispositivo.marca} {dispositivo.modelo}
                     </p>
                     {dispositivo.numeroSerie && <p className="mt-1 text-sm text-slate-400">N.º de serie: {dispositivo.numeroSerie}</p>}
@@ -139,7 +140,7 @@ const DetalleSolicitud = () => {
                     <h3 className="mt-6 mb-2 text-sm font-semibold text-slate-400">Técnico</h3>
                     {tecnico ? (
                         <p className="flex items-center gap-2">
-                            <span aria-hidden="true">🧑‍🔧</span>
+                            <Wrench size={18} aria-hidden="true" />
                             <span>
                                 <span className="font-medium">{tecnico.nombre}</span>
                                 {tecnico.especialidad && <span className="block text-sm text-slate-400">{tecnico.especialidad}</span>}

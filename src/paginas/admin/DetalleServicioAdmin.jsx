@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Phone, Search } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { listarTecnicos, obtenerServicio, reasignarTecnico } from "../../api/admin.js";
 import { estaActiva, listarCotizaciones } from "../../api/solicitudes.js";
@@ -19,7 +20,7 @@ const DatosPersona = ({ titulo, persona, textoSinPersona }) => (
         {persona ? (
             <>
                 <p className="font-medium">{persona.nombre}</p>
-                {persona.telefono && <p className="text-sm text-slate-400">📞 {persona.telefono}</p>}
+                {persona.telefono && <p className="flex items-center gap-2 text-sm text-slate-400"><Phone size={14} aria-hidden="true" />{persona.telefono}</p>}
             </>
         ) : (
             <p className="text-sm text-amber-300">{textoSinPersona}</p>
@@ -66,7 +67,7 @@ const DetalleServicioAdmin = () => {
 
     if (error) {
         return (
-            <EstadoVacio icono="🔍" titulo={error} descripcion="Vuelve a la lista de servicios y elige uno.">
+            <EstadoVacio icono={Search} titulo={error} descripcion="Vuelve a la lista de servicios y elige uno.">
                 <Link to="/admin/servicios" className="boton-primario">Ver servicios</Link>
             </EstadoVacio>
         );
@@ -111,7 +112,7 @@ const DetalleServicioAdmin = () => {
 
                     <h3 className="mt-6 mb-2 text-sm font-semibold text-slate-400">Dispositivo</h3>
                     <p className="flex items-center gap-2">
-                        <span aria-hidden="true">{tipo.icono}</span>
+                        <tipo.icono size={18} className="text-marca" aria-hidden="true" />
                         {tipo.etiqueta} · {dispositivo.marca} {dispositivo.modelo}
                     </p>
                     {dispositivo.numeroSerie && <p className="mt-1 text-sm text-slate-400">N.º de serie: {dispositivo.numeroSerie}</p>}

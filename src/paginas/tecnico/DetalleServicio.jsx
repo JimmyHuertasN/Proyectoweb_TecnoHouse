@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Phone, Search } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { listarCotizaciones } from "../../api/solicitudes.js";
 import { avanzarEstado, crearCotizacion, listarDiagnosticos, obtenerAsignado, registrarDiagnostico } from "../../api/tecnico.js";
@@ -82,7 +83,7 @@ const DetalleServicio = () => {
 
     if (error) {
         return (
-            <EstadoVacio icono="🔍" titulo={error} descripcion="Vuelve a tu lista de servicios y elige uno.">
+            <EstadoVacio icono={Search} titulo={error} descripcion="Vuelve a tu lista de servicios y elige uno.">
                 <Link to="/tecnico/servicios" className="boton-primario">Ver mis servicios</Link>
             </EstadoVacio>
         );
@@ -139,7 +140,7 @@ const DetalleServicio = () => {
 
                     <h3 className="mt-6 mb-2 text-sm font-semibold text-slate-400">Dispositivo</h3>
                     <p className="flex items-center gap-2">
-                        <span aria-hidden="true">{tipo.icono}</span>
+                        <tipo.icono size={18} className="text-marca" aria-hidden="true" />
                         {tipo.etiqueta} · {dispositivo.marca} {dispositivo.modelo}
                     </p>
                     {dispositivo.numeroSerie && <p className="mt-1 text-sm text-slate-400">N.º de serie: {dispositivo.numeroSerie}</p>}
@@ -150,7 +151,7 @@ const DetalleServicio = () => {
                     <p className="font-medium">{cliente.nombre}</p>
                     {cliente.telefono ? (
                         <a href={`tel:${cliente.telefono}`} className="mt-1 inline-block text-sm text-marca hover:underline">
-                            📞 {cliente.telefono}
+                            <span className="inline-flex items-center gap-2"><Phone size={14} aria-hidden="true" />{cliente.telefono}</span>
                         </a>
                     ) : (
                         <p className="mt-1 text-sm text-slate-400">Sin teléfono registrado</p>

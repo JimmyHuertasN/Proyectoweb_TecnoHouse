@@ -70,7 +70,7 @@ const FormularioDispositivo = ({ dispositivo, alGuardar, alCancelar }) => {
                                 onChange={manejarCambio}
                                 className="sr-only"
                             />
-                            <span className="text-2xl" aria-hidden="true">{tipo.icono}</span>
+                            <tipo.icono className="size-6 text-marca" aria-hidden="true" />
                             {tipo.etiqueta}
                         </label>
                     ))}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { listarClientes } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
@@ -74,7 +75,7 @@ const GestionClientes = () => {
             {cargando && <p className="text-slate-400">Cargando clientes...</p>}
 
             {!cargando && !error && clientes.length === 0 && (
-                <EstadoVacio icono="👥" titulo="Todavía no hay clientes" descripcion="Aparecerán aquí cuando se registren en la página." />
+                <EstadoVacio icono={UsersRound} titulo="Todavía no hay clientes" descripcion="Aparecerán aquí cuando se registren en la página." />
             )}
 
             {clientes.length > 0 && (

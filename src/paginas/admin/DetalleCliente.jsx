@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { obtenerFichaCliente } from "../../api/admin.js";
 import { actualizarPerfil } from "../../api/usuarios.js";
@@ -18,9 +19,10 @@ const ListaDispositivos = ({ dispositivos }) => {
         <ul className="space-y-3">
             {dispositivos.map((dispositivo) => {
                 const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+                const Icono = tipo.icono;
                 return (
                     <li key={dispositivo.id} className="flex items-center gap-3 text-sm">
-                        <span className="text-xl" aria-hidden="true">{tipo.icono}</span>
+                        <Icono className="size-5 shrink-0 text-marca" aria-hidden="true" />
                         <span className="min-w-0">
                             <span className="block truncate font-medium">{dispositivo.marca} {dispositivo.modelo}</span>
                             <span className="block text-xs text-slate-400">{dispositivo.numeroSerie || "Sin número de serie"}</span>
@@ -58,7 +60,7 @@ const DetalleCliente = () => {
 
     if (error) {
         return (
-            <EstadoVacio icono="🔍" titulo={error} descripcion="Vuelve a la lista de clientes y elige uno.">
+            <EstadoVacio icono={Search} titulo={error} descripcion="Vuelve a la lista de clientes y elige uno.">
                 <Link to="/admin/clientes" className="boton-primario">Ver clientes</Link>
             </EstadoVacio>
         );

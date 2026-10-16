@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
@@ -35,17 +36,20 @@ const MenuLateral = ({ menu, abierto, alCerrar }) => {
                         className="cursor-pointer text-2xl text-slate-400 hover:text-white lg:hidden"
                         aria-label="Cerrar menú"
                     >
-                        ×
+                        <X size={22} aria-hidden="true" />
                     </button>
                 </div>
 
                 <nav className="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Menú del panel">
-                    {menu.enlaces.map((enlace) => (
-                        <NavLink key={enlace.ruta} to={enlace.ruta} end={enlace.exacta} className={clasesEnlace} onClick={alCerrar}>
-                            <span aria-hidden="true">{enlace.icono}</span>
-                            {enlace.texto}
-                        </NavLink>
-                    ))}
+                    {menu.enlaces.map((enlace) => {
+                        const Icono = enlace.icono;
+                        return (
+                            <NavLink key={enlace.ruta} to={enlace.ruta} end={enlace.exacta} className={clasesEnlace} onClick={alCerrar}>
+                                <Icono size={19} strokeWidth={1.8} aria-hidden="true" />
+                                {enlace.texto}
+                            </NavLink>
+                        );
+                    })}
 
                     {menu.accion && (
                         <Link to={menu.accion.ruta} onClick={alCerrar} className="boton-primario mt-6 w-full">

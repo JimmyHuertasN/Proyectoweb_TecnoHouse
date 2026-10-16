@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
 import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
@@ -25,7 +26,7 @@ const MisSolicitudes = () => {
 
             {!cargando && !error && solicitudes.length === 0 && (
                 <EstadoVacio
-                    icono="🛠️"
+                    icono={Wrench}
                     titulo="Aún no has solicitado ningún servicio"
                     descripcion="Elige uno de tus dispositivos, cuéntanos qué le pasa y un técnico lo revisará."
                 >

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Laptop } from "lucide-react";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
@@ -74,7 +75,7 @@ const MisDispositivos = () => {
 
             {!cargando && !error && dispositivos.length === 0 && !formulario && (
                 <EstadoVacio
-                    icono="💻"
+                    icono={Laptop}
                     titulo="Todavía no registras dispositivos"
                     descripcion="Agrega tu computador, celular o consola. Así, cuando algo falle, solicitar el servicio te tomará segundos."
                 >

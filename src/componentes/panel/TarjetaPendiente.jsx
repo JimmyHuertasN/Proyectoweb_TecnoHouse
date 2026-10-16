@@ -10,6 +10,7 @@ const TarjetaPendiente = ({ solicitud, alTomar }) => {
     const [tomando, setTomando] = useState(false);
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+    const Icono = tipo.icono;
 
     const tomar = async () => {
         if (!window.confirm(`¿Tomar el servicio ${solicitud.codigo}? Quedará asignado a ti.`)) return;
@@ -29,7 +30,7 @@ const TarjetaPendiente = ({ solicitud, alTomar }) => {
         <article className="tarjeta flex flex-col">
             <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
-                    <span className="text-2xl" aria-hidden="true">{tipo.icono}</span>
+                    <Icono className="size-6 text-marca" aria-hidden="true" />
                     <div className="min-w-0">
                         <p className="text-xs font-semibold text-marca">{solicitud.codigo}</p>
                         <h2 className="truncate font-semibold">

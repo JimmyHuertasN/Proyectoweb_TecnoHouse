@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BriefcaseBusiness, UsersRound, Wrench } from "lucide-react";
 import { obtenerMetricas } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
@@ -41,15 +42,15 @@ const Dashboard = () => {
             {metricas && (
                 <>
                     <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
-                        <TarjetaMetrica icono="👥" titulo="Clientes" valor={formatoNumero.format(metricas.clientes)} />
+                        <TarjetaMetrica icono={UsersRound} titulo="Clientes" valor={formatoNumero.format(metricas.clientes)} />
                         <TarjetaMetrica
-                            icono="🧑‍🔧"
+                            icono={BriefcaseBusiness}
                             titulo="Técnicos"
                             valor={formatoNumero.format(metricas.tecnicos)}
                             detalle={`${metricas.tecnicosDisponibles} disponibles`}
                         />
                         <TarjetaMetrica
-                            icono="🛠️"
+                            icono={Wrench}
                             titulo="Servicios"
                             valor={formatoNumero.format(metricas.totalServicios)}
                             detalle={`${metricas.serviciosEnCurso} en curso`}

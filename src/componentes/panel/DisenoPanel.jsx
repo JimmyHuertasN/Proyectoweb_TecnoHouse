@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Menu } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import MenuLateral from "./MenuLateral.jsx";
 
@@ -22,7 +23,7 @@ const DisenoPanel = ({ menu }) => {
                         className="cursor-pointer rounded-lg p-2 text-2xl leading-none text-slate-300 hover:bg-white/5"
                         aria-label="Abrir menú"
                     >
-                        ☰
+                        <Menu size={24} aria-hidden="true" />
                     </button>
                     <Link to={menu.inicio} className="text-lg font-bold">
                         TECNO<span className="text-marca">HOUSE</span>

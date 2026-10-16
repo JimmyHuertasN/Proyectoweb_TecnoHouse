@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CircleCheck, Laptop, Wrench } from "lucide-react";
 import { estaActiva } from "../../api/solicitudes.js";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
@@ -15,9 +16,9 @@ const saludoSegunHora = () => {
     return "Buenas noches";
 };
 
-const Indicador = ({ valor, texto, icono }) => (
+const Indicador = ({ valor, texto, icono: Icono }) => (
     <div className="tarjeta flex items-center gap-4">
-        <span className="flex size-12 items-center justify-center rounded-lg bg-marca/10 text-2xl" aria-hidden="true">{icono}</span>
+        <span className="flex size-12 items-center justify-center rounded-lg bg-marca/10 text-marca" aria-hidden="true"><Icono size={22} /></span>
         <div>
             <p className="text-3xl font-bold">{valor}</p>
             <p className="text-sm text-slate-400">{texto}</p>
@@ -39,7 +40,7 @@ const ResumenPanel = () => {
             {/* BIENVENIDA */}
             <section className="mb-8 overflow-hidden rounded-2xl border border-borde bg-linear-to-br from-tarjeta via-tarjeta to-marca/20 p-6 sm:p-8">
                 <p className="text-sm font-semibold tracking-widest text-marca uppercase">{saludoSegunHora()}</p>
-                <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Hola, {primerNombre(usuario.nombre)} 👋</h1>
+                <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Hola, {primerNombre(usuario.nombre)}</h1>
                 <p className="mt-3 max-w-xl text-slate-300">
                     {activas.length > 0
                         ? `Tienes ${activas.length} ${activas.length === 1 ? "servicio en curso" : "servicios en curso"}. Aquí puedes seguir su avance.`
@@ -53,9 +54,9 @@ const ResumenPanel = () => {
 
             {/* RESUMEN EN NÚMEROS */}
             <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Resumen">
-                <Indicador icono="💻" valor={cargando ? "–" : dispositivos.length} texto="Dispositivos registrados" />
-                <Indicador icono="🛠️" valor={cargando ? "–" : activas.length} texto="Servicios en curso" />
-                <Indicador icono="✅" valor={cargando ? "–" : finalizadas.length} texto="Servicios finalizados" />
+                <Indicador icono={Laptop} valor={cargando ? "–" : dispositivos.length} texto="Dispositivos registrados" />
+                <Indicador icono={Wrench} valor={cargando ? "–" : activas.length} texto="Servicios en curso" />
+                <Indicador icono={CircleCheck} valor={cargando ? "–" : finalizadas.length} texto="Servicios finalizados" />
             </section>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
@@ -66,7 +67,7 @@ const ResumenPanel = () => {
                         <Link to="/cliente/solicitudes" className="text-sm font-semibold text-marca hover:underline">Ver todas</Link>
                     </div>
                     {!cargando && solicitudes.length === 0 ? (
-                        <EstadoVacio icono="🛠️" titulo="Aún no tienes solicitudes" descripcion="Cuando pidas una reparación podrás ver aquí su estado." />
+                        <EstadoVacio icono={Wrench} titulo="Aún no tienes solicitudes" descripcion="Cuando pidas una reparación podrás ver aquí su estado." />
                     ) : (
                         <ul className="space-y-3">
                             {solicitudes.slice(0, 4).map((solicitud) => (
@@ -83,15 +84,18 @@ const ResumenPanel = () => {
                         <Link to="/cliente/dispositivos" className="text-sm font-semibold text-marca hover:underline">Gestionar</Link>
                     </div>
                     {!cargando && dispositivos.length === 0 ? (
-                        <EstadoVacio icono="💻" titulo="Sin dispositivos" descripcion="Registra tu computador, celular o consola para pedir servicio más rápido." />
+                        <EstadoVacio icono={Laptop} titulo="Sin dispositivos" descripcion="Registra tu computador, celular o consola para pedir servicio más rápido." />
                     ) : (
                         <ul className="divide-y divide-borde">
-                            {dispositivos.slice(0, 5).map((dispositivo) => (
-                                <li key={dispositivo.id} className="flex items-center gap-3 py-3">
-                                    <span className="text-xl" aria-hidden="true">{buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo).icono}</span>
-                                    <span className="truncate">{dispositivo.marca} {dispositivo.modelo}</span>
-                                </li>
-                            ))}
+                            {dispositivos.slice(0, 5).map((dispositivo) => {
+                                const Icono = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo).icono;
+                                return (
+                                    <li key={dispositivo.id} className="flex items-center gap-3 py-3">
+                                        <Icono className="size-5 text-marca" aria-hidden="true" />
+                                        <span className="truncate">{dispositivo.marca} {dispositivo.modelo}</span>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     )}
                 </section>
