@@ -18,6 +18,7 @@ import Perfil from "./paginas/panel/Perfil.jsx";
 import ResumenPanel from "./paginas/panel/ResumenPanel.jsx";
 import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
 import MisServicios from "./paginas/tecnico/MisServicios.jsx";
+import PerfilTecnico from "./paginas/tecnico/PerfilTecnico.jsx";
 import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
 
 const RedireccionPanel = () => {
@@ -72,6 +73,7 @@ const Aplicacion = () => {
                         <Route path="pendientes" element={<SolicitudesPendientes />} />
                         <Route path="servicios" element={<MisServicios />} />
                         <Route path="servicios/:id" element={<DetalleServicio />} />
+                        <Route path="perfil" element={<PerfilTecnico />} />
                     </Route>
 
                     {/* Destino protegido del administrador; su panel se puede añadir después. */}

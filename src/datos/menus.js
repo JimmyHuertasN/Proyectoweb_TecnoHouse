@@ -16,5 +16,6 @@ export const MENU_TECNICO = {
     enlaces: [
         { ruta: "/tecnico/pendientes", texto: "Solicitudes pendientes", icono: "📥" },
         { ruta: "/tecnico/servicios", texto: "Mis servicios", icono: "🧰" },
+        { ruta: "/tecnico/perfil", texto: "Mi perfil", icono: "👤" },
     ],
 };
