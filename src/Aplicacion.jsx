@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
 import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
-import { MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
+import { MENU_ADMIN, MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
 import CerrarSesion from "./paginas/CerrarSesion.jsx";
 import CorreoConfirmado from "./paginas/CorreoConfirmado.jsx";
 import IniciarSesion from "./paginas/IniciarSesion.jsx";
@@ -10,6 +10,7 @@ import Inicio from "./paginas/Inicio.jsx";
 import NuevaContrasena from "./paginas/NuevaContrasena.jsx";
 import RecuperarContrasena from "./paginas/RecuperarContrasena.jsx";
 import Registro from "./paginas/Registro.jsx";
+import Dashboard from "./paginas/admin/Dashboard.jsx";
 import DetalleSolicitud from "./paginas/panel/DetalleSolicitud.jsx";
 import MisDispositivos from "./paginas/panel/MisDispositivos.jsx";
 import MisSolicitudes from "./paginas/panel/MisSolicitudes.jsx";
@@ -76,8 +77,17 @@ const Aplicacion = () => {
                         <Route path="perfil" element={<PerfilTecnico />} />
                     </Route>
 
-                    {/* Destino protegido del administrador; su panel se puede añadir después. */}
-                    <Route path="/admin" element={<RutaProtegida rolesPermitidos={["admin"]}><Inicio /></RutaProtegida>} />
+                    {/* Panel del administrador. */}
+                    <Route
+                        path="/admin"
+                        element={
+                            <RutaProtegida rolesPermitidos={["admin"]}>
+                                <DisenoPanel menu={MENU_ADMIN} />
+                            </RutaProtegida>
+                        }
+                    >
+                        <Route index element={<Dashboard />} />
+                    </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
