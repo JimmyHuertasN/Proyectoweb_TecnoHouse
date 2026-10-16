@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-route
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
 import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
+import { MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
 import CerrarSesion from "./paginas/CerrarSesion.jsx";
 import CorreoConfirmado from "./paginas/CorreoConfirmado.jsx";
 import IniciarSesion from "./paginas/IniciarSesion.jsx";
@@ -15,6 +16,7 @@ import MisSolicitudes from "./paginas/panel/MisSolicitudes.jsx";
 import NuevaSolicitud from "./paginas/panel/NuevaSolicitud.jsx";
 import Perfil from "./paginas/panel/Perfil.jsx";
 import ResumenPanel from "./paginas/panel/ResumenPanel.jsx";
+import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
 
 const RedireccionPanel = () => {
     const { pathname, search } = useLocation();
@@ -40,7 +42,7 @@ const Aplicacion = () => {
                         path="/cliente"
                         element={
                             <RutaProtegida rolesPermitidos={["cliente"]}>
-                                <DisenoPanel />
+                                <DisenoPanel menu={MENU_CLIENTE} />
                             </RutaProtegida>
                         }
                     >
@@ -55,8 +57,20 @@ const Aplicacion = () => {
                     {/* Conserva los enlaces viejos: /panel/perfil lleva a /cliente/perfil, etc. */}
                     <Route path="/panel/*" element={<RedireccionPanel />} />
 
-                    {/* Destinos protegidos para los otros roles; los paneles se pueden añadir después. */}
-                    <Route path="/tecnico" element={<RutaProtegida rolesPermitidos={["tecnico"]}><Inicio /></RutaProtegida>} />
+                    {/* Panel del técnico. */}
+                    <Route
+                        path="/tecnico"
+                        element={
+                            <RutaProtegida rolesPermitidos={["tecnico"]}>
+                                <DisenoPanel menu={MENU_TECNICO} />
+                            </RutaProtegida>
+                        }
+                    >
+                        <Route index element={<Navigate to="pendientes" replace />} />
+                        <Route path="pendientes" element={<SolicitudesPendientes />} />
+                    </Route>
+
+                    {/* Destino protegido del administrador; su panel se puede añadir después. */}
                     <Route path="/admin" element={<RutaProtegida rolesPermitidos={["admin"]}><Inicio /></RutaProtegida>} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,13 +2,6 @@ import { Link, NavLink } from "react-router-dom";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
 
-const ENLACES = [
-    { ruta: "/cliente", texto: "Resumen", icono: "🏠", exacta: true },
-    { ruta: "/cliente/dispositivos", texto: "Mis dispositivos", icono: "💻" },
-    { ruta: "/cliente/solicitudes", texto: "Solicitudes", icono: "🛠️" },
-    { ruta: "/cliente/perfil", texto: "Mi perfil", icono: "👤" },
-];
-
 const clasesEnlace = ({ isActive }) =>
     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
         isActive ? "bg-marca/10 text-marca" : "text-slate-300 hover:bg-white/5 hover:text-white"
@@ -18,7 +11,7 @@ const clasesEnlace = ({ isActive }) =>
     En pantallas grandes el menú queda fijo a la izquierda. En celulares se
     oculta fuera de la pantalla y se desliza cuando "abierto" es true.
 */
-const MenuLateral = ({ abierto, alCerrar }) => {
+const MenuLateral = ({ menu, abierto, alCerrar }) => {
     const { usuario } = useSesion();
 
     return (
@@ -47,16 +40,18 @@ const MenuLateral = ({ abierto, alCerrar }) => {
                 </div>
 
                 <nav className="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Menú del panel">
-                    {ENLACES.map((enlace) => (
+                    {menu.enlaces.map((enlace) => (
                         <NavLink key={enlace.ruta} to={enlace.ruta} end={enlace.exacta} className={clasesEnlace} onClick={alCerrar}>
                             <span aria-hidden="true">{enlace.icono}</span>
                             {enlace.texto}
                         </NavLink>
                     ))}
 
-                    <Link to="/cliente/solicitudes/nueva" onClick={alCerrar} className="boton-primario mt-6 w-full">
-                        + Solicitar reparación
-                    </Link>
+                    {menu.accion && (
+                        <Link to={menu.accion.ruta} onClick={alCerrar} className="boton-primario mt-6 w-full">
+                            {menu.accion.texto}
+                        </Link>
+                    )}
                 </nav>
 
                 <div className="border-t border-borde p-4">
