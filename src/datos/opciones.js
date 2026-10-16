@@ -1,3 +1,5 @@
+import { Gamepad2, Laptop, Smartphone } from "lucide-react";
+
 /* Catálogos fijos que usan los formularios y las tarjetas del panel del cliente. */
 
 export const TIPOS_DISPOSITIVO = [
@@ -60,4 +62,3 @@ export const ESTADOS_FINALES = ["finalizado", "calificado"];
 export const buscarOpcion = (catalogo, valor) => {
     return catalogo.find((opcion) => opcion.valor === valor) ?? { valor, etiqueta: valor, icono: Laptop };
 };
-import { Gamepad2, Laptop, Smartphone } from "lucide-react";

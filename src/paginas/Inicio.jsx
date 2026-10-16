@@ -1,9 +1,13 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 import BarraNavegacion from "../componentes/BarraNavegacion.jsx";
-import PiePagina from "../componentes/PiePagina.jsx";
 import TarjetaServicio from "../componentes/TarjetaServicio.jsx";
 import TarjetaTecnico from "../componentes/TarjetaTecnico.jsx";
+import ComoFunciona from "../componentes/inicio/ComoFunciona.jsx";
+import PiePagina from "../componentes/inicio/PiePagina.jsx";
+import PreguntasFrecuentes from "../componentes/inicio/PreguntasFrecuentes.jsx";
+import SeccionContacto from "../componentes/inicio/SeccionContacto.jsx";
+import SeccionResenas from "../componentes/inicio/SeccionResenas.jsx";
+import SeccionUbicacion from "../componentes/inicio/SeccionUbicacion.jsx";
 import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
 
@@ -62,6 +66,9 @@ const Inicio = () => {
                     </div>
                 </section>
 
+                <ComoFunciona />
+                <SeccionResenas />
+
                 <section id="tecnicos" data-animacion-entrada aria-labelledby="titulo-tecnicos" className="scroll-mt-20 bg-fondo px-[8%] py-24 text-center">
                     <h2 id="titulo-tecnicos" className="mb-4 text-4xl font-bold text-marca">NUESTROS TÉCNICOS</h2>
                     <p className="mb-12 text-slate-400">Profesionales certificados listos para resolver cualquier problema tecnológico que se te presente.</p>
@@ -73,22 +80,16 @@ const Inicio = () => {
                     </div>
                 </section>
 
-                <section id="catalogo" data-animacion-entrada aria-labelledby="titulo-catalogo" className="scroll-mt-20 border-t border-borde bg-[#080d16] px-6 py-20 text-center sm:px-[8%]">
+                <PreguntasFrecuentes />
+
+                {/* TODO: cuando exista, reemplaza este espacio con <SeccionCatalogo id="catalogo" />. */}
+                <section id="catalogo" data-animacion-entrada aria-labelledby="titulo-catalogo" className="scroll-mt-20 border-t border-borde bg-[#080d16] px-6 py-16 text-center sm:px-[8%]">
                     <h2 id="titulo-catalogo" className="mb-3 text-3xl font-bold text-marca">CATÁLOGO</h2>
-                    <p className="mx-auto max-w-2xl text-slate-300">Estamos preparando nuestro catálogo de productos y accesorios tecnológicos. Muy pronto encontrarás novedades aquí.</p>
+                    <p className="mx-auto max-w-2xl text-slate-400">El componente de catálogo se agregará aquí.</p>
                 </section>
 
-                <section id="ubicacion" data-animacion-entrada aria-labelledby="titulo-ubicacion" className="scroll-mt-20 bg-fondo px-6 py-20 text-center sm:px-[8%]">
-                    <h2 id="titulo-ubicacion" className="mb-3 text-3xl font-bold text-marca">UBICACIÓN</h2>
-                    <p className="mx-auto max-w-2xl text-slate-300">Próximamente compartiremos aquí la ubicación y las opciones de atención de TecnoHouse.</p>
-                </section>
-
-                <section id="contacto" data-animacion-entrada aria-labelledby="titulo-contacto" className="scroll-mt-20 border-t border-borde bg-gradient-to-b from-[#0a1422] to-fondo px-6 py-20 text-center sm:px-[8%]">
-                    <p className="antetitulo">Estamos para ayudarte</p>
-                    <h2 id="titulo-contacto" className="mb-4 text-3xl font-bold sm:text-4xl">HABLEMOS DE TU EQUIPO</h2>
-                    <p className="mx-auto mb-8 max-w-2xl text-slate-300">Cuéntanos qué problema presenta tu dispositivo y nuestro equipo te ayudará a encontrar la solución.</p>
-                    <Link to="/registro" className="boton-primario px-6 py-3.5 text-[15px] font-bold">Solicitar servicio</Link>
-                </section>
+                <SeccionUbicacion />
+                <SeccionContacto />
             </main>
 
             <PiePagina />

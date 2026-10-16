@@ -15,7 +15,8 @@
 
 1. **URLs de los correos**: en **Authentication → URL Configuration**, pon en *Site URL* la dirección de la app (ej. `http://localhost:5173`) y agrega en *Redirect URLs* `http://localhost:5173/**` (y la dirección pública cuando el sitio esté publicado). Sin esto, los enlaces de confirmación y de recuperación de contraseña no vuelven a la aplicación.
 2. **Seguridad de roles**: ejecuta `supabase/seguridad_roles.sql` en el **SQL Editor**. Impide que un usuario se cambie el rol a sí mismo (por ejemplo, a `admin`).
-3. **Datos de prueba** (opcional, solo desarrollo): ejecuta `supabase/datos_prueba.sql`. Crea un admin, tres técnicos, dos clientes y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo.
+3. **Reseñas públicas**: ejecuta `supabase/vista_resenas.sql` en el **SQL Editor** para publicar únicamente el nombre de pila, puntuación, comentario y fecha de las calificaciones que tienen comentario.
+4. **Datos de prueba** (opcional, solo desarrollo): ejecuta `supabase/datos_prueba.sql`. Crea un admin, tres técnicos, dos clientes y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo.
 
 ## Autenticación
 
@@ -30,3 +31,5 @@
 - **Dispositivos**: tabla `dispositivos`.
 - **Solicitudes de servicio**: tabla `servicios`. La gravedad se guarda al inicio del texto del problema (`[Gravedad: alta] ...`) porque la tabla no tiene una columna para ella.
 - **Técnicos de la página de inicio**: vista pública `tecnicos_publicos`.
+- **Reseñas de la página de inicio**: vista pública `resenas_publicas` (requiere ejecutar `supabase/vista_resenas.sql`).
+- **Contacto público**: completa `src/datos/contacto.js` con los datos verificados de TecnoHouse antes de publicar el sitio.

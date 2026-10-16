@@ -6,7 +6,7 @@ const TarjetaTecnico = ({ tecnico }) => {
 
     return (
         <article data-animacion-entrada className="tarjeta-elevable w-full max-w-sm text-center leading-relaxed sm:w-70">
-            <div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full border border-marca/30 bg-marca/10 text-2xl font-bold text-marca" aria-label={`Avatar de ${tecnico.nombre}`}>
+            <div role="img" aria-label={`Iniciales de ${tecnico.nombre}`} className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full border border-marca/30 bg-marca/10 text-2xl font-bold text-marca">
                 {iniciales(tecnico.nombre)}
             </div>
             <h3 className="mb-1 text-xl leading-snug font-bold text-white">{tecnico.nombre}</h3>
