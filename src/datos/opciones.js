@@ -34,6 +34,15 @@ export const ESTADOS_COTIZACION = [
     { valor: "rechazada", etiqueta: "Rechazada" },
 ];
 
+/* La base de datos acepta puntuaciones de 1 a 5. */
+export const NIVELES_CALIFICACION = [
+    { valor: 1, etiqueta: "Muy malo" },
+    { valor: 2, etiqueta: "Malo" },
+    { valor: 3, etiqueta: "Regular" },
+    { valor: 4, etiqueta: "Bueno" },
+    { valor: 5, etiqueta: "Excelente" },
+];
+
 /* Una solicitud en estos estados ya no está en curso. */
 export const ESTADOS_FINALES = ["finalizado", "calificado"];
 

@@ -7,7 +7,7 @@
     Si el equipo agrega una columna "gravedad", solo hay que cambiar
     componerProblema y separarProblema.
 */
-import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_FINALES, GRAVEDADES } from "../datos/opciones.js";
+import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_FINALES, GRAVEDADES, NIVELES_CALIFICACION } from "../datos/opciones.js";
 import { formatearPesos } from "../utilidades/formato.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
@@ -156,6 +156,23 @@ export const responderCotizacion = async (cotizacionId, aprobar) => {
             p_aprobar: aprobar,
         })
     );
+};
+
+/* Al guardarla, la base de datos pasa el servicio a "calificado" y recalcula el promedio del técnico. */
+export const calificarServicio = async (servicioId, { puntuacion, comentario }) => {
+    if (!NIVELES_CALIFICACION.some((nivel) => nivel.valor === puntuacion)) {
+        throw new Error("Elige de 1 a 5 estrellas.");
+    }
+
+    const { error } = await obtenerCliente()
+        .from("calificaciones")
+        .insert({ servicio_id: Number(servicioId), puntuacion, comentario: comentario.trim() || null });
+
+    // 23505: ya existe una calificación para este servicio.
+    if (error?.code === "23505") {
+        throw new Error("Este servicio ya fue calificado.");
+    }
+    if (error) verificar({ error });
 };
 
 /*
