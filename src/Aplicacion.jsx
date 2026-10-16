@@ -13,6 +13,7 @@ import Registro from "./paginas/Registro.jsx";
 import Dashboard from "./paginas/admin/Dashboard.jsx";
 import DetalleCliente from "./paginas/admin/DetalleCliente.jsx";
 import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
+import Estadisticas from "./paginas/admin/Estadisticas.jsx";
 import GestionClientes from "./paginas/admin/GestionClientes.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
@@ -97,6 +98,7 @@ const Aplicacion = () => {
                         <Route path="tecnicos" element={<GestionTecnicos />} />
                         <Route path="clientes" element={<GestionClientes />} />
                         <Route path="clientes/:id" element={<DetalleCliente />} />
+                        <Route path="estadisticas" element={<Estadisticas />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

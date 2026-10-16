@@ -3,8 +3,9 @@
     Consultas del panel del administrador. Las reglas de seguridad (RLS) le dejan
     leer todas las tablas.
 */
+import { clasificarProblema, OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
 import { ESTADOS_FINALES, ESTADOS_SOLICITUD } from "../datos/opciones.js";
-import { aSolicitud, COLUMNAS_SOLICITUD } from "./solicitudes.js";
+import { aSolicitud, COLUMNAS_SOLICITUD, separarProblema } from "./solicitudes.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 import { obtenerPerfiles } from "./usuarios.js";
 
@@ -221,5 +222,66 @@ export const obtenerFichaCliente = async (clienteId) => {
             numeroSerie: fila.serial ?? "",
         })),
         servicios: await conPersonas(filasServicios),
+    };
+};
+
+const formatoMes = new Intl.DateTimeFormat("es-CO", { month: "short" });
+const formatoMesLargo = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric" });
+
+const claveMes = (fecha) => `${fecha.getFullYear()}-${fecha.getMonth()}`;
+
+/* Cantidad de servicios creados en cada uno de los últimos "meses" meses, incluido el actual. */
+const contarPorMes = (servicios, meses = 6) => {
+    const hoy = new Date();
+    return Array.from({ length: meses }, (_, indice) => {
+        const mes = new Date(hoy.getFullYear(), hoy.getMonth() - (meses - 1 - indice), 1);
+        const cantidad = servicios.filter((servicio) => claveMes(new Date(servicio.creado_en)) === claveMes(mes)).length;
+        return { clave: claveMes(mes), etiqueta: formatoMes.format(mes), nombreCompleto: formatoMesLargo.format(mes), cantidad };
+    });
+};
+
+const contarProblemas = (servicios) => {
+    const conteo = new Map();
+    for (const servicio of servicios) {
+        const categoria = clasificarProblema(separarProblema(servicio.problema).descripcion);
+        conteo.set(categoria, (conteo.get(categoria) ?? 0) + 1);
+    }
+    // De más a menos frecuente; "Otros" siempre al final.
+    return [...conteo]
+        .map(([categoria, cantidad]) => ({ categoria, cantidad }))
+        .sort((a, b) => {
+            if (a.categoria === OTROS_PROBLEMAS) return 1;
+            if (b.categoria === OTROS_PROBLEMAS) return -1;
+            return b.cantidad - a.cantidad;
+        });
+};
+
+/* Promedio real de cada técnico a partir de sus calificaciones; los mejores primero. */
+const rankingTecnicos = async (calificaciones, limite = 5) => {
+    const porTecnico = new Map();
+    for (const { puntuacion, servicio } of calificaciones) {
+        if (!servicio?.tecnico_id) continue;
+        const actual = porTecnico.get(servicio.tecnico_id) ?? { suma: 0, cantidad: 0 };
+        porTecnico.set(servicio.tecnico_id, { suma: actual.suma + puntuacion, cantidad: actual.cantidad + 1 });
+    }
+
+    const perfiles = await obtenerPerfiles([...porTecnico.keys()]);
+    return [...porTecnico]
+        .map(([id, { suma, cantidad }]) => ({ id, nombre: perfiles[id]?.nombre ?? "Técnico", promedio: suma / cantidad, cantidad }))
+        .sort((a, b) => b.promedio - a.promedio || b.cantidad - a.cantidad)
+        .slice(0, limite);
+};
+
+export const obtenerEstadisticas = async () => {
+    const cliente = obtenerCliente();
+    const [servicios, calificaciones] = await Promise.all([
+        cliente.from("servicios").select("problema, creado_en").then(verificar),
+        cliente.from("calificaciones").select("puntuacion, servicio:servicios(tecnico_id)").then(verificar),
+    ]);
+
+    return {
+        serviciosPorMes: contarPorMes(servicios),
+        problemasFrecuentes: contarProblemas(servicios),
+        mejoresTecnicos: await rankingTecnicos(calificaciones),
     };
 };
