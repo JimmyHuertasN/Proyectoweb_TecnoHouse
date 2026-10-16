@@ -33,11 +33,14 @@ const TablaItems = ({ items }) => {
     );
 };
 
-/* "alResponder" la recibe del padre, que llama a la API. Si falla, el error se muestra en la tarjeta. */
+/*
+    "alResponder" la recibe del padre, que llama a la API. Si falla, el error se muestra en la tarjeta.
+    Sin "alResponder" (panel del técnico) la cotización solo se muestra.
+*/
 const TarjetaCotizacion = ({ cotizacion, alResponder }) => {
     const [error, setError] = useState("");
     const [respondiendo, setRespondiendo] = useState(false);
-    const pendiente = cotizacion.estado === "pendiente";
+    const pendiente = cotizacion.estado === "pendiente" && Boolean(alResponder);
 
     const responder = async (aprobar) => {
         if (!window.confirm(preguntaConfirmacion(aprobar, cotizacion.total))) return;

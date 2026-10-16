@@ -1,87 +1,79 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { avanzarEstado, obtenerAsignado } from "../../api/tecnico.js";
+import { listarCotizaciones } from "../../api/solicitudes.js";
+import { avanzarEstado, crearCotizacion, listarDiagnosticos, obtenerAsignado, registrarDiagnostico } from "../../api/tecnico.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import FormularioCotizacion from "../../componentes/panel/FormularioCotizacion.jsx";
+import FormularioDiagnostico from "../../componentes/panel/FormularioDiagnostico.jsx";
+import ListaDiagnosticos from "../../componentes/panel/ListaDiagnosticos.jsx";
+import ProximoPaso from "../../componentes/panel/ProximoPaso.jsx";
+import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
-import { AVANCES_TECNICO, buscarOpcion, ESTADOS_SOLICITUD, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
+import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
-
-/* Qué decirle al técnico cuando el siguiente paso no depende de un botón. */
-const ESPERAS = {
-    en_diagnostico: "Revisa el equipo, registra el diagnóstico y envía la cotización al cliente.",
-    cotizado: "Esperando que el cliente apruebe o rechace la cotización.",
-    finalizado: "Servicio terminado. Esperando la calificación del cliente.",
-    calificado: "Servicio terminado y calificado por el cliente.",
-};
-
-const ProximoPaso = ({ servicio, alAvanzar }) => {
-    const [error, setError] = useState("");
-    const [avanzando, setAvanzando] = useState(false);
-    const avance = AVANCES_TECNICO[servicio.estado];
-
-    const avanzar = async () => {
-        const destino = buscarOpcion(ESTADOS_SOLICITUD, avance.siguiente).etiqueta;
-        if (!window.confirm(`¿Pasar el servicio a "${destino}"? El cliente recibirá una notificación.`)) return;
-
-        setError("");
-        setAvanzando(true);
-
-        try {
-            await alAvanzar();
-        } catch (errorApi) {
-            setError(errorApi.message);
-        } finally {
-            setAvanzando(false);
-        }
-    };
-
-    return (
-        <section className="tarjeta mb-6">
-            <h2 className="mb-3 text-lg font-semibold">Próximo paso</h2>
-            <Aviso texto={error} tipo="error" />
-
-            {avance ? (
-                <button type="button" onClick={avanzar} disabled={avanzando} className="boton-primario">
-                    {avanzando ? "Guardando..." : avance.accion}
-                </button>
-            ) : (
-                <p className="text-sm text-slate-300">{ESPERAS[servicio.estado]}</p>
-            )}
-        </section>
-    );
-};
 
 const DetalleServicio = () => {
     const { id } = useParams();
     const { usuario } = useSesion();
     const [servicio, setServicio] = useState(null);
+    const [diagnosticos, setDiagnosticos] = useState([]);
+    const [cotizaciones, setCotizaciones] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
     const [aviso, setAviso] = useState("");
-    // Cada vez que aumenta, el useEffect vuelve a pedir el servicio a Supabase.
+    // Cada vez que aumenta, el useEffect vuelve a pedir los datos a Supabase.
     const [recargas, setRecargas] = useState(0);
 
     useEffect(() => {
         let vigente = true;
 
-        obtenerAsignado(usuario.id, id)
-            .then((encontrado) => vigente && setServicio(encontrado))
-            .catch((errorApi) => vigente && setError(errorApi.message))
-            .finally(() => vigente && setCargando(false));
+        const cargar = async () => {
+            try {
+                const encontrado = await obtenerAsignado(usuario.id, id);
+                const [listaDiagnosticos, listaCotizaciones] = await Promise.all([
+                    listarDiagnosticos(encontrado.id),
+                    listarCotizaciones(encontrado.id),
+                ]);
+                if (vigente) {
+                    setServicio(encontrado);
+                    setDiagnosticos(listaDiagnosticos);
+                    setCotizaciones(listaCotizaciones);
+                }
+            } catch (errorApi) {
+                if (vigente) setError(errorApi.message);
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        };
 
+        cargar();
         return () => {
             vigente = false;
         };
     }, [usuario.id, id, recargas]);
 
-    const manejarAvance = async () => {
-        await avanzarEstado(usuario.id, servicio);
-        const destino = buscarOpcion(ESTADOS_SOLICITUD, AVANCES_TECNICO[servicio.estado].siguiente).etiqueta;
-        setAviso(`El servicio pasó a "${destino}".`);
+    const terminarAccion = (mensaje) => {
+        setAviso(mensaje);
         setRecargas((anterior) => anterior + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const manejarAvance = async (destino) => {
+        await avanzarEstado(usuario.id, servicio);
+        terminarAccion(`El servicio pasó a "${destino}".`);
+    };
+
+    const manejarDiagnostico = async (datos) => {
+        await registrarDiagnostico(servicio.id, datos);
+        terminarAccion("Diagnóstico guardado.");
+    };
+
+    const manejarCotizacion = async (items) => {
+        await crearCotizacion(servicio.id, items);
+        terminarAccion("Cotización enviada. El cliente debe aprobarla o rechazarla.");
     };
 
     if (cargando) {
@@ -98,6 +90,7 @@ const DetalleServicio = () => {
 
     const { dispositivo, cliente } = servicio;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+    const enDiagnostico = servicio.estado === "en_diagnostico";
 
     return (
         <>
@@ -122,7 +115,21 @@ const DetalleServicio = () => {
                 <BarraProgreso estado={servicio.estado} />
             </section>
 
-            <ProximoPaso servicio={servicio} alAvanzar={manejarAvance} />
+            <ProximoPaso estado={servicio.estado} alAvanzar={manejarAvance} />
+
+            {enDiagnostico && (
+                <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <FormularioDiagnostico alGuardar={manejarDiagnostico} />
+                    {diagnosticos.length > 0 ? (
+                        <FormularioCotizacion alEnviar={manejarCotizacion} />
+                    ) : (
+                        <section className="tarjeta border-dashed">
+                            <h2 className="mb-2 text-lg font-semibold text-slate-400">2. Crear cotización</h2>
+                            <p className="text-sm text-slate-400">Registra primero el diagnóstico para poder cotizar.</p>
+                        </section>
+                    )}
+                </div>
+            )}
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <section className="tarjeta lg:col-span-2">
@@ -149,6 +156,13 @@ const DetalleServicio = () => {
                         <p className="mt-1 text-sm text-slate-400">Sin teléfono registrado</p>
                     )}
                 </section>
+            </div>
+
+            <div className="mt-6">
+                {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
+                {cotizaciones.map((cotizacion) => (
+                    <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} />
+                ))}
             </div>
         </>
     );

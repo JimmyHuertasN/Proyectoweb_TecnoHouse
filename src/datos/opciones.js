@@ -39,7 +39,7 @@ export const AVANCES_TECNICO = {
 
 /* Estados del tipo "estado_cotizacion" de la base de datos. */
 export const ESTADOS_COTIZACION = [
-    { valor: "pendiente", etiqueta: "Pendiente de tu respuesta" },
+    { valor: "pendiente", etiqueta: "Pendiente" },
     { valor: "aprobada", etiqueta: "Aprobada" },
     { valor: "rechazada", etiqueta: "Rechazada" },
 ];
