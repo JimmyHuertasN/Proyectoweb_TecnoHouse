@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { listarCotizaciones, obtenerHistorial, obtenerSolicitud, responderCotizacion } from "../../api/solicitudes.js";
+import { calificarServicio, listarCotizaciones, obtenerHistorial, obtenerSolicitud, responderCotizacion } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import FormularioCalificacion from "../../componentes/panel/FormularioCalificacion.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, ESTADOS_SOLICITUD, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
@@ -87,6 +88,12 @@ const DetalleSolicitud = () => {
         setRecargas((anterior) => anterior + 1);
     };
 
+    const manejarCalificacion = async (datos) => {
+        await calificarServicio(solicitud.id, datos);
+        setAviso("¡Gracias por calificar el servicio!");
+        setRecargas((anterior) => anterior + 1);
+    };
+
     if (cargando) {
         return <p className="text-slate-400">Cargando solicitud...</p>;
     }
@@ -127,6 +134,8 @@ const DetalleSolicitud = () => {
             <section className="tarjeta mb-6">
                 <BarraProgreso estado={solicitud.estado} />
             </section>
+
+            {solicitud.estado === "finalizado" && <FormularioCalificacion alCalificar={manejarCalificacion} />}
 
             {cotizaciones.map((cotizacion) => (
                 <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} alResponder={manejarRespuestaCotizacion} />
