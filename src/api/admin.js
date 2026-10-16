@@ -168,3 +168,58 @@ export const reasignarTecnico = async (servicio, tecnicoId) => {
 
     if (filas.length === 0) throw new Error("El servicio cambió de estado. Actualiza la página e inténtalo de nuevo.");
 };
+
+const contarPorCliente = (filas, clienteId) => filas.filter((fila) => fila.cliente_id === clienteId).length;
+
+/* Los técnicos desactivados también tienen rol "cliente": se reconocen porque conservan su fila en "tecnicos". */
+export const listarClientes = async () => {
+    const cliente = obtenerCliente();
+    const [perfiles, fichasTecnicos, dispositivos, servicios] = await Promise.all([
+        cliente.from("perfiles").select("id, nombre, telefono, creado_en").eq("rol", "cliente").order("nombre").then(verificar),
+        cliente.from("tecnicos").select("perfil_id").then(verificar),
+        cliente.from("dispositivos").select("cliente_id").then(verificar),
+        cliente.from("servicios").select("cliente_id, estado").then(verificar),
+    ]);
+
+    const idsTecnicos = new Set(fichasTecnicos.map((ficha) => ficha.perfil_id));
+    return perfiles
+        .filter((perfil) => !idsTecnicos.has(perfil.id))
+        .map((perfil) => {
+            const suyos = servicios.filter((servicio) => servicio.cliente_id === perfil.id);
+            return {
+                id: perfil.id,
+                nombre: perfil.nombre,
+                telefono: perfil.telefono ?? "",
+                registradoEn: perfil.creado_en,
+                dispositivos: contarPorCliente(dispositivos, perfil.id),
+                servicios: suyos.length,
+                serviciosEnCurso: suyos.filter((servicio) => !ESTADOS_FINALES.includes(servicio.estado)).length,
+            };
+        });
+};
+
+export const obtenerFichaCliente = async (clienteId) => {
+    const cliente = obtenerCliente();
+    const [perfil, dispositivos, filasServicios] = await Promise.all([
+        cliente.from("perfiles").select("id, nombre, telefono, rol, creado_en").eq("id", clienteId).maybeSingle().then(verificar),
+        cliente.from("dispositivos").select("id, tipo, marca, modelo, serial").eq("cliente_id", clienteId).order("creado_en", { ascending: false }).then(verificar),
+        cliente.from("servicios").select(COLUMNAS_SOLICITUD).eq("cliente_id", clienteId).order("creado_en", { ascending: false }).then(verificar),
+    ]);
+
+    if (!perfil || perfil.rol !== "cliente") throw new Error("No encontramos ese cliente.");
+
+    return {
+        id: perfil.id,
+        nombre: perfil.nombre,
+        telefono: perfil.telefono ?? "",
+        registradoEn: perfil.creado_en,
+        dispositivos: dispositivos.map((fila) => ({
+            id: String(fila.id),
+            tipo: fila.tipo,
+            marca: fila.marca ?? "",
+            modelo: fila.modelo ?? "",
+            numeroSerie: fila.serial ?? "",
+        })),
+        servicios: await conPersonas(filasServicios),
+    };
+};
