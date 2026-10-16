@@ -3,16 +3,15 @@ import { Link, Outlet } from "react-router-dom";
 import MenuLateral from "./MenuLateral.jsx";
 
 /*
-    Estructura común de todas las páginas del panel: menú lateral + contenido.
-    <Outlet /> es el lugar donde React Router dibuja la página hija que
-    corresponde a la URL (Resumen, Mis dispositivos, Solicitudes o Perfil).
+    Estructura común de los paneles de cada rol: menú lateral + contenido.
+    <Outlet /> es el lugar donde React Router dibuja la página hija que corresponde a la URL.
 */
-const DisenoPanel = () => {
+const DisenoPanel = ({ menu }) => {
     const [menuAbierto, setMenuAbierto] = useState(false);
 
     return (
         <div className="min-h-screen bg-black text-white lg:flex">
-            <MenuLateral abierto={menuAbierto} alCerrar={() => setMenuAbierto(false)} />
+            <MenuLateral menu={menu} abierto={menuAbierto} alCerrar={() => setMenuAbierto(false)} />
 
             <div className="min-w-0 flex-1">
                 {/* Barra superior solo para celulares y tabletas. */}
@@ -25,7 +24,7 @@ const DisenoPanel = () => {
                     >
                         ☰
                     </button>
-                    <Link to="/cliente" className="text-lg font-bold">
+                    <Link to={menu.inicio} className="text-lg font-bold">
                         TECNO<span className="text-marca">HOUSE</span>
                     </Link>
                     <span className="w-10" />

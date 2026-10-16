@@ -14,7 +14,7 @@ import { obtenerCliente, verificar } from "./supabase.js";
 export const LONGITUD_MINIMA_DESCRIPCION = 15;
 
 // "dispositivo:dispositivos(...)" trae los datos del equipo en la misma consulta (relación por dispositivo_id).
-const COLUMNAS = "id, cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en, dispositivo:dispositivos(tipo, marca, modelo, serial)";
+export const COLUMNAS_SOLICITUD = "id, cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en, dispositivo:dispositivos(tipo, marca, modelo, serial)";
 
 const PATRON_GRAVEDAD = /^\[Gravedad: (baja|media|alta)\]\s*/;
 
@@ -33,7 +33,7 @@ export const formatearCodigo = (id) => `TH-${String(id).padStart(4, "0")}`;
 export const estaActiva = (solicitud) => !ESTADOS_FINALES.includes(solicitud.estado);
 
 /* Convierte una fila de "servicios" al formato que usa la aplicación. */
-const aSolicitud = (fila) => {
+export const aSolicitud = (fila) => {
     const { gravedad, descripcion } = separarProblema(fila.problema);
     const dispositivo = fila.dispositivo ?? {};
 
@@ -61,7 +61,7 @@ export const listarSolicitudes = async (usuarioId) => {
     const filas = verificar(
         await obtenerCliente()
             .from("servicios")
-            .select(COLUMNAS)
+            .select(COLUMNAS_SOLICITUD)
             .eq("cliente_id", usuarioId)
             .order("creado_en", { ascending: false })
     );
@@ -70,7 +70,7 @@ export const listarSolicitudes = async (usuarioId) => {
 
 export const obtenerSolicitud = async (usuarioId, id) => {
     const fila = verificar(
-        await obtenerCliente().from("servicios").select(COLUMNAS).eq("id", id).eq("cliente_id", usuarioId).maybeSingle()
+        await obtenerCliente().from("servicios").select(COLUMNAS_SOLICITUD).eq("id", id).eq("cliente_id", usuarioId).maybeSingle()
     );
     if (!fila) throw new Error("No encontramos esa solicitud.");
     return aSolicitud(fila);
@@ -107,7 +107,7 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
                 dispositivo_id: Number(dispositivoId),
                 problema: componerProblema(gravedad, descripcionLimpia),
             })
-            .select(COLUMNAS)
+            .select(COLUMNAS_SOLICITUD)
             .single()
     );
     return aSolicitud(fila);
