@@ -62,7 +62,7 @@ const NuevaSolicitud = () => {
 
     if (dispositivos.length === 0) {
         return (
-            <>
+            <div className="mx-auto max-w-3xl">
                 <EncabezadoPagina titulo="Solicitar reparación" />
                 <EstadoVacio
                     icono="💻"
@@ -71,15 +71,15 @@ const NuevaSolicitud = () => {
                 >
                     <Link to="/cliente/dispositivos" className="boton-primario">Ir a Mis dispositivos</Link>
                 </EstadoVacio>
-            </>
+            </div>
         );
     }
 
     return (
-        <>
+        <div className="mx-auto max-w-3xl">
             <EncabezadoPagina titulo="Solicitar reparación" descripcion="Cuéntanos qué equipo falla y qué le pasa. Un técnico revisará tu caso." />
 
-            <form onSubmit={manejarEnvio} noValidate className="tarjeta max-w-3xl space-y-8">
+            <form onSubmit={manejarEnvio} noValidate className="tarjeta space-y-8">
                 <Aviso texto={error} tipo="error" />
 
                 {/* 1. DISPOSITIVO */}
@@ -160,7 +160,7 @@ const NuevaSolicitud = () => {
                     </button>
                 </div>
             </form>
-        </>
+        </div>
     );
 };
 
