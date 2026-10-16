@@ -27,6 +27,16 @@ export const ESTADOS_SOLICITUD = [
     { valor: "calificado", etiqueta: "Calificado" },
 ];
 
+/*
+    Cambios de estado que hace el técnico con un botón. Los demás los hace la base de datos:
+    "cotizado" al crear la cotización, y "aprobado" o "en_diagnostico" cuando el cliente responde.
+*/
+export const AVANCES_TECNICO = {
+    asignado: { siguiente: "en_diagnostico", accion: "Iniciar diagnóstico" },
+    aprobado: { siguiente: "en_reparacion", accion: "Iniciar reparación" },
+    en_reparacion: { siguiente: "finalizado", accion: "Marcar como finalizado" },
+};
+
 /* Estados del tipo "estado_cotizacion" de la base de datos. */
 export const ESTADOS_COTIZACION = [
     { valor: "pendiente", etiqueta: "Pendiente de tu respuesta" },

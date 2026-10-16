@@ -3,15 +3,15 @@ import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";
 import { EtiquetaEstado, EtiquetaGravedad } from "./Etiquetas.jsx";
 
-/* Una solicitud dentro de una lista; toda la fila lleva al detalle. */
-const FilaSolicitud = ({ solicitud }) => {
+/* Una solicitud dentro de una lista; toda la fila lleva al detalle. "rutaBase" cambia según el panel. */
+const FilaSolicitud = ({ solicitud, rutaBase = "/cliente/solicitudes" }) => {
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
 
     return (
         <li>
             <Link
-                to={`/cliente/solicitudes/${solicitud.id}`}
+                to={`${rutaBase}/${solicitud.id}`}
                 className="flex flex-col gap-3 rounded-lg border border-borde bg-fondo/60 p-4 transition hover:border-marca/60 sm:flex-row sm:items-center"
             >
                 <span className="hidden text-2xl sm:block" aria-hidden="true">{tipo.icono}</span>

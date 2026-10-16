@@ -48,7 +48,7 @@ const TarjetaPendiente = ({ solicitud, alTomar }) => {
             <dl className="mt-4 space-y-1 text-sm">
                 <div className="flex gap-2">
                     <dt className="text-slate-400">Cliente:</dt>
-                    <dd className="truncate">{solicitud.nombreCliente}</dd>
+                    <dd className="truncate">{solicitud.cliente.nombre}</dd>
                 </div>
                 <div className="flex gap-2">
                     <dt className="text-slate-400">Solicitada:</dt>
