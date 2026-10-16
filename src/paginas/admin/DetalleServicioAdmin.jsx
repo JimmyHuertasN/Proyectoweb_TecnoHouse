@@ -123,7 +123,11 @@ const DetalleServicioAdmin = () => {
 
                     {estaActiva(servicio) ? (
                         <div className="border-t border-borde pt-5">
-                            <SelectorTecnico tecnicos={tecnicos} tecnicoActualId={servicio.tecnicoId} alAsignar={manejarAsignacion} />
+                            <SelectorTecnico
+                                tecnicos={tecnicos.filter((tecnico) => tecnico.activo)}
+                                tecnicoActualId={servicio.tecnicoId}
+                                alAsignar={manejarAsignacion}
+                            />
                         </div>
                     ) : (
                         <p className="border-t border-borde pt-5 text-sm text-slate-400">El servicio terminó: ya no se puede cambiar el técnico.</p>

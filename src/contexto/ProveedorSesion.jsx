@@ -27,6 +27,21 @@ const ProveedorSesion = ({ children }) => {
         return () => data.subscription.unsubscribe();
     }, []);
 
+    // El administrador puede cambiar el rol de alguien con la sesión abierta (por ejemplo, desactivar
+    // a un técnico): al volver a la pestaña se lee de nuevo el perfil y RutaProtegida aplica el rol nuevo.
+    useEffect(() => {
+        if (!supabase) return;
+
+        const actualizarAlVolver = async () => {
+            if (document.visibilityState !== "visible") return;
+            const { data } = await supabase.auth.getSession();
+            if (data.session) setUsuario(await apiUsuarios.obtenerPerfil(data.session.user));
+        };
+
+        document.addEventListener("visibilitychange", actualizarAlVolver);
+        return () => document.removeEventListener("visibilitychange", actualizarAlVolver);
+    }, []);
+
     const iniciarSesion = async (correo, contrasena) => {
         const perfil = await apiUsuarios.iniciarSesion(correo, contrasena);
         setUsuario(perfil);
