@@ -27,6 +27,13 @@ export const ESTADOS_SOLICITUD = [
     { valor: "calificado", etiqueta: "Calificado" },
 ];
 
+/* Estados del tipo "estado_cotizacion" de la base de datos. */
+export const ESTADOS_COTIZACION = [
+    { valor: "pendiente", etiqueta: "Pendiente de tu respuesta" },
+    { valor: "aprobada", etiqueta: "Aprobada" },
+    { valor: "rechazada", etiqueta: "Rechazada" },
+];
+
 /* Una solicitud en estos estados ya no está en curso. */
 export const ESTADOS_FINALES = ["finalizado", "calificado"];
 

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { obtenerHistorial, obtenerSolicitud } from "../../api/solicitudes.js";
+import { listarCotizaciones, obtenerHistorial, obtenerSolicitud, responderCotizacion } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, ESTADOS_SOLICITUD, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha, formatearFechaHora } from "../../utilidades/formato.js";
@@ -43,8 +44,12 @@ const DetalleSolicitud = () => {
     const ubicacion = useLocation();
     const [solicitud, setSolicitud] = useState(null);
     const [historial, setHistorial] = useState([]);
+    const [cotizaciones, setCotizaciones] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
+    const [aviso, setAviso] = useState("");
+    // Cada vez que aumenta, el useEffect vuelve a pedir los datos a Supabase.
+    const [recargas, setRecargas] = useState(0);
     const recienCreada = ubicacion.state?.recienCreada;
 
     useEffect(() => {
@@ -53,10 +58,14 @@ const DetalleSolicitud = () => {
         const cargar = async () => {
             try {
                 const encontrada = await obtenerSolicitud(usuario.id, id);
-                const eventos = await obtenerHistorial(encontrada);
+                const [eventos, listaCotizaciones] = await Promise.all([
+                    obtenerHistorial(encontrada),
+                    listarCotizaciones(encontrada.id),
+                ]);
                 if (vigente) {
                     setSolicitud(encontrada);
                     setHistorial(eventos);
+                    setCotizaciones(listaCotizaciones);
                 }
             } catch (errorApi) {
                 if (vigente) setError(errorApi.message);
@@ -69,7 +78,14 @@ const DetalleSolicitud = () => {
         return () => {
             vigente = false;
         };
-    }, [usuario.id, id]);
+    }, [usuario.id, id, recargas]);
+
+    // Se recarga todo porque responder la cotización también cambia el estado del servicio.
+    const manejarRespuestaCotizacion = async (cotizacion, aprobar) => {
+        await responderCotizacion(cotizacion.id, aprobar);
+        setAviso(aprobar ? "Aprobaste la cotización. El técnico empezará la reparación." : "Rechazaste la cotización.");
+        setRecargas((anterior) => anterior + 1);
+    };
 
     if (cargando) {
         return <p className="text-slate-400">Cargando solicitud...</p>;
@@ -95,6 +111,7 @@ const DetalleSolicitud = () => {
             {recienCreada && (
                 <Aviso texto={`¡Listo! Registramos tu solicitud ${solicitud.codigo}. Te contactaremos cuando un técnico la revise.`} tipo="exito" />
             )}
+            <Aviso texto={aviso} tipo="exito" />
 
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -110,6 +127,10 @@ const DetalleSolicitud = () => {
             <section className="tarjeta mb-6">
                 <BarraProgreso estado={solicitud.estado} />
             </section>
+
+            {cotizaciones.map((cotizacion) => (
+                <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} alResponder={manejarRespuestaCotizacion} />
+            ))}
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <section className="tarjeta lg:col-span-2">

@@ -1,4 +1,4 @@
-import { buscarOpcion, ESTADOS_SOLICITUD, GRAVEDADES } from "../../datos/opciones.js";
+import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_SOLICITUD, GRAVEDADES } from "../../datos/opciones.js";
 
 const COLORES_ESTADO = {
     solicitado: "bg-amber-500/15 text-amber-300",
@@ -11,6 +11,12 @@ const COLORES_ESTADO = {
     calificado: "bg-slate-500/20 text-slate-300",
 };
 
+const COLORES_COTIZACION = {
+    pendiente: "bg-orange-500/15 text-orange-300",
+    aprobada: "bg-emerald-500/15 text-emerald-300",
+    rechazada: "bg-red-500/15 text-red-300",
+};
+
 const COLORES_GRAVEDAD = {
     baja: "text-emerald-300",
     media: "text-amber-300",
@@ -20,6 +26,12 @@ const COLORES_GRAVEDAD = {
 export const EtiquetaEstado = ({ estado }) => (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${COLORES_ESTADO[estado]}`}>
         {buscarOpcion(ESTADOS_SOLICITUD, estado).etiqueta}
+    </span>
+);
+
+export const EtiquetaCotizacion = ({ estado }) => (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${COLORES_COTIZACION[estado]}`}>
+        {buscarOpcion(ESTADOS_COTIZACION, estado).etiqueta}
     </span>
 );
 

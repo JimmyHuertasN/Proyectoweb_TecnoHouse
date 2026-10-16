@@ -7,7 +7,8 @@
     Si el equipo agrega una columna "gravedad", solo hay que cambiar
     componerProblema y separarProblema.
 */
-import { ESTADOS_FINALES, GRAVEDADES } from "../datos/opciones.js";
+import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_FINALES, GRAVEDADES } from "../datos/opciones.js";
+import { formatearPesos } from "../utilidades/formato.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 export const LONGITUD_MINIMA_DESCRIPCION = 15;
@@ -122,9 +123,40 @@ const leerRelacionadas = async (tabla, columnas, servicioId) => {
     return data;
 };
 
-const formatoPesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+const COLUMNAS_COTIZACION = "id, total, estado, creado_en, items:cotizacion_items(id, concepto, precio)";
 
-const ESTADOS_COTIZACION = { pendiente: "pendiente de tu respuesta", aprobada: "aprobada", rechazada: "rechazada" };
+/* Los ítems se ordenan por id para mostrarlos en el orden en que el técnico los agregó. */
+const aCotizacion = (fila) => ({
+    id: String(fila.id),
+    total: Number(fila.total),
+    estado: fila.estado,
+    creadaEn: fila.creado_en,
+    items: fila.items
+        .map((item) => ({ id: item.id, concepto: item.concepto, precio: Number(item.precio) }))
+        .sort((a, b) => a.id - b.id),
+});
+
+/* El total no se calcula aquí: la base de datos lo actualiza cada vez que cambian los ítems. */
+export const listarCotizaciones = async (servicioId) => {
+    const filas = verificar(
+        await obtenerCliente()
+            .from("cotizaciones")
+            .select(COLUMNAS_COTIZACION)
+            .eq("servicio_id", servicioId)
+            .order("creado_en", { ascending: false })
+    );
+    return filas.map(aCotizacion);
+};
+
+/* El cliente no puede editar "cotizaciones" directamente: lo hace la función responder_cotizacion de Supabase. */
+export const responderCotizacion = async (cotizacionId, aprobar) => {
+    verificar(
+        await obtenerCliente().rpc("responder_cotizacion", {
+            p_cotizacion_id: Number(cotizacionId),
+            p_aprobar: aprobar,
+        })
+    );
+};
 
 /*
     Arma el historial de una solicitud con lo que registra el taller:
@@ -148,8 +180,8 @@ export const obtenerHistorial = async (solicitud) => {
         })),
         ...cotizaciones.map((cotizacion) => ({
             fecha: cotizacion.creado_en,
-            titulo: `Cotización por ${formatoPesos.format(cotizacion.total)}`,
-            detalle: `Estado: ${ESTADOS_COTIZACION[cotizacion.estado] ?? cotizacion.estado}.`,
+            titulo: `Cotización por ${formatearPesos(cotizacion.total)}`,
+            detalle: `Estado: ${buscarOpcion(ESTADOS_COTIZACION, cotizacion.estado).etiqueta.toLowerCase()}.`,
         })),
         ...calificaciones.map((calificacion) => ({
             fecha: calificacion.creado_en,
