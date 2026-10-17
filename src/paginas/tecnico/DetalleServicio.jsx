@@ -166,8 +166,9 @@ const DetalleServicio = () => {
 
             <div className="mt-6">
                 {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
+                {/* Comparte los datos del servicio y cliente con la descarga de la cotización. */}
                 {cotizaciones.map((cotizacion) => (
-                    <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} />
+                    <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} servicio={servicio} />
                 ))}
             </div>
         </>

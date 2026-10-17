@@ -142,8 +142,9 @@ const DetalleServicioAdmin = () => {
             <ChatServicio servicioId={servicio.id} soloLectura />
 
             {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
+            {/* Proporciona al PDF los datos completos del servicio para el administrador. */}
             {cotizaciones.map((cotizacion) => (
-                <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} />
+                <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} servicio={servicio} />
             ))}
         </>
     );

@@ -122,8 +122,15 @@ const DetalleSolicitud = () => {
 
             {solicitud.estado === "finalizado" && <FormularioCalificacion alCalificar={manejarCalificacion} />}
 
+            {/* Pasa al PDF el servicio y el perfil del cliente que inició sesión. */}
             {cotizaciones.map((cotizacion) => (
-                <TarjetaCotizacion key={cotizacion.id} cotizacion={cotizacion} alResponder={manejarRespuestaCotizacion} />
+                <TarjetaCotizacion
+                    key={cotizacion.id}
+                    cotizacion={cotizacion}
+                    servicio={solicitud}
+                    cliente={usuario}
+                    alResponder={manejarRespuestaCotizacion}
+                />
             ))}
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
