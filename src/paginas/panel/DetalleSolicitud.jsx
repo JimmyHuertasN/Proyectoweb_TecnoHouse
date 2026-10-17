@@ -13,6 +13,7 @@ import Aviso from "../../componentes/Aviso.jsx";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import ChatServicio from "../../componentes/panel/ChatServicio.jsx";
 import FormularioCalificacion from "../../componentes/panel/FormularioCalificacion.jsx";
 import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
@@ -169,6 +170,8 @@ const DetalleSolicitud = () => {
 
             {/* Las fotos privadas se muestran como galería con enlaces firmados. */}
             <GaleriaFotosServicio servicioId={solicitud.id} />
+            {/* Conversación compartida con el técnico asignado. */}
+            <ChatServicio servicioId={solicitud.id} />
         </>
     );
 };
