@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
+import { Camera, Mail, MapPin, Phone, UsersRound } from "lucide-react";
 import { CONTACTO } from "../../datos/contacto.js";
 
 const ENLACES = [
@@ -12,7 +12,8 @@ const ENLACES = [
     { href: "/#catalogo", texto: "Catálogo" },
 ];
 
-const ICONOS_RED = { Facebook, Instagram };
+// Lucide no incluye logotipos de marcas: se usan símbolos genéricos disponibles.
+const ICONOS_RED = { Facebook: UsersRound, Instagram: Camera };
 const telefonoConfigurado = CONTACTO.telefono.replace(/\D/g, "").length >= 7;
 const correoConfigurado = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CONTACTO.correo);
 
