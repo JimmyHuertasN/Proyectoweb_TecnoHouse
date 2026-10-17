@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Download } from "lucide-react"; // Icono para la acción de generar el PDF.
 import { formatearFecha, formatearPesos } from "../../utilidades/formato.js";
+import generarCotizacionPdf from "../../utilidades/generarCotizacionPdf.js"; // Lógica común del documento imprimible.
 import Aviso from "../Aviso.jsx";
 import { EtiquetaCotizacion } from "./Etiquetas.jsx";
 import useConfirmar from "../../hooks/useConfirmar.js";
@@ -38,7 +40,8 @@ const TablaItems = ({ items }) => {
     "alResponder" la recibe del padre, que llama a la API. Si falla, el error se muestra en la tarjeta.
     Sin "alResponder" (panel del técnico) la cotización solo se muestra.
 */
-const TarjetaCotizacion = ({ cotizacion, alResponder }) => {
+// Recibe datos del servicio y el cliente para completar el PDF en todos los paneles.
+const TarjetaCotizacion = ({ cotizacion, alResponder, servicio, cliente }) => {
     const [error, setError] = useState("");
     const [respondiendo, setRespondiendo] = useState(false);
     const pendiente = cotizacion.estado === "pendiente" && Boolean(alResponder);
@@ -59,6 +62,16 @@ const TarjetaCotizacion = ({ cotizacion, alResponder }) => {
         }
     };
 
+    // Prepara la hoja imprimible con la información del servicio y abre el diálogo del navegador.
+    const descargarPdf = () => {
+        setError("");
+        try {
+            generarCotizacionPdf({ cotizacion, servicio, cliente: cliente ?? servicio?.cliente });
+        } catch (errorPdf) {
+            setError(errorPdf.message);
+        }
+    };
+
     return (
         <section className={`tarjeta mb-6 ${pendiente ? "border-orange-500/50" : ""}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -66,7 +79,13 @@ const TarjetaCotizacion = ({ cotizacion, alResponder }) => {
                     <h2 className="text-lg font-semibold">Cotización</h2>
                     <p className="text-sm text-slate-400">Enviada el {formatearFecha(cotizacion.creadaEn)}</p>
                 </div>
-                <EtiquetaCotizacion estado={cotizacion.estado} />
+                {/* Mantiene visible la descarga para cliente, técnico y administrador. */}
+                <div className="flex flex-wrap items-center gap-2">
+                    <EtiquetaCotizacion estado={cotizacion.estado} />
+                    <button type="button" onClick={descargarPdf} className="boton-secundario px-3 py-2" aria-label="Descargar cotización como PDF">
+                        <Download size={16} aria-hidden="true" /> Descargar PDF
+                    </button>
+                </div>
             </div>
 
             <Aviso texto={error} tipo="error" />
