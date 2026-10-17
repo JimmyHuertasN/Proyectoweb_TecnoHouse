@@ -8,6 +8,7 @@ import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etique
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioCotizacion from "../../componentes/panel/FormularioCotizacion.jsx";
 import FormularioDiagnostico from "../../componentes/panel/FormularioDiagnostico.jsx";
+import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import ListaDiagnosticos from "../../componentes/panel/ListaDiagnosticos.jsx";
 import ProximoPaso from "../../componentes/panel/ProximoPaso.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
@@ -156,6 +157,9 @@ const DetalleServicio = () => {
                     )}
                 </section>
             </div>
+
+            {/* Las políticas permiten que el técnico asignado consulte los adjuntos. */}
+            <GaleriaFotosServicio servicioId={servicio.id} />
 
             <div className="mt-6">
                 {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}

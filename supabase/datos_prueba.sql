@@ -101,8 +101,8 @@ begin
     insert into public.dispositivos (cliente_id, tipo, marca, modelo, serial) values (pedro, 'celular', 'Xiaomi', 'Redmi Note 12', null) returning id into cel_pedro;
 
     -- María: celular cotizado, esperando que ella apruebe o rechace la cotización.
-    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en)
-    values (maria, cel_maria, ana, '[Gravedad: alta] La pantalla se quedó en negro después de una caída, pero el celular vibra y suena.', 'cotizado', now() - interval '5 days')
+    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, gravedad, categoria, estado, creado_en)
+    values (maria, cel_maria, ana, 'La pantalla se quedó en negro después de una caída, pero el celular vibra y suena.', 'alta', 'Pantalla', 'cotizado', now() - interval '5 days')
     returning id into servicio;
     insert into public.diagnosticos (servicio_id, hallazgos, recomendaciones, creado_en)
     values (servicio, 'El panel AMOLED está fracturado internamente; la placa funciona bien.', 'Cambiar la pantalla completa.', now() - interval '4 days');
@@ -110,12 +110,12 @@ begin
     insert into public.cotizacion_items (cotizacion_id, concepto, precio) values (cotizacion, 'Pantalla AMOLED original', 300000), (cotizacion, 'Mano de obra', 50000);
 
     -- María: portátil recién solicitado, todavía sin técnico (para que un técnico lo acepte).
-    insert into public.servicios (cliente_id, dispositivo_id, problema, estado, creado_en)
-    values (maria, pc_maria, '[Gravedad: media] Se calienta mucho y se apaga solo cuando abro varios programas.', 'solicitado', now() - interval '1 day');
+    insert into public.servicios (cliente_id, dispositivo_id, problema, gravedad, categoria, estado, creado_en)
+    values (maria, pc_maria, 'Se calienta mucho y se apaga solo cuando abro varios programas.', 'media', 'Temperatura', 'solicitado', now() - interval '1 day');
 
     -- Pedro: PS5 en reparación, con la cotización ya aprobada.
-    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en)
-    values (pedro, ps5_pedro, laura, '[Gravedad: media] No lee los discos y hace un ruido extraño al insertarlos.', 'en_reparacion', now() - interval '8 days')
+    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, gravedad, categoria, estado, creado_en)
+    values (pedro, ps5_pedro, laura, 'No lee los discos y hace un ruido extraño al insertarlos.', 'media', 'Lectura de discos', 'en_reparacion', now() - interval '8 days')
     returning id into servicio;
     insert into public.diagnosticos (servicio_id, hallazgos, recomendaciones, creado_en)
     values (servicio, 'El lector óptico tiene el láser desgastado.', 'Reemplazar el lector y limpiar el sistema de ventilación.', now() - interval '7 days');
@@ -123,8 +123,8 @@ begin
     insert into public.cotizacion_items (cotizacion_id, concepto, precio) values (cotizacion, 'Lector óptico KEM-497', 200000), (cotizacion, 'Limpieza interna', 30000), (cotizacion, 'Mano de obra', 50000);
 
     -- Pedro: celular ya reparado y calificado.
-    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en)
-    values (pedro, cel_pedro, ana, '[Gravedad: baja] La batería dura muy poco, menos de medio día.', 'calificado', now() - interval '20 days')
+    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, gravedad, categoria, estado, creado_en)
+    values (pedro, cel_pedro, ana, 'La batería dura muy poco, menos de medio día.', 'baja', 'Batería y carga', 'calificado', now() - interval '20 days')
     returning id into servicio;
     insert into public.diagnosticos (servicio_id, hallazgos, recomendaciones, creado_en)
     values (servicio, 'La batería está al 61 % de su capacidad original.', 'Cambiar la batería.', now() - interval '19 days');
@@ -134,8 +134,8 @@ begin
     values (servicio, 5, 'Muy rápida y amable. El celular quedó como nuevo.', now() - interval '15 days');
 
     -- María: portátil reparado antes, finalizado y todavía sin calificar (para probar "Calificar").
-    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en)
-    values (maria, pc_maria, carlos, '[Gravedad: alta] No enciende; solo parpadea la luz de carga.', 'finalizado', now() - interval '40 days');
+    insert into public.servicios (cliente_id, dispositivo_id, tecnico_id, problema, gravedad, categoria, estado, creado_en)
+    values (maria, pc_maria, carlos, 'No enciende; solo parpadea la luz de carga.', 'alta', 'No enciende', 'finalizado', now() - interval '40 days');
 
     raise notice 'Datos de prueba creados.';
 end;

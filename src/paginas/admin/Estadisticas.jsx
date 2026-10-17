@@ -56,7 +56,7 @@ const Estadisticas = () => {
             </TarjetaGrafico>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <TarjetaGrafico titulo="Problemas frecuentes" descripcion="Agrupados por palabras clave de la descripción de la falla">
+                <TarjetaGrafico titulo="Problemas frecuentes" descripcion="Agrupados por categoría seleccionada al crear la solicitud">
                     {problemasFrecuentes.length === 0 ? (
                         <SinDatos texto="Todavía no hay servicios." />
                     ) : (

@@ -2,29 +2,30 @@
     solicitudes.js
     Solicitudes de servicio técnico sobre la tabla "servicios".
 
-    La tabla no tiene columna de gravedad, así que se guarda al inicio del
-    texto del problema, por ejemplo: "[Gravedad: alta] La pantalla no enciende".
-    Si el equipo agrega una columna "gravedad", solo hay que cambiar
-    componerProblema y separarProblema.
+    Gravedad y categoría se guardan en sus propias columnas; "problema" contiene
+    únicamente la descripción escrita por el cliente.
 */
 import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_FINALES, GRAVEDADES, NIVELES_CALIFICACION } from "../datos/opciones.js";
+import { CATEGORIAS_PROBLEMAS, OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
 import { formatearPesos } from "../utilidades/formato.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 export const LONGITUD_MINIMA_DESCRIPCION = 15;
 
 // "dispositivo:dispositivos(...)" trae los datos del equipo en la misma consulta (relación por dispositivo_id).
-export const COLUMNAS_SOLICITUD = "id, cliente_id, dispositivo_id, tecnico_id, problema, estado, creado_en, dispositivo:dispositivos(tipo, marca, modelo, serial)";
+export const COLUMNAS_SOLICITUD = "id, cliente_id, dispositivo_id, tecnico_id, problema, gravedad, categoria, estado, creado_en, dispositivo:dispositivos(tipo, marca, modelo, serial)";
 
 const PATRON_GRAVEDAD = /^\[Gravedad: (baja|media|alta)\]\s*/;
 
-const componerProblema = (gravedad, descripcion) => `[Gravedad: ${gravedad}] ${descripcion}`;
+export const separarProblema = (problema = "", gravedadGuardada = null) => {
+    if (gravedadGuardada !== null && gravedadGuardada !== undefined) {
+        return { gravedad: gravedadGuardada, descripcion: problema };
+    }
 
-export const separarProblema = (problema = "") => {
     const coincidencia = problema.match(PATRON_GRAVEDAD);
     return coincidencia
         ? { gravedad: coincidencia[1], descripcion: problema.slice(coincidencia[0].length) }
-        : { gravedad: null, descripcion: problema };
+        : { gravedad: "media", descripcion: problema };
 };
 
 /* Código legible a partir del id, por ejemplo TH-0007. */
@@ -45,7 +46,7 @@ export const filtrarSolicitudes = (solicitudes, filtro) => {
 
 /* Convierte una fila de "servicios" al formato que usa la aplicación. */
 export const aSolicitud = (fila) => {
-    const { gravedad, descripcion } = separarProblema(fila.problema);
+    const { gravedad, descripcion } = separarProblema(fila.problema, fila.gravedad);
     const dispositivo = fila.dispositivo ?? {};
 
     return {
@@ -62,6 +63,7 @@ export const aSolicitud = (fila) => {
         },
         descripcion,
         gravedad,
+        categoria: fila.categoria ?? OTROS_PROBLEMAS,
         estado: fila.estado,
         creadaEn: fila.creado_en,
     };
@@ -87,12 +89,16 @@ export const obtenerSolicitud = async (usuarioId, id) => {
     return aSolicitud(fila);
 };
 
-export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gravedad }) => {
+export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gravedad, categoria }) => {
     const cliente = obtenerCliente();
     const descripcionLimpia = descripcion.trim();
 
     if (!GRAVEDADES.some((opcion) => opcion.valor === gravedad)) {
         throw new Error("Indica qué tan grave es la falla.");
+    }
+
+    if (!CATEGORIAS_PROBLEMAS.includes(categoria)) {
+        throw new Error("Selecciona una categoría para la falla.");
     }
 
     if (descripcionLimpia.length < LONGITUD_MINIMA_DESCRIPCION) {
@@ -116,7 +122,9 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
             .insert({
                 cliente_id: usuarioId,
                 dispositivo_id: Number(dispositivoId),
-                problema: componerProblema(gravedad, descripcionLimpia),
+                problema: descripcionLimpia,
+                gravedad,
+                categoria,
             })
             .select(COLUMNAS_SOLICITUD)
             .single()

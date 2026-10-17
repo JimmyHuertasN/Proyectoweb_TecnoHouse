@@ -14,6 +14,7 @@ import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioCalificacion from "../../componentes/panel/FormularioCalificacion.jsx";
+import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
@@ -102,6 +103,7 @@ const DetalleSolicitud = () => {
             {recienCreada && (
                 <Aviso texto={`¡Listo! Registramos tu solicitud ${solicitud.codigo}. Te contactaremos cuando un técnico la revise.`} tipo="exito" />
             )}
+            {ubicacion.state?.errorFotos && <Aviso texto={`La solicitud se creó, pero no se pudieron guardar las fotos: ${ubicacion.state.errorFotos}`} tipo="error" />}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-marca">{solicitud.codigo}</p>
@@ -164,6 +166,9 @@ const DetalleSolicitud = () => {
                     </ol>
                 </section>
             </div>
+
+            {/* Las fotos privadas se muestran como galería con enlaces firmados. */}
+            <GaleriaFotosServicio servicioId={solicitud.id} />
         </>
     );
 };
