@@ -40,7 +40,7 @@ const SeccionContacto = () => {
                 <div>
                     <p className="antetitulo">Estamos para ayudarte</p>
                     <h2 id="titulo-contacto" className="mb-4 text-3xl font-bold sm:text-4xl">CONTÁCTANOS</h2>
-                    <p className="mb-8 max-w-xl leading-relaxed text-slate-300">Cuéntanos qué le ocurre a tu equipo. Elige si quieres abrir WhatsApp o preparar un correo con tus datos y tu mensaje.</p>
+                    <p className="mb-8 max-w-xl leading-relaxed text-slate-300">Cuéntanos qué le ocurre a tu equipo. Puedes abrir WhatsApp o preparar un borrador de correo con tus datos y tu mensaje.</p>
 
                     <ul className="space-y-5">
                         <li className="flex items-start gap-3">
@@ -89,7 +89,8 @@ const SeccionContacto = () => {
                             <Send size={17} aria-hidden="true" /> Preparar correo
                         </button>
                     </div>
-                    {(!whatsappConfigurado || !correoConfigurado) && <p className="text-xs text-slate-500">Reemplaza los datos pendientes en `src/datos/contacto.js` para habilitar los canales de envío.</p>}
+                    {(!whatsappConfigurado || !correoConfigurado) && <p className="text-xs text-slate-500">Reemplaza los datos pendientes en `src/datos/contacto.js` para habilitar los canales de contacto.</p>}
+                    {correoConfigurado && <p className="text-xs text-slate-500">El botón abre un borrador en la aplicación de correo configurada en tu dispositivo; tendrás que enviarlo desde allí.</p>}
                 </form>
             </div>
         </section>

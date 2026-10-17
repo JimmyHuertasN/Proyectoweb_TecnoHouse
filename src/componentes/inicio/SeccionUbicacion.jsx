@@ -2,11 +2,11 @@ import { MapPin } from "lucide-react";
 import { CONTACTO } from "../../datos/contacto.js";
 
 const SeccionUbicacion = () => {
-    const latitud = Number(CONTACTO.coordenadas.latitud);
-    const longitud = Number(CONTACTO.coordenadas.longitud);
-    const ubicacionDisponible = Number.isFinite(latitud) && Number.isFinite(longitud)
-        && Math.abs(latitud) <= 90 && Math.abs(longitud) <= 180;
-    const mapa = `https://www.google.com/maps?q=${latitud},${longitud}&output=embed`;
+    const direccion = CONTACTO.direccion.trim();
+    const ubicacionDisponible = direccion.length > 0 && !direccion.includes("PENDIENTE");
+    // Google Maps geocodifica la dirección al cargar el mapa; cambiar CONTACTO.direccion
+    // actualiza también la ubicación mostrada sin mantener coordenadas duplicadas.
+    const mapa = `https://www.google.com/maps?q=${encodeURIComponent(direccion)}&output=embed`;
 
     return (
         <section id="ubicacion" data-animacion-entrada aria-labelledby="titulo-ubicacion" className="scroll-mt-20 bg-fondo px-6 py-20 sm:px-[8%] sm:py-24">
@@ -23,7 +23,7 @@ const SeccionUbicacion = () => {
                     <div className="min-h-72 bg-[#080d16] md:col-span-3">
                         {ubicacionDisponible ? (
                             <iframe
-                                title={`Mapa de ubicación de TecnoHouse: ${CONTACTO.direccion}`}
+                                title={`Mapa de ubicación de TecnoHouse: ${direccion}`}
                                 src={mapa}
                                 className="size-full min-h-72 border-0 grayscale-[0.2]"
                                 loading="lazy"
