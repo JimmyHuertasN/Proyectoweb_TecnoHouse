@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Laptop } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, Laptop } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { estaActiva, LONGITUD_MINIMA_DESCRIPCION } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import { buscarOpcion, GRAVEDADES, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
+import { CATEGORIAS_PROBLEMAS } from "../../datos/categoriasProblemas.js";
+import { CANTIDAD_MAXIMA_FOTOS, TAMANO_MAXIMO_FOTO, subirFotos, TIPOS_FOTO_PERMITIDOS } from "../../api/fotos.js";
 import { useDispositivos } from "../../hooks/useDispositivos.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
 
@@ -24,13 +26,55 @@ const NuevaSolicitud = () => {
     // Si se llega desde "Solicitar reparación" en una tarjeta, el equipo viene preseleccionado (?dispositivo=id).
     const [dispositivoId, setDispositivoId] = useState(parametros.get("dispositivo") ?? "");
     const [gravedad, setGravedad] = useState("media");
+    const [categoria, setCategoria] = useState("");
     const [descripcion, setDescripcion] = useState("");
+    // Conserva las imágenes seleccionadas y libera sus URL de vista previa al salir.
+    const [fotos, setFotos] = useState([]);
+    const urlsPrevisualizacion = useRef(new Set());
     const [error, setError] = useState("");
     const [enviando, setEnviando] = useState(false);
+
+    useEffect(() => () => urlsPrevisualizacion.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
     // Equipos que ya están en el taller: no se pueden volver a elegir.
     const ocupados = new Set(solicitudes.filter(estaActiva).map((solicitud) => solicitud.dispositivoId));
     const seleccionado = ocupados.has(dispositivoId) ? "" : dispositivoId;
+
+    // Valida las imágenes antes de mostrarlas en la vista previa.
+    const manejarSeleccionFotos = (evento) => {
+        const archivos = Array.from(evento.target.files ?? []);
+        evento.target.value = "";
+        if (archivos.length === 0) return;
+        if (fotos.length + archivos.length > CANTIDAD_MAXIMA_FOTOS) {
+            setError(`Puedes adjuntar hasta ${CANTIDAD_MAXIMA_FOTOS} imágenes.`);
+            return;
+        }
+        if (archivos.some((archivo) => !TIPOS_FOTO_PERMITIDOS.includes(archivo.type))) {
+            setError("Las fotos deben estar en formato JPG o PNG.");
+            return;
+        }
+        if (archivos.some((archivo) => archivo.size > TAMANO_MAXIMO_FOTO)) {
+            setError("Cada foto debe pesar máximo 3 MB.");
+            return;
+        }
+
+        setError("");
+        setFotos((actuales) => [
+            ...actuales,
+            ...archivos.map((archivo) => {
+                const vistaPrevia = URL.createObjectURL(archivo);
+                urlsPrevisualizacion.current.add(vistaPrevia);
+                return { archivo, vistaPrevia };
+            }),
+        ]);
+    };
+
+    // Quitar una imagen también libera su URL temporal.
+    const quitarFoto = (vistaPrevia) => {
+        URL.revokeObjectURL(vistaPrevia);
+        urlsPrevisualizacion.current.delete(vistaPrevia);
+        setFotos((actuales) => actuales.filter((foto) => foto.vistaPrevia !== vistaPrevia));
+    };
 
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
@@ -49,8 +93,15 @@ const NuevaSolicitud = () => {
         setEnviando(true);
 
         try {
-            const nueva = await crearSolicitud({ dispositivoId: seleccionado, gravedad, descripcion });
-            navegar(`/cliente/solicitudes/${nueva.id}`, { state: { recienCreada: true } });
+            const nueva = await crearSolicitud({ dispositivoId: seleccionado, gravedad, categoria, descripcion });
+            let errorFotos = "";
+            try {
+                if (fotos.length > 0) await subirFotos(nueva.id, fotos.map((foto) => foto.archivo));
+            } catch (errorApi) {
+                // La solicitud ya existe; el detalle informa si falló la carga de adjuntos.
+                errorFotos = errorApi.message;
+            }
+            navegar(`/cliente/solicitudes/${nueva.id}`, { state: { recienCreada: true, errorFotos } });
         } catch (errorApi) {
             setError(errorApi.message);
             setEnviando(false);
@@ -138,9 +189,24 @@ const NuevaSolicitud = () => {
                     </div>
                 </fieldset>
 
-                {/* 3. DESCRIPCIÓN */}
+                {/* 3. CATEGORÍA */}
                 <div>
-                    <label htmlFor="descripcion" className="etiqueta">3. Describe la falla</label>
+                    <label htmlFor="categoria" className="etiqueta">3. Selecciona la categoría del problema</label>
+                    <select
+                        id="categoria"
+                        className="campo"
+                        value={categoria}
+                        onChange={(evento) => setCategoria(evento.target.value)}
+                        required
+                    >
+                        <option value="">Elige una categoría...</option>
+                        {CATEGORIAS_PROBLEMAS.map((opcion) => <option key={opcion} value={opcion}>{opcion}</option>)}
+                    </select>
+                </div>
+
+                {/* 4. DESCRIPCIÓN */}
+                <div>
+                    <label htmlFor="descripcion" className="etiqueta">4. Describe la falla</label>
                     <textarea
                         id="descripcion"
                         rows={5}
@@ -153,6 +219,40 @@ const NuevaSolicitud = () => {
                     <p className="mt-1 text-right text-xs text-slate-500">
                         {descripcion.length}/{LONGITUD_MAXIMA_DESCRIPCION}
                     </p>
+                </div>
+
+                {/* Adjunta hasta tres imágenes y permite revisar o quitar cada vista previa. */}
+                <div>
+                    <label htmlFor="fotos-servicio" className="etiqueta">Fotos (opcional)</label>
+                    <input
+                        id="fotos-servicio"
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        multiple
+                        disabled={enviando || fotos.length >= CANTIDAD_MAXIMA_FOTOS}
+                        onChange={manejarSeleccionFotos}
+                        className="sr-only"
+                    />
+                    <label htmlFor="fotos-servicio" className="boton-secundario w-fit">
+                        <ImagePlus size={18} aria-hidden="true" />
+                        Agregar imágenes ({fotos.length}/{CANTIDAD_MAXIMA_FOTOS})
+                    </label>
+                    <p className="mt-2 text-xs text-slate-400">JPG o PNG, máximo 3 MB por imagen.</p>
+                    {fotos.length > 0 && (
+                        <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {fotos.map(({ archivo, vistaPrevia }) => (
+                                <li key={vistaPrevia} className="overflow-hidden rounded-lg border border-borde bg-fondo">
+                                    <img src={vistaPrevia} alt={`Vista previa de ${archivo.name}`} className="aspect-square w-full object-cover" />
+                                    <div className="flex items-center justify-between gap-2 p-2">
+                                        <span className="truncate text-xs text-slate-400">{archivo.name}</span>
+                                        <button type="button" onClick={() => quitarFoto(vistaPrevia)} className="shrink-0 text-xs font-semibold text-red-300 hover:underline">
+                                            Quitar
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
 
                 <div className="flex flex-col-reverse gap-3 border-t border-borde pt-6 sm:flex-row sm:justify-end">

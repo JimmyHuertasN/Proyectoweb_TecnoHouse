@@ -3,9 +3,9 @@
     Consultas del panel del administrador. Las reglas de seguridad (RLS) le dejan
     leer todas las tablas.
 */
-import { clasificarProblema, OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
+import { OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
 import { ESTADOS_FINALES, ESTADOS_SOLICITUD } from "../datos/opciones.js";
-import { aSolicitud, COLUMNAS_SOLICITUD, separarProblema } from "./solicitudes.js";
+import { aSolicitud, COLUMNAS_SOLICITUD } from "./solicitudes.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 import { obtenerPerfiles } from "./usuarios.js";
 
@@ -243,15 +243,16 @@ const contarPorMes = (servicios, meses = 6) => {
 const contarProblemas = (servicios) => {
     const conteo = new Map();
     for (const servicio of servicios) {
-        const categoria = clasificarProblema(separarProblema(servicio.problema).descripcion);
+        const categoria = servicio.categoria || OTROS_PROBLEMAS;
         conteo.set(categoria, (conteo.get(categoria) ?? 0) + 1);
     }
     // De más a menos frecuente; "Otros" siempre al final.
     return [...conteo]
         .map(([categoria, cantidad]) => ({ categoria, cantidad }))
         .sort((a, b) => {
-            if (a.categoria === OTROS_PROBLEMAS) return 1;
-            if (b.categoria === OTROS_PROBLEMAS) return -1;
+            if (a.categoria === OTROS_PROBLEMAS || b.categoria === OTROS_PROBLEMAS) {
+                return a.categoria === b.categoria ? 0 : a.categoria === OTROS_PROBLEMAS ? 1 : -1;
+            }
             return b.cantidad - a.cantidad;
         });
 };
@@ -275,7 +276,7 @@ const rankingTecnicos = async (calificaciones, limite = 5) => {
 export const obtenerEstadisticas = async () => {
     const cliente = obtenerCliente();
     const [servicios, calificaciones] = await Promise.all([
-        cliente.from("servicios").select("problema, creado_en").then(verificar),
+        cliente.from("servicios").select("categoria, creado_en").then(verificar),
         cliente.from("calificaciones").select("puntuacion, servicio:servicios(tecnico_id)").then(verificar),
     ]);
 

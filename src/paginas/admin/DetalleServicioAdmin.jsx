@@ -7,6 +7,7 @@ import { listarDiagnosticos } from "../../api/tecnico.js";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import ListaDiagnosticos from "../../componentes/panel/ListaDiagnosticos.jsx";
 import SelectorTecnico from "../../componentes/panel/SelectorTecnico.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
@@ -133,6 +134,9 @@ const DetalleServicioAdmin = () => {
                     )}
                 </section>
             </div>
+
+            {/* El administrador también puede consultar las fotos con URL firmada. */}
+            <GaleriaFotosServicio servicioId={servicio.id} />
 
             {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
             {cotizaciones.map((cotizacion) => (

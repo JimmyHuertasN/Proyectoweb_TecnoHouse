@@ -10,6 +10,19 @@ import { createClient } from "@supabase/supabase-js";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const clavePublica = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Evita tratar los valores de la plantilla como si fueran credenciales reales.
+const configuracionDeEjemplo = /tu-proyecto|tu-clave-publica/i.test(`${url ?? ""} ${clavePublica ?? ""}`)
+    || url === "VITE_SUPABASE_URL"
+    || clavePublica === "VITE_SUPABASE_ANON_KEY";
+// Valida la URL antes de crear el cliente para que un valor inválido no deje la app en blanco.
+const urlValida = (() => {
+    try {
+        const direccion = new URL(url);
+        return direccion.protocol === "https:" || direccion.protocol === "http:";
+    } catch {
+        return false;
+    }
+})();
 
 /*
     Los enlaces de los correos de Supabase (confirmar cuenta, recuperar contraseña)
@@ -19,13 +32,13 @@ const clavePublica = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const fragmento = new URLSearchParams(window.location.hash.slice(1));
 export const errorEnlaceCorreo = fragmento.get("error_code");
 
-export const supabaseConfigurado = Boolean(url && clavePublica);
+export const supabaseConfigurado = Boolean(url && clavePublica && urlValida && !configuracionDeEjemplo);
 export const supabase = supabaseConfigurado ? createClient(url, clavePublica) : null;
 
 /* Devuelve el cliente o explica qué falta, en vez de fallar con "cannot read properties of null". */
 export const obtenerCliente = () => {
     if (!supabase) {
-        throw new Error("Falta el archivo .env con VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (ver README).");
+        throw new Error("Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env con los valores reales de tu proyecto Supabase (ver README).");
     }
     return supabase;
 };
