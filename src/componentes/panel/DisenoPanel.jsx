@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
+import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
 import MenuLateral from "./MenuLateral.jsx";
 
 /*
@@ -28,7 +29,8 @@ const DisenoPanel = ({ menu }) => {
                     <Link to={menu.inicio} className="text-lg font-bold">
                         TECNO<span className="text-marca">HOUSE</span>
                     </Link>
-                    <span className="w-10" />
+                    {/* Campana visible en el encabezado móvil del panel. */}
+                    <CampanaNotificaciones />
                 </header>
 
                 <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">

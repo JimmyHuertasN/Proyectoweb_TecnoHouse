@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
+import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
 
@@ -30,6 +31,11 @@ const MenuLateral = ({ menu, abierto, alCerrar }) => {
                     <Link to="/" className="text-xl font-bold text-white">
                         TECNO<span className="text-marca">HOUSE</span>
                     </Link>
+                    {/* Campana del encabezado del menú lateral para pantallas grandes. */}
+                    {/* En escritorio se alinea hacia el contenido para que el menú no se corte. */}
+                    <div className="hidden lg:block">
+                        <CampanaNotificaciones enMenuLateral />
+                    </div>
                     <button
                         type="button"
                         onClick={alCerrar}
