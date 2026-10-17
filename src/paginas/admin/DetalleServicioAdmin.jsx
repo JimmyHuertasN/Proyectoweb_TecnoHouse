@@ -7,6 +7,7 @@ import { listarDiagnosticos } from "../../api/tecnico.js";
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import ChatServicio from "../../componentes/panel/ChatServicio.jsx";
 import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import ListaDiagnosticos from "../../componentes/panel/ListaDiagnosticos.jsx";
 import SelectorTecnico from "../../componentes/panel/SelectorTecnico.jsx";
@@ -137,6 +138,8 @@ const DetalleServicioAdmin = () => {
 
             {/* El administrador también puede consultar las fotos con URL firmada. */}
             <GaleriaFotosServicio servicioId={servicio.id} />
+            {/* El panel administrativo permite consultar, pero no enviar mensajes. */}
+            <ChatServicio servicioId={servicio.id} soloLectura />
 
             {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
             {cotizaciones.map((cotizacion) => (

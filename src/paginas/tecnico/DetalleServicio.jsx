@@ -6,6 +6,7 @@ import { avanzarEstado, crearCotizacion, listarDiagnosticos, obtenerAsignado, re
 import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import ChatServicio from "../../componentes/panel/ChatServicio.jsx";
 import FormularioCotizacion from "../../componentes/panel/FormularioCotizacion.jsx";
 import FormularioDiagnostico from "../../componentes/panel/FormularioDiagnostico.jsx";
 import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
@@ -160,6 +161,8 @@ const DetalleServicio = () => {
 
             {/* Las políticas permiten que el técnico asignado consulte los adjuntos. */}
             <GaleriaFotosServicio servicioId={servicio.id} />
+            {/* Chat para coordinar el servicio con el cliente. */}
+            <ChatServicio servicioId={servicio.id} />
 
             <div className="mt-6">
                 {diagnosticos.length > 0 && <ListaDiagnosticos diagnosticos={diagnosticos} />}
