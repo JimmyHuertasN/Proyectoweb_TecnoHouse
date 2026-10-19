@@ -3,6 +3,8 @@ import { obtenerPerfiles } from "./usuarios.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 export const LONGITUD_MAXIMA_MENSAJE = 500;
+// Supabase reutiliza un canal con el mismo nombre aunque se esté cerrando; cada suscripción usa uno propio.
+let consecutivoCanales = 0;
 
 // Adapta una fila de Supabase al formato que muestra el chat.
 const aMensaje = (fila, perfiles) => ({
@@ -43,7 +45,8 @@ export const enviarMensaje = async (servicioId, autorId, texto) => {
 /* Escucha inserciones únicamente del servicio actual. */
 export const suscribirMensajes = (servicioId, alCambiar) => {
     const cliente = obtenerCliente();
-    const canal = cliente.channel(`mensajes-servicio-${servicioId}`)
+    consecutivoCanales += 1;
+    const canal = cliente.channel(`mensajes-servicio-${servicioId}-${consecutivoCanales}`)
         .on("postgres_changes", {
             event: "INSERT",
             schema: "public",
