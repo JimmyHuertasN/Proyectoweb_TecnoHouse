@@ -183,18 +183,18 @@ begin
             if new.cliente_id is distinct from auth.uid() then
                 perform public.registrar_notificacion(
                     new.cliente_id, new.id, 'Estado del servicio actualizado',
-                    'El servicio ahora está en estado: ' || replace(new.estado, '_', ' ') || '.'
+                    'El servicio ahora está en estado: ' || replace(new.estado::text, '_', ' ') || '.'
                 );
             end if;
             if new.tecnico_id is not null and new.tecnico_id is distinct from auth.uid() then
                 perform public.registrar_notificacion(
                     new.tecnico_id, new.id, 'Estado del servicio actualizado',
-                    'El servicio ahora está en estado: ' || replace(new.estado, '_', ' ') || '.'
+                    'El servicio ahora está en estado: ' || replace(new.estado::text, '_', ' ') || '.'
                 );
             end if;
             perform public.notificar_administradores(
                 new.id, 'Estado del servicio actualizado',
-                'El servicio ahora está en estado: ' || replace(new.estado, '_', ' ') || '.'
+                'El servicio ahora está en estado: ' || replace(new.estado::text, '_', ' ') || '.'
             );
         end if;
     end if;
