@@ -1,4 +1,4 @@
-/* Columnas verticales de una sola serie, para valores a lo largo del tiempo. Cada dato: { clave, etiqueta, valor, descripcion }. */
+/* Columnas verticales de una sola serie, para valores a lo largo del tiempo. Cada dato: { clave, etiqueta, valor, textoValor, descripcion }; "textoValor" reemplaza al número sobre la columna (por ejemplo, dinero abreviado). */
 const GraficoColumnas = ({ datos, etiquetaAria }) => {
     const maximo = Math.max(...datos.map((dato) => dato.valor), 1);
 
@@ -8,7 +8,7 @@ const GraficoColumnas = ({ datos, etiquetaAria }) => {
                 {datos.map((dato) => (
                     <li key={dato.clave} title={dato.descripcion} className="group flex h-full flex-1 flex-col items-center justify-end">
                         <span className="sr-only">{dato.etiqueta}: </span>
-                        <span className="mb-1 text-sm font-semibold text-white tabular-nums">{dato.valor}</span>
+                        <span className="mb-1 text-sm font-semibold text-white tabular-nums">{dato.textoValor ?? dato.valor}</span>
                         <span
                             className="w-full max-w-12 rounded-t bg-marca transition-opacity group-hover:opacity-80"
                             style={{ height: `${(dato.valor / maximo) * 80}%` }}
