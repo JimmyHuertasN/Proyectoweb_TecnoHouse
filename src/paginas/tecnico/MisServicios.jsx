@@ -1,19 +1,22 @@
-import { useState } from "react";
 import { BriefcaseBusiness } from "lucide-react";
 import { Link } from "react-router-dom";
-import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
+import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
-import FiltroSolicitudes from "../../componentes/panel/FiltroSolicitudes.jsx";
+import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import { useServiciosAsignados } from "../../hooks/useServiciosAsignados.js";
+import { cumpleFiltrosSolicitud, FILTROS_SOLICITUD_VACIOS, opcionesEstadoSolicitud } from "../../utilidades/filtros.js";
+
+// Abre mostrando solo los servicios en curso, como antes.
+const FILTROS_INICIALES = { ...FILTROS_SOLICITUD_VACIOS, estado: "activas" };
 
 const MisServicios = () => {
     const { servicios, cargando, error } = useServiciosAsignados();
-    const [filtro, setFiltro] = useState("activas");
-    const visibles = filtrarSolicitudes(servicios, filtro);
+    const paginado = useFiltroPaginado(servicios, cumpleFiltrosSolicitud, FILTROS_SOLICITUD_VACIOS, 10, FILTROS_INICIALES);
 
     return (
         <>
@@ -31,17 +34,22 @@ const MisServicios = () => {
 
             {servicios.length > 0 && (
                 <>
-                    <FiltroSolicitudes solicitudes={servicios} filtro={filtro} alCambiar={setFiltro} />
+                    <BarraFiltros
+                        id="mis-servicios"
+                        etiqueta="Filtrar mis servicios"
+                        placeholder="Código, cliente, equipo o problema"
+                        paginado={paginado}
+                        opcionesEstado={opcionesEstadoSolicitud(servicios)}
+                        conFechas
+                    />
 
-                    {visibles.length === 0 ? (
-                        <p className="py-8 text-center text-slate-400">No hay servicios en esta categoría.</p>
-                    ) : (
+                    <ResultadosPaginados id="mis-servicios" paginado={paginado}>
                         <ul className="space-y-3">
-                            {visibles.map((servicio) => (
+                            {paginado.elementos.map((servicio) => (
                                 <FilaSolicitud key={servicio.id} solicitud={servicio} rutaBase="/tecnico/servicios" />
                             ))}
                         </ul>
-                    )}
+                    </ResultadosPaginados>
                 </>
             )}
         </>

@@ -33,17 +33,6 @@ export const formatearCodigo = (id) => `TH-${String(id).padStart(4, "0")}`;
 
 export const estaActiva = (solicitud) => !ESTADOS_FINALES.includes(solicitud.estado);
 
-export const FILTROS_SOLICITUD = [
-    { valor: "todas", etiqueta: "Todas", cumple: () => true },
-    { valor: "activas", etiqueta: "En curso", cumple: estaActiva },
-    { valor: "finalizadas", etiqueta: "Finalizadas", cumple: (solicitud) => !estaActiva(solicitud) },
-];
-
-export const filtrarSolicitudes = (solicitudes, filtro) => {
-    const { cumple } = FILTROS_SOLICITUD.find((opcion) => opcion.valor === filtro);
-    return solicitudes.filter(cumple);
-};
-
 /* Convierte una fila de "servicios" al formato que usa la aplicación. */
 export const aSolicitud = (fila) => {
     const { gravedad, descripcion } = separarProblema(fila.problema, fila.gravedad);

@@ -1,19 +1,19 @@
-import { useState } from "react";
 import { Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
-import { filtrarSolicitudes } from "../../api/solicitudes.js";
 import Aviso from "../../componentes/Aviso.jsx";
+import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
-import FiltroSolicitudes from "../../componentes/panel/FiltroSolicitudes.jsx";
+import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import { useSolicitudes } from "../../hooks/useSolicitudes.js";
+import { cumpleFiltrosSolicitud, FILTROS_SOLICITUD_VACIOS, opcionesEstadoSolicitud } from "../../utilidades/filtros.js";
 
 const MisSolicitudes = () => {
     const { solicitudes, cargando, error } = useSolicitudes();
-    const [filtro, setFiltro] = useState("todas");
-    const visibles = filtrarSolicitudes(solicitudes, filtro);
+    const paginado = useFiltroPaginado(solicitudes, cumpleFiltrosSolicitud, FILTROS_SOLICITUD_VACIOS);
 
     return (
         <>
@@ -37,17 +37,22 @@ const MisSolicitudes = () => {
 
             {solicitudes.length > 0 && (
                 <>
-                    <FiltroSolicitudes solicitudes={solicitudes} filtro={filtro} alCambiar={setFiltro} />
+                    <BarraFiltros
+                        id="solicitudes"
+                        etiqueta="Filtrar solicitudes"
+                        placeholder="Código, equipo o problema"
+                        paginado={paginado}
+                        opcionesEstado={opcionesEstadoSolicitud(solicitudes)}
+                        conFechas
+                    />
 
-                    {visibles.length === 0 ? (
-                        <p className="py-8 text-center text-slate-400">No hay solicitudes en esta categoría.</p>
-                    ) : (
+                    <ResultadosPaginados id="solicitudes" paginado={paginado}>
                         <ul className="space-y-3">
-                            {visibles.map((solicitud) => (
+                            {paginado.elementos.map((solicitud) => (
                                 <FilaSolicitud key={solicitud.id} solicitud={solicitud} />
                             ))}
                         </ul>
-                    )}
+                    </ResultadosPaginados>
                 </>
             )}
         </>

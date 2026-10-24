@@ -1,26 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BriefcaseBusiness } from "lucide-react";
 import { cambiarEstadoTecnico, crearTecnico, listarTecnicos } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
+import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioTecnico from "../../componentes/panel/FormularioTecnico.jsx";
+import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import TarjetaGestionTecnico from "../../componentes/panel/TarjetaGestionTecnico.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import useToast from "../../hooks/useToast.js";
+import { coincideTexto } from "../../utilidades/filtros.js";
 
-const GrupoTecnicos = ({ titulo, tecnicos, alCambiarEstado }) => (
-    <section className="mb-10">
-        <h2 className="mb-4 text-lg font-semibold">
-            {titulo} <span className="text-slate-500">({tecnicos.length})</span>
-        </h2>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {tecnicos.map((tecnico) => (
-                <TarjetaGestionTecnico key={tecnico.id} tecnico={tecnico} alCambiarEstado={alCambiarEstado} />
-            ))}
-        </div>
-    </section>
-);
+const FILTROS_VACIOS = { texto: "", estado: "todos" };
+
+const cumpleFiltrosTecnico = (tecnico, { texto, estado }) =>
+    (estado === "todos" || tecnico.activo === (estado === "activos")) &&
+    coincideTexto(texto, [tecnico.nombre, tecnico.telefono, tecnico.especialidad]);
+
+const opcionesEstadoTecnico = (tecnicos) => {
+    const activos = tecnicos.filter((tecnico) => tecnico.activo).length;
+    return [
+        { valor: "todos", etiqueta: `Todos (${tecnicos.length})` },
+        { valor: "activos", etiqueta: `Activos (${activos})` },
+        { valor: "desactivados", etiqueta: `Desactivados (${tecnicos.length - activos})` },
+    ];
+};
 
 const GestionTecnicos = () => {
     const [tecnicos, setTecnicos] = useState([]);
@@ -30,6 +36,9 @@ const GestionTecnicos = () => {
     const [formularioAbierto, setFormularioAbierto] = useState(false);
     // Cada vez que aumenta, el useEffect vuelve a pedir la lista a Supabase.
     const [recargas, setRecargas] = useState(0);
+    // Los activos primero; dentro de cada grupo se conserva el orden por nombre que trae la API.
+    const ordenados = useMemo(() => [...tecnicos].sort((a, b) => Number(b.activo) - Number(a.activo)), [tecnicos]);
+    const paginado = useFiltroPaginado(ordenados, cumpleFiltrosTecnico, FILTROS_VACIOS);
 
     useEffect(() => {
         let vigente = true;
@@ -61,9 +70,6 @@ const GestionTecnicos = () => {
         terminarAccion(activo ? `${tecnico.nombre} está activo de nuevo.` : `${tecnico.nombre} quedó desactivado.`);
     };
 
-    const activos = tecnicos.filter((tecnico) => tecnico.activo);
-    const inactivos = tecnicos.filter((tecnico) => !tecnico.activo);
-
     return (
         <>
             <EncabezadoPagina titulo="Técnicos" descripcion="Crea cuentas de técnicos y actívalas o desactívalas.">
@@ -90,8 +96,27 @@ const GestionTecnicos = () => {
                 <EstadoVacio icono={BriefcaseBusiness} titulo="Todavía no hay técnicos" descripcion="Crea el primero con el botón “Nuevo técnico”." />
             )}
 
-            {activos.length > 0 && <GrupoTecnicos titulo="Activos" tecnicos={activos} alCambiarEstado={manejarCambioEstado} />}
-            {inactivos.length > 0 && <GrupoTecnicos titulo="Desactivados" tecnicos={inactivos} alCambiarEstado={manejarCambioEstado} />}
+            {tecnicos.length > 0 && (
+                <section aria-labelledby="titulo-lista-tecnicos">
+                    <h2 id="titulo-lista-tecnicos" className="sr-only">Listado de técnicos</h2>
+
+                    <BarraFiltros
+                        id="tecnicos"
+                        etiqueta="Filtrar técnicos"
+                        placeholder="Nombre, teléfono o especialidad"
+                        paginado={paginado}
+                        opcionesEstado={opcionesEstadoTecnico(tecnicos)}
+                    />
+
+                    <ResultadosPaginados id="tecnicos" paginado={paginado}>
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                            {paginado.elementos.map((tecnico) => (
+                                <TarjetaGestionTecnico key={tecnico.id} tecnico={tecnico} alCambiarEstado={manejarCambioEstado} />
+                            ))}
+                        </div>
+                    </ResultadosPaginados>
+                </section>
+            )}
         </>
     );
 };
