@@ -6,6 +6,15 @@
 import { OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
 import { ESTADOS_FINALES, ESTADOS_SOLICITUD } from "../datos/opciones.js";
 import { aSolicitud, COLUMNAS_SOLICITUD } from "./solicitudes.js";
+import { estaEnRango } from "../utilidades/filtros.js";
+import {
+    agruparPorMes,
+    calcularPorcentajeAprobadas,
+    calcularTiempoPromedio,
+    contarPorDispositivo,
+    filtrarPorFecha,
+    mesesEnRango,
+} from "../utilidades/reportes.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 import { obtenerPerfiles } from "./usuarios.js";
 
@@ -35,27 +44,91 @@ const contarPorEstado = (servicios) =>
         cantidad: servicios.filter((servicio) => servicio.estado === estado.valor).length,
     }));
 
-export const obtenerMetricas = async () => {
+/*
+    Los reportes reciben "desde" y "hasta" (AAAA-MM-DD en hora local, vacío = sin límite) y filtran por la
+    fecha de solicitud del servicio (servicios.creado_en). El filtro se aplica aquí, después de traer solo
+    las columnas necesarias, para usar el mismo cálculo de días locales que las listas del panel.
+*/
+export const obtenerMetricas = async (desde = "", hasta = "") => {
     const cliente = obtenerCliente();
-    const contarPerfiles = (rol) => contar(cliente.from("perfiles").select("id", { count: "exact", head: true }).eq("rol", rol));
 
-    const [clientes, tecnicos, tecnicosDisponibles, servicios, cotizacionesAprobadas] = await Promise.all([
-        contarPerfiles("cliente"),
-        contarPerfiles("tecnico"),
+    const [perfilesClientes, tecnicos, tecnicosDisponibles, servicios, cotizacionesAprobadas] = await Promise.all([
+        cliente.from("perfiles").select("creado_en").eq("rol", "cliente").then(verificar),
+        contar(cliente.from("perfiles").select("id", { count: "exact", head: true }).eq("rol", "tecnico")),
         contar(cliente.from("tecnicos").select("perfil_id", { count: "exact", head: true }).eq("disponible", true)),
-        cliente.from("servicios").select("estado").then(verificar),
-        cliente.from("cotizaciones").select("total, servicio:servicios(estado)").eq("estado", "aprobada").then(verificar),
+        cliente.from("servicios").select("estado, creado_en").then(verificar),
+        cliente.from("cotizaciones").select("total, servicio:servicios(estado, creado_en)").eq("estado", "aprobada").then(verificar),
     ]);
 
+    const serviciosEnRango = filtrarPorFecha(servicios, desde, hasta);
+    const aprobadasEnRango = cotizacionesAprobadas.filter((cotizacion) => cotizacion.servicio && estaEnRango(cotizacion.servicio.creado_en, desde, hasta));
+
     return {
-        clientes,
+        clientes: perfilesClientes.length,
+        clientesNuevos: filtrarPorFecha(perfilesClientes, desde, hasta).length,
         tecnicos,
         tecnicosDisponibles,
-        totalServicios: servicios.length,
-        serviciosEnCurso: servicios.filter((servicio) => !ESTADOS_FINALES.includes(servicio.estado)).length,
-        serviciosPorEstado: contarPorEstado(servicios),
-        ingresos: calcularIngresos(cotizacionesAprobadas),
+        totalServicios: serviciosEnRango.length,
+        serviciosEnCurso: serviciosEnRango.filter((servicio) => !ESTADOS_FINALES.includes(servicio.estado)).length,
+        serviciosPorEstado: contarPorEstado(serviciosEnRango),
+        ingresos: calcularIngresos(aprobadasEnRango),
     };
+};
+
+/*
+    Ingresos de cada mes del rango: cotizaciones aprobadas de servicios ya terminados, en el mes en que
+    se solicitó el servicio (la base de datos no guarda la fecha de finalización).
+*/
+export const obtenerIngresosPorMes = async (desde = "", hasta = "") => {
+    const cotizaciones = verificar(
+        await obtenerCliente().from("cotizaciones").select("total, servicio:servicios(estado, creado_en)").eq("estado", "aprobada")
+    );
+    const realizadas = cotizaciones.filter(
+        (cotizacion) => cotizacion.servicio && ESTADOS_FINALES.includes(cotizacion.servicio.estado) && estaEnRango(cotizacion.servicio.creado_en, desde, hasta)
+    );
+
+    return agruparPorMes(realizadas, mesesEnRango(desde, hasta), (cotizacion) => cotizacion.servicio.creado_en, (cotizacion) => Number(cotizacion.total)).map(
+        ({ clave, etiqueta, nombreCompleto, valor }) => ({ mes: clave, etiqueta, nombreCompleto, total: valor })
+    );
+};
+
+/*
+    Días promedio entre la solicitud y el cierre del servicio. La base de datos no guarda cuándo se
+    finalizó: se usa la fecha de la calificación del cliente, el único registro posterior al trabajo.
+    Devuelve { dias, servicios } o null si ningún servicio del rango fue calificado.
+*/
+export const obtenerTiempoPromedio = async (desde = "", hasta = "") => {
+    const calificaciones = verificar(
+        await obtenerCliente().from("calificaciones").select("servicio_id, creado_en, servicio:servicios(creado_en, estado)")
+    );
+
+    // Un servicio cuenta una sola vez, con su calificación más antigua.
+    const porServicio = new Map();
+    for (const calificacion of calificaciones) {
+        const { servicio } = calificacion;
+        if (!servicio || !ESTADOS_FINALES.includes(servicio.estado) || !estaEnRango(servicio.creado_en, desde, hasta)) continue;
+
+        const anterior = porServicio.get(calificacion.servicio_id);
+        if (!anterior || calificacion.creado_en < anterior.fin) porServicio.set(calificacion.servicio_id, { inicio: servicio.creado_en, fin: calificacion.creado_en });
+    }
+
+    return calcularTiempoPromedio([...porServicio.values()]);
+};
+
+/*
+    De todas las cotizaciones emitidas en el rango, cuántas aprobó el cliente. Se cuentan las cotizaciones
+    y no el estado actual del servicio, porque un servicio aprobado sigue avanzando a "en reparación", etc.
+    Devuelve { porcentaje, aprobadas, cotizadas }.
+*/
+export const obtenerPorcentajeAprobadas = async (desde = "", hasta = "") => {
+    const cotizaciones = verificar(await obtenerCliente().from("cotizaciones").select("estado, servicio:servicios(creado_en)"));
+    return calcularPorcentajeAprobadas(cotizaciones.filter((cotizacion) => cotizacion.servicio && estaEnRango(cotizacion.servicio.creado_en, desde, hasta)));
+};
+
+/* Cantidad de servicios del rango por tipo de equipo (celular, computador, consola), de mayor a menor. */
+export const obtenerServiciosPorDispositivo = async (desde = "", hasta = "") => {
+    const servicios = verificar(await obtenerCliente().from("servicios").select("creado_en, dispositivo:dispositivos(tipo)"));
+    return contarPorDispositivo(filtrarPorFecha(servicios, desde, hasta));
 };
 
 const SIN_PERFIL = { nombre: "", telefono: "" };
@@ -225,21 +298,6 @@ export const obtenerFichaCliente = async (clienteId) => {
     };
 };
 
-const formatoMes = new Intl.DateTimeFormat("es-CO", { month: "short" });
-const formatoMesLargo = new Intl.DateTimeFormat("es-CO", { month: "long", year: "numeric" });
-
-const claveMes = (fecha) => `${fecha.getFullYear()}-${fecha.getMonth()}`;
-
-/* Cantidad de servicios creados en cada uno de los últimos "meses" meses, incluido el actual. */
-const contarPorMes = (servicios, meses = 6) => {
-    const hoy = new Date();
-    return Array.from({ length: meses }, (_, indice) => {
-        const mes = new Date(hoy.getFullYear(), hoy.getMonth() - (meses - 1 - indice), 1);
-        const cantidad = servicios.filter((servicio) => claveMes(new Date(servicio.creado_en)) === claveMes(mes)).length;
-        return { clave: claveMes(mes), etiqueta: formatoMes.format(mes), nombreCompleto: formatoMesLargo.format(mes), cantidad };
-    });
-};
-
 const contarProblemas = (servicios) => {
     const conteo = new Map();
     for (const servicio of servicios) {
@@ -273,16 +331,31 @@ const rankingTecnicos = async (calificaciones, limite = 5) => {
         .slice(0, limite);
 };
 
-export const obtenerEstadisticas = async () => {
+export const obtenerEstadisticas = async (desde = "", hasta = "") => {
     const cliente = obtenerCliente();
     const [servicios, calificaciones] = await Promise.all([
         cliente.from("servicios").select("categoria, creado_en").then(verificar),
-        cliente.from("calificaciones").select("puntuacion, servicio:servicios(tecnico_id)").then(verificar),
+        cliente.from("calificaciones").select("puntuacion, servicio:servicios(tecnico_id, creado_en)").then(verificar),
     ]);
 
+    const serviciosEnRango = filtrarPorFecha(servicios, desde, hasta);
+    const calificacionesEnRango = calificaciones.filter((calificacion) => calificacion.servicio && estaEnRango(calificacion.servicio.creado_en, desde, hasta));
+
     return {
-        serviciosPorMes: contarPorMes(servicios),
-        problemasFrecuentes: contarProblemas(servicios),
-        mejoresTecnicos: await rankingTecnicos(calificaciones),
+        serviciosPorMes: agruparPorMes(serviciosEnRango, mesesEnRango(desde, hasta), (servicio) => servicio.creado_en).map(
+            ({ clave, etiqueta, nombreCompleto, valor }) => ({ clave, etiqueta, nombreCompleto, cantidad: valor })
+        ),
+        problemasFrecuentes: contarProblemas(serviciosEnRango),
+        mejoresTecnicos: await rankingTecnicos(calificacionesEnRango),
     };
+};
+
+/* Suma de las cotizaciones aprobadas de cada servicio ({ [servicioId]: total }); sirve para exportar la lista de servicios. */
+export const obtenerTotalesPorServicio = async () => {
+    const cotizaciones = verificar(await obtenerCliente().from("cotizaciones").select("servicio_id, total").eq("estado", "aprobada"));
+    const totales = {};
+    for (const cotizacion of cotizaciones) {
+        totales[cotizacion.servicio_id] = (totales[cotizacion.servicio_id] ?? 0) + Number(cotizacion.total);
+    }
+    return totales;
 };

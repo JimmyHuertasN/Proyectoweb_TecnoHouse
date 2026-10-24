@@ -53,6 +53,7 @@ export const useFiltroPaginado = (lista, cumple, filtrosVacios, tamanoPagina = 1
         filtros,
         cambiarFiltro,
         limpiarFiltros,
+        filtrados,
         hayFiltrosActivos: !sonIguales(filtros, filtrosVacios),
     };
 };
