@@ -1,5 +1,7 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import DisenoPanel from "./componentes/panel/DisenoPanel.jsx";
+import Skeleton from "./componentes/panel/Skeleton.jsx";
 import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
 import ProveedorConfirmacion from "./contexto/ProveedorConfirmacion.jsx";
@@ -30,6 +32,9 @@ import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
 import MisServicios from "./paginas/tecnico/MisServicios.jsx";
 import PerfilTecnico from "./paginas/tecnico/PerfilTecnico.jsx";
 import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
+
+// Se descarga solo cuando el administrador abre el catálogo.
+const GestionProductos = lazy(() => import("./paginas/admin/GestionProductos.jsx"));
 
 const RedireccionPanel = () => {
     const { pathname, search } = useLocation();
@@ -103,6 +108,14 @@ const Aplicacion = () => {
                         <Route path="tecnicos" element={<GestionTecnicos />} />
                         <Route path="clientes" element={<GestionClientes />} />
                         <Route path="clientes/:id" element={<DetalleCliente />} />
+                        <Route
+                            path="catalogo"
+                            element={
+                                <Suspense fallback={<Skeleton tipo="fila" cantidad={4} etiqueta="Cargando catálogo" />}>
+                                    <GestionProductos />
+                                </Suspense>
+                            }
+                        />
                         <Route path="estadisticas" element={<Estadisticas />} />
                     </Route>
 

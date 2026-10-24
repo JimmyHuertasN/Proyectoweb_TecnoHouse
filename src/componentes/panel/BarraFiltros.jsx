@@ -18,7 +18,17 @@ const OpcionesEstado = ({ opciones }) =>
         )
     );
 
-const BarraFiltros = ({ id, etiqueta, placeholder, paginado, opcionesEstado, conFechas = false }) => {
+const SelectorFiltro = ({ id, nombre, etiqueta, opciones, valor, alCambiar }) => (
+    <div className={CLASE_CONTROL}>
+        <label htmlFor={`${id}-${nombre}`} className="etiqueta">{etiqueta}</label>
+        <select id={`${id}-${nombre}`} name={nombre} className="campo" value={valor} onChange={alCambiar}>
+            <OpcionesEstado opciones={opciones} />
+        </select>
+    </div>
+);
+
+/* "opcionesCategoria" agrega un segundo selector (filtro "categoria"), con el mismo formato que "opcionesEstado". */
+const BarraFiltros = ({ id, etiqueta, placeholder, paginado, opcionesEstado, opcionesCategoria, conFechas = false }) => {
     const { filtros, cambiarFiltro, limpiarFiltros, hayFiltrosActivos } = paginado;
     const alCambiar = (evento) => cambiarFiltro(evento.target.name, evento.target.value);
 
@@ -44,13 +54,12 @@ const BarraFiltros = ({ id, etiqueta, placeholder, paginado, opcionesEstado, con
                 />
             </div>
 
+            {opcionesCategoria && (
+                <SelectorFiltro id={id} nombre="categoria" etiqueta="Categoría" opciones={opcionesCategoria} valor={filtros.categoria} alCambiar={alCambiar} />
+            )}
+
             {opcionesEstado && (
-                <div className={CLASE_CONTROL}>
-                    <label htmlFor={`${id}-estado`} className="etiqueta">Estado</label>
-                    <select id={`${id}-estado`} name="estado" className="campo" value={filtros.estado} onChange={alCambiar}>
-                        <OpcionesEstado opciones={opcionesEstado} />
-                    </select>
-                </div>
+                <SelectorFiltro id={id} nombre="estado" etiqueta="Estado" opciones={opcionesEstado} valor={filtros.estado} alCambiar={alCambiar} />
             )}
 
             {conFechas && (
