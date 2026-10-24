@@ -3,15 +3,18 @@ import { UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { listarClientes } from "../../api/admin.js";
 import Aviso from "../../componentes/Aviso.jsx";
+import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
+import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
+import { coincideTexto } from "../../utilidades/filtros.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 
-const coincideBusqueda = (cliente, busqueda) => {
-    const texto = busqueda.trim().toLowerCase();
-    return !texto || cliente.nombre.toLowerCase().includes(texto) || cliente.telefono.includes(texto);
-};
+const FILTROS_VACIOS = { texto: "" };
+
+const coincideBusqueda = (cliente, { texto }) => coincideTexto(texto, [cliente.nombre, cliente.telefono]);
 
 const FilaCliente = ({ cliente }) => (
     <li>
@@ -51,8 +54,7 @@ const GestionClientes = () => {
     const [clientes, setClientes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
-    const [busqueda, setBusqueda] = useState("");
-    const visibles = clientes.filter((cliente) => coincideBusqueda(cliente, busqueda));
+    const paginado = useFiltroPaginado(clientes, coincideBusqueda, FILTROS_VACIOS);
 
     useEffect(() => {
         let vigente = true;
@@ -81,25 +83,15 @@ const GestionClientes = () => {
 
             {clientes.length > 0 && (
                 <>
-                    <label htmlFor="buscar-cliente" className="sr-only">Buscar cliente</label>
-                    <input
-                        id="buscar-cliente"
-                        type="search"
-                        className="campo mb-5 max-w-md"
-                        placeholder="Buscar por nombre o teléfono"
-                        value={busqueda}
-                        onChange={(evento) => setBusqueda(evento.target.value)}
-                    />
+                    <BarraFiltros id="clientes" etiqueta="Buscar clientes" placeholder="Nombre o teléfono" paginado={paginado} />
 
-                    {visibles.length === 0 ? (
-                        <p className="py-8 text-center text-slate-400">Ningún cliente coincide con “{busqueda}”.</p>
-                    ) : (
+                    <ResultadosPaginados id="clientes" paginado={paginado}>
                         <ul className="space-y-3">
-                            {visibles.map((cliente) => (
+                            {paginado.elementos.map((cliente) => (
                                 <FilaCliente key={cliente.id} cliente={cliente} />
                             ))}
                         </ul>
-                    )}
+                    </ResultadosPaginados>
                 </>
             )}
         </>
