@@ -6,6 +6,7 @@ import Skeleton from "../componentes/panel/Skeleton.jsx";
 import ComoFunciona from "../componentes/inicio/ComoFunciona.jsx";
 import PiePagina from "../componentes/inicio/PiePagina.jsx";
 import PreguntasFrecuentes from "../componentes/inicio/PreguntasFrecuentes.jsx";
+import SeccionCatalogo from "../componentes/inicio/SeccionCatalogo.jsx";
 import SeccionContacto from "../componentes/inicio/SeccionContacto.jsx";
 import SeccionResenas from "../componentes/inicio/SeccionResenas.jsx";
 import SeccionUbicacion from "../componentes/inicio/SeccionUbicacion.jsx";
@@ -83,11 +84,7 @@ const Inicio = () => {
 
                 <PreguntasFrecuentes />
 
-                {/* TODO: cuando exista, reemplaza este espacio con <SeccionCatalogo id="catalogo" />. */}
-                <section id="catalogo" data-animacion-entrada aria-labelledby="titulo-catalogo" className="scroll-mt-20 border-t border-borde bg-[#080d16] px-6 py-16 text-center sm:px-[8%]">
-                    <h2 id="titulo-catalogo" className="mb-3 text-3xl font-bold text-marca">CATÁLOGO</h2>
-                    <p className="mx-auto max-w-2xl text-slate-400">El componente de catálogo se agregará aquí.</p>
-                </section>
+                <SeccionCatalogo id="catalogo" />
 
                 <SeccionUbicacion />
                 <SeccionContacto />
