@@ -11,7 +11,8 @@ const SelectorTecnico = ({ tecnicos, tecnicoActualId, alAsignar }) => {
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
     const confirmar = useConfirmar();
-    const opciones = tecnicos.filter((tecnico) => tecnico.id !== tecnicoActualId);
+    // Un técnico desactivado ya no entra a su panel: no se le pueden asignar servicios.
+    const opciones = tecnicos.filter((tecnico) => tecnico.activo && tecnico.id !== tecnicoActualId);
 
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
@@ -38,7 +39,7 @@ const SelectorTecnico = ({ tecnicos, tecnicoActualId, alAsignar }) => {
     };
 
     if (opciones.length === 0) {
-        return <p className="text-sm text-slate-400">No hay otros técnicos para asignar.</p>;
+        return <p className="text-sm text-slate-400">No hay otros técnicos activos para asignar.</p>;
     }
 
     return (
