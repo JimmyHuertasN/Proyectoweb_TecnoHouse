@@ -44,6 +44,8 @@ const DetalleServicio = () => {
                     setServicio(encontrado);
                     setDiagnosticos(listaDiagnosticos);
                     setCotizaciones(listaCotizaciones);
+                    // Quita el error de una carga anterior (otro servicio o un fallo de red).
+                    setError("");
                 }
             } catch (errorApi) {
                 if (vigente) setError(errorApi.message);

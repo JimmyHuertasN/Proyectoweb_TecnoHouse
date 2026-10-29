@@ -49,7 +49,11 @@ const DetalleServicioAdmin = () => {
                     listarDiagnosticos(servicio.id),
                     listarCotizaciones(servicio.id),
                 ]);
-                if (vigente) setDatos({ servicio, tecnicos, diagnosticos, cotizaciones });
+                if (vigente) {
+                    setDatos({ servicio, tecnicos, diagnosticos, cotizaciones });
+                    // Quita el error de una carga anterior (otro servicio o un fallo de red).
+                    setError("");
+                }
             } catch (errorApi) {
                 if (vigente) setError(errorApi.message);
             }

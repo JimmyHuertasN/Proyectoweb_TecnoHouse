@@ -53,6 +53,8 @@ const DetalleSolicitud = () => {
                     setHistorial(eventos);
                     setCotizaciones(listaCotizaciones);
                     setTecnico(tecnicoAsignado);
+                    // Quita el error de una carga anterior (otra solicitud o un fallo de red).
+                    setError("");
                 }
             } catch (errorApi) {
                 if (vigente) setError(errorApi.message);
