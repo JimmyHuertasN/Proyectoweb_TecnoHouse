@@ -13,6 +13,7 @@ const IniciarSesion = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     // Si la cuenta existe pero no ha confirmado el correo, se ofrece reenviarlo.
     const [sinConfirmar, setSinConfirmar] = useState(false);
+    const [enviando, setEnviando] = useState(false);
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
     const ubicacion = useLocation();
@@ -32,6 +33,7 @@ const IniciarSesion = () => {
         }
 
         // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
+        setEnviando(true);
         try {
             const usuario = await iniciarSesion(correo.trim().toLowerCase(), contrasena);
             setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });
@@ -45,6 +47,7 @@ const IniciarSesion = () => {
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
             setSinConfirmar(errorApi.codigo === "email_not_confirmed");
+            setEnviando(false);
         }
     };
 
@@ -103,7 +106,9 @@ const IniciarSesion = () => {
                     </div>
                 </div>
 
-                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit">Entrar</button>
+                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit" disabled={enviando}>
+                    {enviando ? "Entrando..." : "Entrar"}
+                </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate-400">

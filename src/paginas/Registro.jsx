@@ -27,6 +27,7 @@ const Registro = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     // Correo de la cuenta recién creada que falta confirmar (para poder reenviarle el correo).
     const [correoPorConfirmar, setCorreoPorConfirmar] = useState("");
+    const [enviando, setEnviando] = useState(false);
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
 
@@ -68,6 +69,7 @@ const Registro = () => {
         }
 
         // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
+        setEnviando(true);
         try {
             const { requiereConfirmacion } = await registrarUsuario({ nombre, correo, telefono, contrasena });
             setValores(VALORES_INICIALES);
@@ -79,6 +81,7 @@ const Registro = () => {
                     texto: `¡Cuenta creada! Te enviamos un correo a ${correo}. Confírmalo y luego inicia sesión.`,
                     tipo: "exito",
                 });
+                setEnviando(false);
                 return;
             }
 
@@ -86,6 +89,7 @@ const Registro = () => {
             temporizadorRef.current = setTimeout(() => navegar("/cliente"), 1500);
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
+            setEnviando(false);
         }
     };
 
@@ -117,7 +121,9 @@ const Registro = () => {
                     </div>
                 ))}
 
-                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit">Crear cuenta</button>
+                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit" disabled={enviando}>
+                    {enviando ? "Creando cuenta..." : "Crear cuenta"}
+                </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate-400">
