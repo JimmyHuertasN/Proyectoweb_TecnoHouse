@@ -3,7 +3,7 @@ import { Clock3, Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { CONTACTO } from "../../datos/contacto.js";
 
 const telefonoWhatsApp = CONTACTO.whatsapp.replace(/\D/g, "");
-const whatsappConfigurado = telefonoWhatsApp.length >= 8 && telefonoWhatsApp.length <= 15;
+const whatsappConfigurado = CONTACTO.whatsappConfigurado && telefonoWhatsApp.length >= 8 && telefonoWhatsApp.length <= 15;
 const telefonoConfigurado = CONTACTO.telefono.replace(/\D/g, "").length >= 7;
 const correoConfigurado = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CONTACTO.correo);
 

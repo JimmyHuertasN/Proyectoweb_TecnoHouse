@@ -6,6 +6,7 @@
 export const CONTACTO = {
     telefono: "3044748157",
     whatsapp: "+57 304 4748157",
+    whatsappConfigurado: true,
     correo: "mbjuancamilo16@gmail.com",
     correoConfigurado: true,
     horario: "8:00 a.m. - 6:00 p.m. Lunes a Viernes",
