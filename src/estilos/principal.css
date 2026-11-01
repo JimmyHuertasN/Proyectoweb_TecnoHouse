@@ -21,7 +21,11 @@
     }
 
     body {
-        @apply bg-black text-white;
+        @apply overflow-x-hidden bg-black text-white;
+    }
+
+    :where(a, button, input, select, textarea, summary):focus-visible {
+        @apply outline-2 outline-offset-2 outline-marca;
     }
 }
 
@@ -36,11 +40,11 @@
     }
 
     .campo {
-        @apply w-full rounded-lg border border-slate-600 bg-fondo px-3 py-2.5 text-white placeholder:text-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/15 focus:outline-none;
+        @apply w-full rounded-lg border border-slate-600 bg-fondo px-3 py-2.5 text-white placeholder:text-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/15 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca;
     }
 
     .boton-primario {
-        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-marca-oscuro disabled:cursor-not-allowed disabled:opacity-50;
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-marca-oscuro disabled:cursor-not-allowed disabled:opacity-50;
     }
 
     .boton-secundario {
