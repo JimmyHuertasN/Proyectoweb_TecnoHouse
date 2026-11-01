@@ -44,7 +44,7 @@ const PiePagina = () => (
 
             <div>
                 <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">Redes sociales</h2>
-                {CONTACTO.redes.length > 0 ? (
+                {CONTACTO.redes.some((red) => /^https?:\/\//.test(red.url)) ? (
                     <ul className="flex gap-3">
                         {CONTACTO.redes.map((red) => {
                             const Icono = ICONOS_RED[red.nombre];
@@ -54,9 +54,7 @@ const PiePagina = () => (
                                 <li key={red.nombre}>
                                     {urlValida ? (
                                         <a href={red.url} target="_blank" rel="noreferrer" aria-label={red.nombre} className="flex size-10 items-center justify-center rounded-lg border border-borde text-slate-300 transition hover:border-marca hover:text-marca"><Icono size={18} aria-hidden="true" /></a>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-2 text-sm text-slate-500"><Icono size={16} aria-hidden="true" />{red.nombre}: {red.url}</span>
-                                    )}
+                                    ) : null}
                                 </li>
                             );
                         })}
