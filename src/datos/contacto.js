@@ -1,17 +1,32 @@
-/* Reemplaza estos valores en un solo lugar antes de publicar el sitio. */
+/*
+ * Reemplaza y confirma estos valores en un solo lugar antes de publicar el sitio.
+ * Un dato con `Configurado: false` no debe mostrarse como enlace ni habilitar
+ * una acción de contacto, aunque tenga un formato aparentemente válido.
+ */
 export const CONTACTO = {
-    telefono: "[3044748157]",
-    whatsapp: "[+57 304 4748157]",
+    telefono: "3044748157",
+    whatsapp: "+57 304 4748157",
+    whatsappConfigurado: true,
     correo: "mbjuancamilo16@gmail.com",
-    horario: "[8:00 a.m. - 6:00 p.m. Lunes a Viernes]",
+    correoConfigurado: true,
+    horario: "8:00 a.m. - 6:00 p.m. Lunes a Viernes",
+    horarioConfigurado: false,
     direccion: "Sede Hurtado, vía a Patillal, Valledupar, Cesar, Colombia",
     redes: [
-        { nombre: "Instagram", url: "[URL INSTAGRAM PENDIENTE]" },
-        { nombre: "Facebook", url: "[URL FACEBOOK PENDIENTE]" },
+        { nombre: "Instagram", url: "" },
+        { nombre: "Facebook", url: "" },
     ],
-    // Referencia de prueba para la Sede Hurtado de la UPC.
+    // Coordenadas de referencia; no se usan hasta confirmar la dirección.
     coordenadas: {
         latitud: 10.50067,
         longitud: -73.26938,
     },
 };
+
+export const PENDIENTES_CONTACTO = [
+    "Confirmar el teléfono público y el número de WhatsApp.",
+    "Confirmar el horario de atención.",
+    "Confirmar la dirección y las coordenadas de la sede.",
+    "Confirmar las URL oficiales de Instagram y Facebook.",
+    "Verificar que el correo público sea el buzón definitivo de TecnoHouse.",
+];

@@ -8,7 +8,7 @@ import ImagenProducto from "../ImagenProducto.jsx";
 import Skeleton from "../panel/Skeleton.jsx";
 
 const telefonoWhatsApp = CONTACTO.whatsapp.replace(/\D/g, "");
-const whatsappConfigurado = telefonoWhatsApp.length >= 8 && telefonoWhatsApp.length <= 15;
+const whatsappConfigurado = CONTACTO.whatsappConfigurado && telefonoWhatsApp.length >= 8 && telefonoWhatsApp.length <= 15;
 
 const enlaceWhatsApp = (nombreProducto) =>
     `https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(`Hola, consulto por ${nombreProducto}`)}`;

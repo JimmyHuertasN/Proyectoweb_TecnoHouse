@@ -76,6 +76,13 @@ export const listarDiagnosticos = async (servicioId) => {
 export const registrarDiagnostico = async (servicioId, { hallazgos, recomendaciones }) => {
     if (!hallazgos.trim()) throw new Error("Describe qué encontraste en el equipo.");
 
+    const servicio = verificar(
+        await obtenerCliente().from("servicios").select("estado").eq("id", servicioId).maybeSingle()
+    );
+    if (!servicio || servicio.estado !== "en_diagnostico") {
+        throw new Error("Solo puedes registrar diagnósticos cuando el servicio está en diagnóstico.");
+    }
+
     verificar(
         await obtenerCliente()
             .from("diagnosticos")
@@ -105,6 +112,10 @@ export const prepararItems = (items) => {
 export const crearCotizacion = async (servicioId, items) => {
     const filasItems = prepararItems(items);
     const cliente = obtenerCliente();
+    const servicio = verificar(await cliente.from("servicios").select("estado").eq("id", servicioId).maybeSingle());
+    if (!servicio || servicio.estado !== "en_diagnostico") {
+        throw new Error("Solo puedes crear una cotización desde un servicio en diagnóstico.");
+    }
 
     const cotizacion = verificar(
         await cliente.from("cotizaciones").insert({ servicio_id: Number(servicioId) }).select("id").single()

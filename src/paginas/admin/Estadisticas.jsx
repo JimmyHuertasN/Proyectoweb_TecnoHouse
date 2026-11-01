@@ -36,7 +36,7 @@ const Estadisticas = () => {
 
         Promise.all([obtenerEstadisticas(desde, hasta), obtenerIngresosPorMes(desde, hasta), obtenerServiciosPorDispositivo(desde, hasta)])
             .then(([estadisticas, ingresosPorMes, porDispositivo]) => vigente && setResultado({ clave, datos: { ...estadisticas, ingresosPorMes, porDispositivo } }))
-            .catch(() => vigente && setResultado({ clave, error: "No se pudieron cargar las estadísticas." }));
+            .catch((errorApi) => vigente && setResultado({ clave, error: errorApi.message || "No se pudieron cargar las estadísticas." }));
 
         return () => {
             vigente = false;
