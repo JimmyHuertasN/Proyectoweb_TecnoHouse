@@ -45,7 +45,7 @@ const TodosLosServicios = () => {
 
         listarServicios()
             .then((lista) => vigente && setServicios(lista))
-            .catch(() => vigente && setError("No se pudieron cargar los servicios."))
+            .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar los servicios."))
             .finally(() => vigente && setCargando(false));
 
         return () => {
@@ -61,8 +61,8 @@ const TodosLosServicios = () => {
             const filas = paginado.filtrados.map((servicio) => aFilaCsv(servicio, totales));
             descargarCsv(`servicios_${fechaLocal(new Date().toISOString())}.csv`, generarCsv(COLUMNAS_CSV, filas));
             toast.exito(`Se exportaron ${filas.length} ${filas.length === 1 ? "servicio" : "servicios"}.`);
-        } catch {
-            toast.error("No se pudo exportar el archivo. Inténtalo de nuevo.");
+        } catch (errorApi) {
+            toast.error(errorApi.message || "No se pudo exportar el archivo. Inténtalo de nuevo.");
         } finally {
             setExportando(false);
         }

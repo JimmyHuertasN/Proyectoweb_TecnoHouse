@@ -235,9 +235,21 @@ export const reasignarTecnico = async (servicio, tecnicoId) => {
         throw new Error("No se puede cambiar el técnico de un servicio terminado.");
     }
 
+    const cliente = obtenerCliente();
+    const [perfil, ficha] = await Promise.all([
+        cliente.from("perfiles").select("rol").eq("id", tecnicoId).maybeSingle().then(verificar),
+        cliente.from("tecnicos").select("perfil_id, disponible").eq("perfil_id", tecnicoId).maybeSingle().then(verificar),
+    ]);
+    if (!perfil || perfil.rol !== "tecnico" || !ficha) {
+        throw new Error("Solo puedes asignar servicios a técnicos activos.");
+    }
+    if (!ficha.disponible) {
+        throw new Error("El técnico seleccionado no está disponible para nuevos servicios.");
+    }
+
     const cambios = servicio.estado === "solicitado" ? { tecnico_id: tecnicoId, estado: "asignado" } : { tecnico_id: tecnicoId };
     const filas = verificar(
-        await obtenerCliente().from("servicios").update(cambios).eq("id", servicio.id).eq("estado", servicio.estado).select("id")
+        await cliente.from("servicios").update(cambios).eq("id", servicio.id).eq("estado", servicio.estado).select("id")
     );
 
     if (filas.length === 0) throw new Error("El servicio cambió de estado. Actualiza la página e inténtalo de nuevo.");

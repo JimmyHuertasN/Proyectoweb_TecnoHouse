@@ -18,7 +18,7 @@ export const usePendientes = () => {
                 setPendientes(lista);
                 setError(null);
             })
-            .catch(() => vigente && setError("No se pudieron cargar las solicitudes pendientes."))
+            .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar las solicitudes pendientes."))
             .finally(() => vigente && setCargando(false));
 
         return () => {

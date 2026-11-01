@@ -27,7 +27,7 @@ const Dashboard = () => {
 
         Promise.all([obtenerMetricas(desde, hasta), obtenerTiempoPromedio(desde, hasta), obtenerPorcentajeAprobadas(desde, hasta)])
             .then(([metricas, tiempo, aprobadas]) => vigente && setResultado({ clave, datos: { metricas, tiempo, aprobadas } }))
-            .catch(() => vigente && setResultado({ clave, error: "No se pudieron cargar las métricas." }));
+            .catch((errorApi) => vigente && setResultado({ clave, error: errorApi.message || "No se pudieron cargar las métricas." }));
 
         return () => {
             vigente = false;

@@ -61,7 +61,7 @@ const GestionClientes = () => {
 
         listarClientes()
             .then((lista) => vigente && setClientes(lista))
-            .catch(() => vigente && setError("No se pudieron cargar los clientes."))
+            .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar los clientes."))
             .finally(() => vigente && setCargando(false));
 
         return () => {

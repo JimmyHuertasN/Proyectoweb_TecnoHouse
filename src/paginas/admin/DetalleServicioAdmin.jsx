@@ -125,7 +125,7 @@ const DetalleServicioAdmin = () => {
                     {estaActiva(servicio) ? (
                         <div className="border-t border-borde pt-5">
                             <SelectorTecnico
-                                tecnicos={tecnicos.filter((tecnico) => tecnico.activo)}
+                                tecnicos={tecnicos.filter((tecnico) => tecnico.activo && tecnico.disponible)}
                                 tecnicoActualId={servicio.tecnicoId}
                                 alAsignar={manejarAsignacion}
                             />
