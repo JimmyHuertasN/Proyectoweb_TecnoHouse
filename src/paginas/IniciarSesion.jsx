@@ -13,6 +13,7 @@ const IniciarSesion = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     // Si la cuenta existe pero no ha confirmado el correo, se ofrece reenviarlo.
     const [sinConfirmar, setSinConfirmar] = useState(false);
+    // Evita enviar varias solicitudes de autenticación mientras Supabase responde.
     const [enviando, setEnviando] = useState(false);
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
@@ -25,6 +26,7 @@ const IniciarSesion = () => {
 
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
+        if (enviando) return;
 
         // Validación del formulario: los dos campos son obligatorios.
         if (!correo.trim() || !contrasena) {
@@ -32,8 +34,11 @@ const IniciarSesion = () => {
             return;
         }
 
-        // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
+        // Oculta el enlace de reenvío de un intento anterior mientras se valida este intento.
+        setSinConfirmar(false);
         setEnviando(true);
+
+        // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
         try {
             const usuario = await iniciarSesion(correo.trim().toLowerCase(), contrasena);
             setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });

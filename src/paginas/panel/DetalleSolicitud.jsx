@@ -96,6 +96,8 @@ const DetalleSolicitud = () => {
 
     const { dispositivo } = solicitud;
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);
+    // El historial confirma que ya existe una calificación y evita mostrar un formulario que la API rechazará por duplicado.
+    const yaCalificada = historial.some((evento) => evento.titulo.startsWith("Calificaste el servicio"));
 
     return (
         <>
@@ -122,7 +124,7 @@ const DetalleSolicitud = () => {
                 <BarraProgreso estado={solicitud.estado} />
             </section>
 
-            {solicitud.estado === "finalizado" && <FormularioCalificacion alCalificar={manejarCalificacion} />}
+            {solicitud.estado === "finalizado" && !yaCalificada && <FormularioCalificacion alCalificar={manejarCalificacion} />}
 
             {/* Pasa al PDF el servicio y el perfil del cliente que inició sesión. */}
             {cotizaciones.map((cotizacion) => (
