@@ -136,11 +136,21 @@ const GestionProductos = () => {
     };
 
     const alternar = (producto) =>
-        ejecutar(
-            producto,
-            () => toggleActivo(producto.id, !producto.activo),
-            producto.activo ? `${producto.nombre} ya no se muestra en el catálogo.` : `${producto.nombre} vuelve a mostrarse en el catálogo.`
-        );
+        confirmar({
+            titulo: producto.activo ? "Desactivar producto" : "Activar producto",
+            mensaje: producto.activo
+                ? `¿Ocultar ${producto.nombre} del catálogo? El producto no se borrará.`
+                : `¿Volver a mostrar ${producto.nombre} en el catálogo?`,
+        }).then((aceptado) => {
+            if (aceptado) {
+                return ejecutar(
+                    producto,
+                    () => toggleActivo(producto.id, !producto.activo),
+                    producto.activo ? `${producto.nombre} ya no se muestra en el catálogo.` : `${producto.nombre} vuelve a mostrarse en el catálogo.`
+                );
+            }
+            return undefined;
+        });
 
     const borrar = async (producto) => {
         const aceptado = await confirmar({

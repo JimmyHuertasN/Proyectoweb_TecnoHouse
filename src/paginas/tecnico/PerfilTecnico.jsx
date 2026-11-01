@@ -66,7 +66,7 @@ const PerfilTecnico = () => {
                 setFicha(fichaEncontrada);
                 setCalificaciones(lista);
             })
-            .catch(() => vigente && setError("No se pudo cargar tu perfil."))
+            .catch((errorApi) => vigente && setError(errorApi.message || "No se pudo cargar tu perfil."))
             .finally(() => vigente && setCargando(false));
 
         return () => {
