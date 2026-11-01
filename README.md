@@ -35,3 +35,7 @@
 - **Técnicos de la página de inicio**: vista pública `tecnicos_publicos`.
 - **Reseñas de la página de inicio**: vista pública `resenas_publicas` (requiere ejecutar `supabase/vista_resenas.sql`).
 - **Contacto público**: completa `src/datos/contacto.js` con los datos verificados de TecnoHouse antes de publicar el sitio.
+
+## Validación y demo
+
+La checklist reproducible, el registro de resultados y el guion de presentación están en [VALIDACION_FINAL_Y_GUION_DEMO.md](./VALIDACION_FINAL_Y_GUION_DEMO.md). Usa siempre una instancia de Supabase de desarrollo y datos ficticios.

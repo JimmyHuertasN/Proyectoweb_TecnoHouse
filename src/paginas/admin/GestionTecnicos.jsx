@@ -45,7 +45,7 @@ const GestionTecnicos = () => {
 
         listarTecnicos()
             .then((lista) => vigente && setTecnicos(lista))
-            .catch(() => vigente && setError("No se pudieron cargar los técnicos."))
+            .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar los técnicos."))
             .finally(() => vigente && setCargando(false));
 
         return () => {

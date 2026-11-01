@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSesion } from "../contexto/ContextoSesion.js";
 import { primerNombre } from "../utilidades/formato.js";
@@ -18,6 +18,8 @@ const BarraNavegacion = () => {
     const { usuario } = useSesion();
     const [menuAbierto, setMenuAbierto] = useState(false);
     const [seccionActiva, setSeccionActiva] = useState("inicio");
+    const botonMenu = useRef(null);
+    const menuMovil = useRef(null);
 
     useEffect(() => {
         const secciones = ENLACES
@@ -38,11 +40,17 @@ const BarraNavegacion = () => {
 
     useEffect(() => {
         if (!menuAbierto) return undefined;
+        const primerEnlace = menuMovil.current?.querySelector("a");
+        primerEnlace?.focus();
         const cerrarConEscape = (evento) => {
             if (evento.key === "Escape") setMenuAbierto(false);
         };
         window.addEventListener("keydown", cerrarConEscape);
         return () => window.removeEventListener("keydown", cerrarConEscape);
+    }, [menuAbierto]);
+
+    useEffect(() => {
+        if (!menuAbierto) botonMenu.current?.focus();
     }, [menuAbierto]);
 
     const claseEnlace = (href) => `rounded px-2 py-1 text-[15px] transition hover:text-marca focus-visible:outline-2 focus-visible:outline-marca ${
@@ -85,6 +93,8 @@ const BarraNavegacion = () => {
                 </div>
 
                 <button
+                    ref={botonMenu}
+                    id="boton-menu-movil"
                     type="button"
                     className="inline-flex size-11 items-center justify-center rounded-lg border border-borde text-white transition hover:border-marca hover:text-marca focus-visible:outline-2 focus-visible:outline-marca md:hidden"
                     aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
@@ -99,7 +109,7 @@ const BarraNavegacion = () => {
             </div>
 
             {menuAbierto && (
-                <nav id="menu-movil" aria-label="Navegación móvil" className="border-t border-borde bg-black px-4 py-3 shadow-xl md:hidden">
+                <nav ref={menuMovil} id="menu-movil" aria-labelledby="boton-menu-movil" className="border-t border-borde bg-black px-4 py-3 shadow-xl md:hidden">
                     <ul className="flex flex-col">{enlaces(true)}</ul>
                     <div className="mt-3 flex gap-3 border-t border-borde pt-4 sm:hidden">
                         {usuario ? (

@@ -131,14 +131,9 @@ export const obtenerTecnicoAsignado = async (tecnicoId) => {
     return { nombre: perfil?.nombre ?? "Técnico de TecnoHouse", especialidad: ficha?.especialidad ?? "" };
 };
 
-/* Lee una tabla relacionada con el servicio; si las reglas de seguridad no la dejan leer, la omite. */
+/* Una relación que falla no debe parecer un historial vacío: conserva el error de Supabase. */
 const leerRelacionadas = async (tabla, columnas, servicioId) => {
-    const { data, error } = await obtenerCliente().from(tabla).select(columnas).eq("servicio_id", servicioId);
-    if (error) {
-        console.warn(`No se pudo leer ${tabla}:`, error.message);
-        return [];
-    }
-    return data;
+    return verificar(await obtenerCliente().from(tabla).select(columnas).eq("servicio_id", servicioId));
 };
 
 const COLUMNAS_COTIZACION = "id, total, estado, creado_en, items:cotizacion_items(id, concepto, precio)";

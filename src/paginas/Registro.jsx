@@ -27,6 +27,7 @@ const Registro = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     // Correo de la cuenta recién creada que falta confirmar (para poder reenviarle el correo).
     const [correoPorConfirmar, setCorreoPorConfirmar] = useState("");
+    // Evita crear cuentas duplicadas si se pulsa varias veces mientras responde Supabase.
     const [enviando, setEnviando] = useState(false);
     const navegar = useNavigate();
     const temporizadorRef = useRef(null);
@@ -43,6 +44,7 @@ const Registro = () => {
 
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
+        if (enviando) return;
 
         const nombre = valores.nombre.trim();
         const correo = valores.correo.trim().toLowerCase();
@@ -68,8 +70,11 @@ const Registro = () => {
             return;
         }
 
-        // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
+        // Elimina el resultado visible de un intento anterior antes de iniciar uno nuevo.
+        setCorreoPorConfirmar("");
         setEnviando(true);
+
+        // Validación 6 (la hace Supabase): el correo no puede estar registrado previamente.
         try {
             const { requiereConfirmacion } = await registrarUsuario({ nombre, correo, telefono, contrasena });
             setValores(VALORES_INICIALES);
