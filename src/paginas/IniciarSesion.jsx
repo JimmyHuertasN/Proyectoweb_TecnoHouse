@@ -13,6 +13,8 @@ const IniciarSesion = () => {
     const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
     // Si la cuenta existe pero no ha confirmado el correo, se ofrece reenviarlo.
     const [sinConfirmar, setSinConfirmar] = useState(false);
+    // Evita enviar varias solicitudes de autenticación mientras Supabase responde.
+    const [enviando, setEnviando] = useState(false);
     const { iniciarSesion } = useSesion();
     const navegar = useNavigate();
     const ubicacion = useLocation();
@@ -24,12 +26,17 @@ const IniciarSesion = () => {
 
     const manejarEnvio = async (evento) => {
         evento.preventDefault();
+        if (enviando) return;
 
         // Validación del formulario: los dos campos son obligatorios.
         if (!correo.trim() || !contrasena) {
             setMensaje({ texto: "Escribe tu correo y tu contraseña.", tipo: "error" });
             return;
         }
+
+        // Oculta el enlace de reenvío de un intento anterior mientras se valida este intento.
+        setSinConfirmar(false);
+        setEnviando(true);
 
         // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
         try {
@@ -45,6 +52,7 @@ const IniciarSesion = () => {
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
             setSinConfirmar(errorApi.codigo === "email_not_confirmed");
+            setEnviando(false);
         }
     };
 
@@ -103,7 +111,9 @@ const IniciarSesion = () => {
                     </div>
                 </div>
 
-                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit">Entrar</button>
+                <button className="boton-primario w-full py-3 text-[15px] font-bold" type="submit" disabled={enviando}>
+                    {enviando ? "Entrando..." : "Entrar"}
+                </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate-400">
