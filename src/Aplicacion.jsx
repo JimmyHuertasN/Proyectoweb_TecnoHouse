@@ -32,6 +32,9 @@ import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
 import MisServicios from "./paginas/tecnico/MisServicios.jsx";
 import PerfilTecnico from "./paginas/tecnico/PerfilTecnico.jsx";
 import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
+import DisenoTienda from "./componentes/tienda/DisenoTienda.jsx";
+import DetalleProducto from "./paginas/tienda/DetalleProducto.jsx";
+import Tienda from "./paginas/tienda/Tienda.jsx";
 
 // Se descarga solo cuando el administrador abre el catálogo.
 const GestionProductos = lazy(() => import("./paginas/admin/GestionProductos.jsx"));
@@ -56,6 +59,12 @@ const Aplicacion = () => {
                     <Route path="/recuperar" element={<RecuperarContrasena />} />
                     <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
                     <Route path="/correo-confirmado" element={<CorreoConfirmado />} />
+
+                    {/* Tienda pública: el catálogo y el detalle comparten encabezado y carrito. */}
+                    <Route path="/tienda" element={<DisenoTienda />}>
+                        <Route index element={<Tienda />} />
+                        <Route path=":id" element={<DetalleProducto />} />
+                    </Route>
 
                     {/* Panel del cliente: todas estas rutas comparten el menú lateral y exigen sesión. */}
                     <Route
