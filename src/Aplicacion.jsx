@@ -13,6 +13,7 @@ import IniciarSesion from "./paginas/IniciarSesion.jsx";
 import Inicio from "./paginas/Inicio.jsx";
 import NuevaContrasena from "./paginas/NuevaContrasena.jsx";
 import NoEncontrada from "./paginas/NoEncontrada.jsx";
+import Portada from "./paginas/Portada.jsx";
 import RecuperarContrasena from "./paginas/RecuperarContrasena.jsx";
 import Registro from "./paginas/Registro.jsx";
 import Dashboard from "./paginas/admin/Dashboard.jsx";
@@ -52,7 +53,8 @@ const Aplicacion = () => {
                 <ProveedorConfirmacion>
                 <Routes>
                     {/* Sitio público */}
-                    <Route path="/" element={<Inicio />} />
+                    <Route path="/" element={<Portada />} />
+                    <Route path="/reparaciones" element={<Inicio />} />
                     <Route path="/login" element={<IniciarSesion />} />
                     <Route path="/registro" element={<Registro />} />
                     <Route path="/salir" element={<CerrarSesion />} />

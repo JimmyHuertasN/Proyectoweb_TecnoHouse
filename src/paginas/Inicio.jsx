@@ -6,7 +6,6 @@ import Skeleton from "../componentes/panel/Skeleton.jsx";
 import ComoFunciona from "../componentes/inicio/ComoFunciona.jsx";
 import PiePagina from "../componentes/inicio/PiePagina.jsx";
 import PreguntasFrecuentes from "../componentes/inicio/PreguntasFrecuentes.jsx";
-import SeccionCatalogo from "../componentes/inicio/SeccionCatalogo.jsx";
 import SeccionContacto from "../componentes/inicio/SeccionContacto.jsx";
 import SeccionResenas from "../componentes/inicio/SeccionResenas.jsx";
 import SeccionUbicacion from "../componentes/inicio/SeccionUbicacion.jsx";
@@ -83,8 +82,6 @@ const Inicio = () => {
                 </section>
 
                 <PreguntasFrecuentes />
-
-                <SeccionCatalogo id="catalogo" />
 
                 <SeccionUbicacion />
                 <SeccionContacto />
