@@ -1,0 +1,60 @@
+@TecnoHouse_Api_HostAddress = http://localhost:5100
+@supabaseAccessToken = pega_aqui_un_access_token_de_supabase
+
+### GET autenticado: RLS limita las filas según el usuario
+GET {{TecnoHouse_Api_HostAddress}}/api/perfiles
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### POST autenticado: sincroniza el perfil del usuario del token (no permite cambiar el rol)
+POST {{TecnoHouse_Api_HostAddress}}/api/perfiles
+Authorization: Bearer {{supabaseAccessToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Nombre del usuario",
+  "telefono": "3001234567"
+}
+
+### GET público: reseñas de la página de inicio
+GET {{TecnoHouse_Api_HostAddress}}/api/resenas-publicas
+Accept: application/json
+
+### GET público: productos activos
+GET {{TecnoHouse_Api_HostAddress}}/api/productos-activos
+Accept: application/json
+
+### GET autenticado: todos los productos visibles bajo las políticas RLS
+GET {{TecnoHouse_Api_HostAddress}}/api/productos
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### POST autenticado: crea un producto (la política RLS debe permitirlo al usuario)
+POST {{TecnoHouse_Api_HostAddress}}/api/productos
+Authorization: Bearer {{supabaseAccessToken}}
+Content-Type: application/json
+
+{
+  "nombre": "Producto de prueba",
+  "categoria": "Accesorios",
+  "precio": 10000,
+  "stock": 2
+}
+
+### POST autenticado: ejemplo de registro de un dispositivo
+POST {{TecnoHouse_Api_HostAddress}}/api/dispositivos
+Authorization: Bearer {{supabaseAccessToken}}
+Content-Type: application/json
+
+{
+  "clienteId": "PEGA_AQUI_EL_UUID_DE_TU_PERFIL",
+  "tipo": "celular",
+  "marca": "Samsung",
+  "modelo": "Galaxy A54",
+  "serial": "SERIAL-DE-PRUEBA"
+}
+
+### GET autenticado: verifica el dispositivo guardado (RLS solo devuelve tus filas)
+GET {{TecnoHouse_Api_HostAddress}}/api/dispositivos
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json

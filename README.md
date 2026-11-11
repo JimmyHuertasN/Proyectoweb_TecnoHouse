@@ -9,6 +9,10 @@
    VITE_SUPABASE_ANON_KEY=tu-clave-publica
    ```
    Usa solo la clave **pública** (`anon` o `sb_publishable_...`). La clave secreta (`service_role` o `sb_secret_...`) nunca va en el navegador ni en el repositorio.
+   Agrega también la dirección del API ASP.NET:
+   ```
+   VITE_TECNOHOUSE_API_URL=http://localhost:5100
+   ```
 3. Ejecuta `npm run dev` y abre la dirección que muestra la terminal. Si cambias el `.env`, reinicia el servidor.
 
 ## Configuración de Supabase (una sola vez por proyecto)
@@ -27,6 +31,8 @@
 - Recuperación de contraseña: `/recuperar` envía el enlace y `/nueva-contrasena` permite crear la nueva.
 
 ## Datos
+
+- **API ASP.NET**: abre `backend/TecnoHouse.Api.sln` en Visual Studio y configura sus secretos locales según `backend/README.md`. Los listados y registros de dispositivos pasan por la API; Supabase Auth conserva el inicio de sesión y entrega el token JWT.
 
 - **Cuentas**: Supabase Auth. Al registrarse se envía un correo de confirmación; hay que confirmarlo antes de iniciar sesión.
 - **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico` o `admin`). Un trigger crea el perfil con rol `cliente` al registrarse; los otros roles se asignan desde la base de datos.
