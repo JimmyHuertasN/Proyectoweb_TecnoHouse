@@ -8,7 +8,6 @@ const ENLACES = [
     { href: "#inicio", texto: "Inicio" },
     { href: "#servicios", texto: "Servicios" },
     { href: "#tecnicos", texto: "Técnicos" },
-    { href: "#catalogo", texto: "Catálogo" },
     { href: "#ubicacion", texto: "Ubicación" },
 ];
 
@@ -57,18 +56,26 @@ const BarraNavegacion = () => {
         seccionActiva === href.slice(1) ? "font-semibold text-marca" : "text-slate-300"
     }`;
 
-    const enlaces = (movil = false) => ENLACES.map((enlace) => (
-        <li key={enlace.href}>
-            <a
-                href={enlace.href}
-                aria-current={seccionActiva === enlace.href.slice(1) ? "location" : undefined}
-                onClick={() => movil && setMenuAbierto(false)}
-                className={`${claseEnlace(enlace.href)} ${movil ? "block px-4 py-3" : ""}`}
-            >
-                {enlace.texto}
-            </a>
-        </li>
-    ));
+    const enlaces = (movil = false) => [
+        ...ENLACES.map((enlace) => (
+            <li key={enlace.href}>
+                <a
+                    href={enlace.href}
+                    aria-current={seccionActiva === enlace.href.slice(1) ? "location" : undefined}
+                    onClick={() => movil && setMenuAbierto(false)}
+                    className={`${claseEnlace(enlace.href)} ${movil ? "block px-4 py-3" : ""}`}
+                >
+                    {enlace.texto}
+                </a>
+            </li>
+        )),
+        // La tienda es otra página, no una sección del inicio.
+        <li key="tienda">
+            <Link to="/tienda" className={`rounded px-2 py-1 text-[15px] font-semibold text-marca transition hover:text-white ${movil ? "block px-4 py-3" : ""}`}>
+                Tienda
+            </Link>
+        </li>,
+    ];
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-borde bg-black/95 backdrop-blur">
