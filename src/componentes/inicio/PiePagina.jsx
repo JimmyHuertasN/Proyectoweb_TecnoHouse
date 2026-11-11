@@ -2,14 +2,14 @@ import { Camera, Mail, MapPin, Phone, UsersRound } from "lucide-react";
 import { CONTACTO } from "../../datos/contacto.js";
 
 const ENLACES = [
-    { href: "/#servicios", texto: "Servicios" },
-    { href: "/#como-funciona", texto: "Cómo funciona" },
-    { href: "/#tecnicos", texto: "Nuestros técnicos" },
-    { href: "/#resenas", texto: "Reseñas" },
-    { href: "/#preguntas-frecuentes", texto: "Preguntas frecuentes" },
-    { href: "/#ubicacion", texto: "Ubicación" },
-    { href: "/#contacto", texto: "Contáctanos" },
-    { href: "/#catalogo", texto: "Catálogo" },
+    { href: "/reparaciones#servicios", texto: "Servicios" },
+    { href: "/reparaciones#como-funciona", texto: "Cómo funciona" },
+    { href: "/reparaciones#tecnicos", texto: "Nuestros técnicos" },
+    { href: "/reparaciones#resenas", texto: "Reseñas" },
+    { href: "/reparaciones#preguntas-frecuentes", texto: "Preguntas frecuentes" },
+    { href: "/reparaciones#ubicacion", texto: "Ubicación" },
+    { href: "/reparaciones#contacto", texto: "Contáctanos" },
+    { href: "/tienda", texto: "Tienda" },
 ];
 
 // Lucide no incluye logotipos de marcas: se usan símbolos genéricos disponibles.
