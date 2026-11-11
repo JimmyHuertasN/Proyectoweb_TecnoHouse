@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { obtenerCliente, verificar } from "../api/supabase.js";
+import { llamarApi } from "../api/backend.js";
 
 /*
     Carga los técnicos desde la vista pública "tecnicos_publicos" de Supabase.
@@ -15,13 +15,8 @@ export const useTecnicos = () => {
 
         const cargar = async () => {
             try {
-                const filas = verificar(
-                    await obtenerCliente()
-                        .from("tecnicos_publicos")
-                        .select("id, nombre, especialidad, disponible, calificacion_promedio")
-                        .order("nombre")
-                );
-                if (vigente) setTecnicos(filas);
+                const filas = await llamarApi("/api/tecnicos-publicos", { publico: true });
+                if (vigente) setTecnicos(filas.sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "")));
             } catch (errorConsulta) {
                 if (vigente) setError(`No se pudieron cargar los técnicos: ${errorConsulta.message}`);
             } finally {
