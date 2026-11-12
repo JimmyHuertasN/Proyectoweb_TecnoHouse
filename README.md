@@ -1,13 +1,123 @@
-# Proyectoweb_TecnoHouse
+# TecnoHouse
 
-Aplicación web de TecnoHouse, un negocio de reparación de equipos tecnológicos con tienda de productos y repuestos. Los clientes solicitan reparaciones y siguen su estado en línea, los técnicos atienden los servicios y el administrador gestiona el negocio y la tienda.
+TecnoHouse es una aplicación web para un negocio de reparación y mantenimiento de equipos tecnológicos ubicado en Valledupar, Cesar. Reúne en un solo sitio el servicio técnico y una tienda de productos y repuestos.
 
-Tecnologías: React 19, React Router 7, Vite, Tailwind CSS 4, Supabase (autenticación, base de datos, almacenamiento y Realtime) y lucide-react para los íconos.
+El proyecto se desarrolló como trabajo de la asignatura Proyecto de Web, en quinto semestre.
+
+## El problema
+
+En un taller pequeño, las solicitudes llegan por llamadas o mensajes, el estado de cada equipo se consulta preguntando al técnico y las cotizaciones se pierden entre conversaciones. El cliente no sabe en qué va su reparación y el negocio no tiene datos para saber cuánto trabajo atiende, cuánto gana ni qué técnicos rinden mejor.
+
+TecnoHouse ordena ese proceso:
+
+- El **cliente** registra sus equipos, pide una reparación con fotos, aprueba o rechaza la cotización y sigue cada paso en línea.
+- El **técnico** recibe las solicitudes, diagnostica, cotiza y avanza el servicio hasta terminarlo.
+- El **administrador** supervisa los servicios, gestiona técnicos y clientes, administra la tienda y consulta los indicadores del negocio.
+
+## Servicios que ofrece el negocio
+
+- Computadoras y laptops: diagnóstico, reparación y mantenimiento.
+- Celulares: pantallas, baterías, software y otros componentes.
+- Consolas de videojuegos: mantenimiento, limpieza y reparación.
+- Cámaras de seguridad: instalación, configuración y mantenimiento.
+- Mantenimiento preventivo y correctivo de equipos.
+
+## Cómo avanza una reparación
+
+Cada solicitud recorre estos estados. El cliente los ve en una barra de progreso y recibe un aviso con cada cambio.
+
+| Estado | Quién lo produce |
+|---|---|
+| Solicitado | El cliente crea la solicitud con el equipo, la categoría del problema, la gravedad y fotos. |
+| Técnico asignado | Un técnico toma la solicitud o el administrador la asigna. |
+| En diagnóstico | El técnico revisa el equipo. |
+| Cotizado | El técnico registra el diagnóstico y los ítems con su precio. |
+| Cotización aprobada | El cliente acepta la cotización. Si la rechaza, el servicio vuelve a diagnóstico. |
+| En reparación | El técnico trabaja en el equipo. |
+| Finalizado | El técnico marca el trabajo como terminado. |
+| Calificado | El cliente puntúa el servicio de 1 a 5 y puede dejar un comentario. |
+
+Durante todo el proceso, cliente y técnico pueden escribirse en la conversación del servicio. La cotización también se puede descargar en PDF.
+
+## Funcionalidades
+
+### Sitio público
+
+| Ruta | Contenido |
+|---|---|
+| `/` | Portada que separa la tienda de las reparaciones, con vista previa de productos y servicios. |
+| `/reparaciones` | Servicios, cómo funciona, técnicos, reseñas de clientes, preguntas frecuentes, contacto y ubicación. |
+| `/tienda` | Catálogo con categorías, buscador, filtro de disponibles y orden por precio, nombre o fecha. |
+| `/tienda/:id` | Detalle del producto, productos relacionados y consulta por WhatsApp. |
+
+La tienda tiene un carrito lateral que se guarda en el navegador y envía el pedido por WhatsApp con la lista de productos y el total. No permite pedir más unidades que el stock disponible.
+
+### Cuentas
+
+- Registro con confirmación por correo y opción de reenviar el correo.
+- Inicio de sesión que lleva a cada usuario al panel de su rol.
+- Recuperación de contraseña por correo.
+
+### Panel del cliente (`/cliente`)
+
+- Resumen de sus solicitudes activas.
+- Registro de dispositivos: computadores, celulares y consolas.
+- Solicitudes de reparación con fotos, seguimiento del estado, conversación con el técnico, cotización y calificación.
+- Perfil.
+
+### Panel del técnico (`/tecnico`)
+
+- Solicitudes pendientes que puede tomar.
+- Servicios asignados con diagnóstico, cotización y avance de estado.
+- Conversación con el cliente.
+- Perfil con su disponibilidad y su calificación.
+
+### Panel del administrador (`/admin`)
+
+- **Dashboard**: servicios por estado, ingresos de reparaciones y de la tienda, clientes nuevos, técnicos disponibles e inventario, con filtro por periodo.
+- **Servicios**: listado con filtros, búsqueda y paginación, detalle, reasignación de técnico y exportación a CSV.
+- **Técnicos**: creación de cuentas, edición, disponibilidad y activación o desactivación.
+- **Clientes**: listado y detalle con sus dispositivos y servicios.
+- **Tienda**: productos con imagen, precio, categoría y stock, ajuste rápido de stock y aviso de productos por reponer.
+- **Pedidos**: pedidos de la tienda por estado.
+- **Estadísticas**: tendencias mensuales, problemas frecuentes, servicios por tipo de dispositivo y técnicos mejor calificados.
+
+Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
+
+## Tecnologías
+
+| Parte | Herramienta |
+|---|---|
+| Interfaz | React 19 y React Router 7 |
+| Estilos | Tailwind CSS 4 |
+| Íconos | lucide-react |
+| Compilación | Vite |
+| Backend | Supabase: autenticación, base de datos PostgreSQL, almacenamiento de archivos y Realtime |
+| Revisión de código | oxlint |
+
+## Arquitectura
+
+La aplicación es una SPA que se conecta directamente a Supabase. No tiene un servidor propio: la seguridad se aplica en la base de datos con políticas RLS (Row Level Security), de modo que cada usuario solo puede leer y modificar lo que le corresponde según su rol. Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
+
+```
+src/
+├── api/          Consultas a Supabase, agrupadas por tema
+├── componentes/  Componentes reutilizables (inicio, panel y tienda)
+├── contexto/     Sesión, tienda, avisos y confirmaciones compartidos por la app
+├── datos/        Datos fijos: servicios, estados, menús, categorías y contacto
+├── hooks/        Lógica reutilizable de las páginas
+├── paginas/      Páginas públicas, de la tienda y de cada panel
+├── utilidades/   Filtros, formatos, reportes, CSV, PDF, inventario y WhatsApp
+└── Aplicacion.jsx  Rutas de la aplicación
+supabase/         Scripts SQL de tablas, vistas, funciones y políticas
+```
 
 ## Cómo ejecutarlo
 
+Requisitos: Node.js 20.19 o superior y un proyecto de Supabase.
+
 1. Instala las dependencias con `npm install`.
-2. Crea un archivo `.env` en la raíz del proyecto (puedes copiar `.env.example`). En el Dashboard de Supabase, abre tu proyecto y pulsa **Connect** para copiar la URL y la clave pública. También puedes consultar las claves en **Settings → API Keys** (icono de engranaje en la barra lateral):
+2. Crea un archivo `.env` en la raíz del proyecto (puedes copiar `.env.example`). En el Dashboard de Supabase, abre tu proyecto y pulsa **Connect** para copiar la URL y la clave pública. También puedes consultar las claves en **Settings → API Keys**:
    ```
    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
    VITE_SUPABASE_ANON_KEY=tu-clave-publica
@@ -22,7 +132,9 @@ Tecnologías: React 19, React Router 7, Vite, Tailwind CSS 4, Supabase (autentic
 | `npm run preview` | Sirve la versión compilada |
 | `npm run lint` | Revisa el código con oxlint |
 
-## Configuración de Supabase (una sola vez por proyecto)
+## Configuración de Supabase
+
+Se hace una sola vez por proyecto.
 
 1. **URLs de los correos**: en **Authentication → URL Configuration**, pon en *Site URL* la dirección de la app (ej. `http://localhost:5173`) y agrega en *Redirect URLs* `http://localhost:5173/**` (y la dirección pública cuando el sitio esté publicado). Sin esto, los enlaces de confirmación y de recuperación de contraseña no vuelven a la aplicación.
 2. **Scripts SQL**: ejecútalos en el **SQL Editor** en este orden. Todos se pueden ejecutar más de una vez sin perder datos.
@@ -41,45 +153,16 @@ Tecnologías: React 19, React Router 7, Vite, Tailwind CSS 4, Supabase (autentic
 
 Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base.
 
-## Funcionalidades
-
-### Sitio público
-
-| Ruta | Contenido |
-|---|---|
-| `/` | Portada que separa la tienda de las reparaciones, con vista previa de productos y servicios. |
-| `/reparaciones` | Servicios, cómo funciona, técnicos, reseñas, preguntas frecuentes, contacto y ubicación. |
-| `/tienda` | Catálogo con categorías, buscador, filtro de disponibles y orden por precio, nombre o fecha. |
-| `/tienda/:id` | Detalle del producto, productos relacionados y consulta por WhatsApp. |
-
-La tienda tiene un carrito lateral que se guarda en el navegador y envía el pedido por WhatsApp con la lista de productos y el total. No permite pedir más unidades que el stock disponible.
-
-### Autenticación
-
-- Registro con confirmación por correo (`/correo-confirmado` recibe el enlace) y opción de reenviar el correo.
-- Inicio de sesión que lleva a cada usuario a la sección de su rol (`/cliente`, `/tecnico` o `/admin`).
-- Recuperación de contraseña: `/recuperar` envía el enlace y `/nueva-contrasena` permite crear la nueva.
-
-### Paneles por rol
-
-- **Cliente** (`/cliente`): resumen, dispositivos, solicitudes de reparación con fotos, seguimiento del estado, conversación con el técnico, aprobación de la cotización, calificación del servicio y perfil.
-- **Técnico** (`/tecnico`): solicitudes pendientes, servicios asignados con diagnóstico y cotización, conversación con el cliente y perfil.
-- **Administrador** (`/admin`): dashboard con ingresos de reparaciones y de la tienda, servicios con filtros y exportación CSV, técnicos, clientes, gestión de la tienda (productos, imágenes, stock e inventario), pedidos y estadísticas.
-
-Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
-
 ## Datos
 
-- **Cuentas**: Supabase Auth. Al registrarse se envía un correo de confirmación; hay que confirmarlo antes de iniciar sesión.
+- **Cuentas**: Supabase Auth. Hay que confirmar el correo antes de iniciar sesión.
 - **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico` o `admin`). Un trigger crea el perfil con rol `cliente` al registrarse; los técnicos los crea el administrador desde la aplicación y el rol `admin` se asigna desde la base de datos.
 - **Dispositivos**: tabla `dispositivos`.
-- **Solicitudes de servicio**: tabla `servicios`, con fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
+- **Servicios**: tabla `servicios`, con sus cotizaciones, fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
 - **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`.
-- **Técnicos de la página de reparaciones**: vista pública `tecnicos_publicos`.
-- **Reseñas de la página de reparaciones**: vista pública `resenas_publicas`.
-- **Contacto público**: completa `src/datos/contacto.js` con los datos verificados de TecnoHouse antes de publicar el sitio.
+- **Contacto público**: completa `src/datos/contacto.js` con los datos verificados del negocio antes de publicar el sitio.
 
-## Pendiente en la base de datos
+## Pendiente
 
 Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambios en Supabase. En el código están marcadas con el comentario `PENDIENTE BASE`:
 
@@ -89,5 +172,5 @@ Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambio
 
 ## Documentación
 
-- [GUIA_CAMBIOS_PROYECTO.md](./GUIA_CAMBIOS_PROYECTO.md): resumen de los cambios del proyecto y dónde está cada parte del código.
+- [GUIA_CAMBIOS_PROYECTO.md](./GUIA_CAMBIOS_PROYECTO.md): evolución del proyecto y dónde está cada parte del código.
 - [VALIDACION_FINAL_Y_GUION_DEMO.md](./VALIDACION_FINAL_Y_GUION_DEMO.md): checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios.
