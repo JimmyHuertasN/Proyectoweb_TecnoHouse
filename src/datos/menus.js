@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ChartNoAxesCombined, House, Inbox, Laptop, LayoutDashboard, Package, UserRound, UsersRound, Wrench } from "lucide-react";
+import { BriefcaseBusiness, ChartNoAxesCombined, House, Inbox, Laptop, LayoutDashboard, ShoppingCart, Store, UserRound, UsersRound, Wrench } from "lucide-react";
 
 /* Menú lateral de cada rol. "accion" es el botón destacado debajo de los enlaces (opcional). */
 
@@ -29,7 +29,8 @@ export const MENU_ADMIN = {
         { ruta: "/admin/servicios", texto: "Servicios", icono: Wrench },
         { ruta: "/admin/tecnicos", texto: "Técnicos", icono: BriefcaseBusiness },
         { ruta: "/admin/clientes", texto: "Clientes", icono: UsersRound },
-        { ruta: "/admin/catalogo", texto: "Catálogo", icono: Package },
+        { ruta: "/admin/catalogo", texto: "Tienda", icono: Store },
+        { ruta: "/admin/pedidos", texto: "Pedidos", icono: ShoppingCart },
         { ruta: "/admin/estadisticas", texto: "Estadísticas", icono: ChartNoAxesCombined },
     ],
 };
