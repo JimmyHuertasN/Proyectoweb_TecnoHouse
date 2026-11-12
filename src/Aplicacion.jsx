@@ -22,6 +22,7 @@ import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
 import Estadisticas from "./paginas/admin/Estadisticas.jsx";
 import GestionClientes from "./paginas/admin/GestionClientes.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
+import PedidosTienda from "./paginas/admin/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 import DetalleSolicitud from "./paginas/panel/DetalleSolicitud.jsx";
 import MisDispositivos from "./paginas/panel/MisDispositivos.jsx";
@@ -127,6 +128,7 @@ const Aplicacion = () => {
                                 </Suspense>
                             }
                         />
+                        <Route path="pedidos" element={<PedidosTienda />} />
                         <Route path="estadisticas" element={<Estadisticas />} />
                     </Route>
 
