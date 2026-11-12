@@ -4,6 +4,10 @@ TecnoHouse es una aplicación web para un negocio de reparación y mantenimiento
 
 El proyecto se desarrolló como trabajo de la asignatura Proyecto de Web, en quinto semestre.
 
+<p align="center">
+  <img src="docs/capturas/portada.png" alt="Portada de TecnoHouse" width="700">
+</p>
+
 ## El problema
 
 En un taller pequeño, las solicitudes llegan por llamadas o mensajes, el estado de cada equipo se consulta preguntando al técnico y las cotizaciones se pierden entre conversaciones. El cliente no sabe en qué va su reparación y el negocio no tiene datos para saber cuánto trabajo atiende, cuánto gana ni qué técnicos rinden mejor.
@@ -38,6 +42,26 @@ Cada solicitud recorre estos estados. El cliente los ve en una barra de progreso
 | Calificado | El cliente puntúa el servicio de 1 a 5 y puede dejar un comentario. |
 
 Durante todo el proceso, cliente y técnico pueden escribirse en la conversación del servicio. La cotización también se puede descargar en PDF.
+
+## Capturas
+
+**Tienda**: catálogo con categorías, buscador y carrito.
+
+![Tienda](docs/capturas/tienda.png)
+
+**Reparaciones**: servicios que ofrece el negocio.
+
+![Servicios de reparación](docs/capturas/reparaciones.png)
+
+**Panel del técnico**: detalle de un servicio con su progreso, el próximo paso, la falla reportada y la conversación con el cliente.
+
+![Detalle de un servicio en el panel del técnico](docs/capturas/servicio-tecnico.png)
+
+**Panel del administrador**: dashboard con ingresos, clientes, técnicos, servicios por estado y tasa de cotizaciones aprobadas.
+
+<p align="center">
+  <img src="docs/capturas/dashboard.png" alt="Dashboard del administrador" width="700">
+</p>
 
 ## Funcionalidades
 
