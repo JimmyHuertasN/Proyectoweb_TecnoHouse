@@ -1,41 +1,53 @@
-# Informe breve de revisión — TecnoHouse
+# Informe de revisión del proyecto — TecnoHouse
 
-**Fecha de revisión:** 31 de octubre de 2026
-**Alcance:** revisión estática del código fuente, rutas, componentes, APIs, configuración y scripts SQL del árbol compartido. No se modificó código ni se ejecutaron pruebas.
+**Actualizado:** 12 de noviembre de 2026
+**Alcance:** revisión estática del código, rutas, componentes, documentación y scripts SQL presentes en el repositorio. Se consideraron los cambios recientes de la tienda y del panel administrativo. No se ejecutaron pruebas ni se verificó una instancia de Supabase desplegada.
 
-## Qué aporta valor al proyecto
+## Resumen ejecutivo
 
-- **Resuelve un flujo completo de reparación.** El cliente registra equipos y solicitudes; el técnico toma casos, documenta diagnósticos, cotiza y avanza estados; el cliente responde a la cotización y califica el servicio. Esto muestra una solución de negocio de punta a punta, no solo una página informativa (`src/paginas/panel/`, `src/paginas/tecnico/`, `src/paginas/admin/`).
-- **Da seguimiento y transparencia.** Fotos privadas por servicio, chat entre cliente y técnico, notificaciones en tiempo real, historial de estados y PDF de cotización ayudan a reducir la incertidumbre y dejan evidencia del proceso (`src/api/fotos.js`, `src/api/mensajes.js`, `src/api/notificaciones.js`, `src/utilidades/generarCotizacionPdf.js`).
-- **Incluye operación administrativa real.** El administrador gestiona servicios, clientes, técnicos y productos, y dispone de dashboard, estadísticas por periodo y exportación CSV (`src/paginas/admin/`, `src/api/admin.js`).
-- **Tiene una base razonable de seguridad de datos.** La aplicación separa roles y consultas; los scripts definen políticas RLS para catálogo, fotos, chat y notificaciones, además de reglas para proteger los roles. La efectividad depende de que esos scripts estén aplicados al proyecto Supabase correspondiente (`supabase/`).
-- **La interfaz cubre estados y dispositivos distintos.** Hay vistas adaptables, estados de carga, errores, confirmaciones, mensajes de resultado, búsqueda y paginación. El registro e inicio de sesión incluyen confirmación por correo y recuperación de contraseña.
-- **La portada explica el servicio y ofrece contacto.** Incluye servicios, técnicos, reseñas, preguntas frecuentes, ubicación y contacto; `src/componentes/BarraNavegacionAutenticacion.jsx` mantiene la marca y una salida clara a la portada durante login y registro.
+TecnoHouse reúne dos procesos relacionados: la atención de reparaciones y la venta de repuestos y accesorios. La parte de reparaciones cubre el recorrido del cliente, el técnico y el administrador; la tienda ya permite consultar productos, filtrarlos, ver su detalle y preparar un pedido para enviar por WhatsApp. El panel incorpora gestión de productos, inventario y una vista inicial de pedidos.
 
-## Hallazgos que conviene atender antes de presentarlo
+La principal limitación para presentar la tienda como un flujo comercial completo es que los pedidos no se guardan en la base de datos: la integración actual los deriva a WhatsApp. Por ello la lista administrativa de pedidos y los ingresos de tienda todavía no representan operaciones persistidas. También quedan datos de contacto y configuración de Supabase por confirmar antes de una publicación.
 
-1. **El catálogo público todavía es un marcador de posición.** Aunque `SeccionCatalogo.jsx` ya implementa productos, filtros y enlaces a WhatsApp, `src/paginas/Inicio.jsx` muestra el texto “El componente de catálogo se agregará aquí” y conserva un comentario TODO. La gestión del catálogo en el panel sí está implementada, pero el visitante aún no ve esos productos en la portada.
-2. **Hay datos de contacto pendientes de validar.** `src/datos/contacto.js` contiene valores entre corchetes y enlaces de redes sociales pendientes; las coordenadas se describen como referencia de prueba. Antes de una demostración pública, hay que sustituir o confirmar esos datos para que contacto y mapa no parezcan ficticios.
-3. **La puesta en marcha depende de Supabase.** El README explica variables de entorno y algunos scripts, pero el repositorio también contiene scripts de catálogo, técnicos, chat y notificaciones. Conviene preparar una instalación demostrable y documentar el orden y estado de todas las migraciones y políticas necesarias.
-4. **Los filtros y la paginación trabajan sobre listas ya cargadas.** Es suficiente para una demostración pequeña; con muchos servicios o productos convendría pasar búsqueda, filtros y paginación al servidor para no descargar toda la lista.
-5. **No hay un flujo automatizado de pruebas declarado en `package.json`.** Para una muestra ante jurados, una lista corta de escenarios repetibles (cliente, técnico y administrador) y evidencia de sus resultados daría más confianza. La presente revisión fue estática y no certifica el funcionamiento en una instancia real de Supabase.
+## Avances que aportan valor
 
-## Qué agregar — sin contar el chatbot con IA
+- **Flujo de reparación de punta a punta.** El cliente registra dispositivos y solicitudes con fotos, consulta estados, conversa con el técnico, responde a la cotización y califica el servicio. El técnico toma solicitudes, documenta diagnóstico, cotiza y actualiza el progreso. El administrador supervisa y reasigna servicios. La cotización se puede descargar en PDF.
+- **Seguimiento y comunicación.** Las fotos privadas, el chat del servicio, las notificaciones en tiempo real y la barra de progreso aportan trazabilidad y mantienen informado al cliente (`src/api/fotos.js`, `src/api/mensajes.js`, `src/api/notificaciones.js`).
+- **Tienda pública funcional para consulta y contacto.** La portada separa tienda y reparaciones, muestra una vista previa de productos y ofrece accesos directos. La tienda incluye categorías, búsqueda, filtro de disponibilidad, orden por precio/nombre/fecha y detalle del producto (`src/paginas/Portada.jsx`, `src/paginas/tienda/Tienda.jsx`, `src/paginas/tienda/DetalleProducto.jsx`).
+- **Carrito con límites de inventario.** El carrito persiste en el navegador, toma el precio vigente del producto y no permite agregar más unidades que el stock cargado. El pedido se compone con productos y total para abrir WhatsApp (`src/contexto/ProveedorTienda.jsx`, `src/componentes/tienda/CarritoLateral.jsx`, `src/utilidades/whatsapp.js`).
+- **Operación administrativa ampliada.** El panel permite administrar productos, imágenes, precios y stock; tiene resúmenes de inventario y tienda, ingresos combinados en el dashboard, estadísticas por periodo y exportación CSV. Se añadió una sección de pedidos, aunque depende de una futura tabla en Supabase (`src/paginas/admin/`, `src/componentes/panel/ResumenTienda.jsx`, `src/api/pedidos.js`).
+- **Base de seguridad y roles.** La aplicación protege las rutas por rol y delega el aislamiento de datos a políticas RLS y vistas públicas de Supabase. Esto depende de aplicar correctamente los scripts SQL del repositorio y configurar permisos en el proyecto correspondiente.
+- **Documentación de puesta en marcha.** El README describe las rutas, roles, tecnología, variables de entorno, scripts SQL y comandos disponibles. `package.json` declara scripts de desarrollo, compilación, vista previa y lint.
 
-### Prioridad alta para la Expo
+## Pendientes y riesgos para la presentación
 
-- **Seguimiento público con código QR.** Al crear una solicitud, generar un QR que abra una página de consulta con código del servicio y una vista segura de estados, fechas y próximos pasos. Así un jurado puede probar el valor del producto en segundos desde su teléfono. No exponer datos personales ni permitir cambios desde esa página.
-- **Línea de tiempo con evidencia antes/después.** Ordenar en una sola vista los cambios de estado, diagnóstico, cotización, aprobación y fotos; añadir fotos finales del equipo entregado. Esto amplía la evidencia que ya guardan las fotos y el historial y permite contar claramente qué hizo el taller.
-- **Demo preparada y guion de 3 minutos.** Cargar datos ficticios coherentes y cuentas de demostración por rol; presentar un caso desde solicitud hasta cierre, luego mostrar la notificación al cliente y el indicador administrativo. Evita depender de registros en vivo o de datos personales durante la exposición.
+1. **Pedidos e ingresos de tienda aún no se registran.** `src/api/pedidos.js` devuelve una lista vacía y cero ingresos; no existe el esquema SQL de `pedidos` y `pedido_items`. El carrito abre WhatsApp, por lo que el cierre y la confirmación de la venta ocurren fuera de la aplicación. La pantalla `/admin/pedidos` es una estructura preparada, no una gestión operativa conectada a datos.
+2. **El stock no se descuenta al vender.** El carrito limita cantidades según el stock leído, pero no hay confirmación transaccional ni descuento de inventario al completar una venta. El valor mostrado puede quedar desactualizado si hay compras concurrentes.
+3. **Los destacados no tienen selección administrativa persistida.** La portada muestra productos disponibles en el orden recibido y tanto ella como el selector de tienda marcan el soporte de la columna `destacado` como pendiente (`src/paginas/Portada.jsx`, `src/paginas/tienda/Tienda.jsx`).
+4. **Faltan datos públicos por validar.** En `src/datos/contacto.js`, el teléfono, WhatsApp y correo están marcados como configurados; el horario sigue sin confirmar, las redes no tienen URL y el comentario indica que las coordenadas son de referencia hasta validar la dirección. Confirmar la información directamente con el negocio antes de publicar o exponerla.
+5. **La instalación depende de Supabase y de scripts SQL.** La aplicación requiere credenciales públicas válidas, URLs de autenticación, tablas, vistas, buckets y políticas. El README presenta un orden de scripts, pero no hay evidencia en el repositorio que confirme su aplicación o las políticas RLS del entorno de demostración.
+6. **Filtros y paginación del panel se aplican sobre datos cargados.** Es adecuado para un volumen pequeño de demostración; con muchos registros convendría filtrar y paginar desde Supabase.
+7. **No se declara un conjunto automatizado de pruebas.** El `package.json` incluye `lint`, pero no scripts de test. Esta revisión fue estática y no certifica funcionamiento visual, accesibilidad, reglas RLS ni flujos contra una instancia real.
 
-### Prioridad media
+## Recomendaciones priorizadas
 
-- **PWA instalable y avisos del navegador.** Permitir instalar la aplicación y recibir avisos de cambios importantes; definir con cuidado qué información se conserva sin conexión y pedir permiso para notificaciones. Esto vuelve tangible el seguimiento en el celular.
-- **Panel de impacto y operación.** Mostrar tiempo de respuesta, reparaciones cerradas, satisfacción, equipos recuperados y, si se registra con un método transparente, residuos electrónicos evitados. Etiquetar claramente estimaciones y periodos para que las cifras sean defendibles.
-- **Accesibilidad verificable.** Revisar navegación completa por teclado, contraste, foco visible, etiquetas de formularios y lectura con tecnologías de asistencia; presentar los resultados de esa revisión como parte de la calidad del producto.
+### Antes de presentar o publicar
 
-## Recomendación de presentación
+- Validar y completar los datos de contacto, horario, redes, dirección y coordenadas; comprobar que los enlaces de WhatsApp y correo correspondan al negocio.
+- Preparar una instancia de Supabase de demostración con datos ficticios, ejecutar los scripts en el orden documentado y verificar permisos por rol.
+- Demostrar explícitamente el límite actual de pedidos: armado del carrito y envío por WhatsApp. No presentar la lista administrativa ni los ingresos de tienda como datos reales mientras no exista persistencia.
+- Recorrer en la demostración una reparación completa y, por separado, el flujo de consulta y pedido de la tienda.
 
-La propuesta más convincente es posicionar TecnoHouse como un sistema de **trazabilidad y confianza para servicios técnicos**: mostrar QR de seguimiento, evidencia del diagnóstico y reparación, y avisos al cliente mientras el administrador ve métricas. Antes de agregar más módulos, completaría el catálogo público, validaría contacto y coordenadas, y dejaría una demo estable con datos ficticios.
+### Siguiente mejora funcional
 
-Ninguna mejora puede asegurar un cupo: la decisión depende de los criterios de selección de la universidad, que no están incluidos en el proyecto. Estas propuestas sí hacen más fácil demostrar el problema atendido, el flujo funcional y el valor diferencial ante un jurado.
+- Crear tablas `pedidos` y `pedido_items`, políticas RLS y una operación segura que valide stock y precios y descuente inventario de forma atómica al confirmar una venta. Añadir estados y conectar la pantalla administrativa y los ingresos a esos registros.
+- Incorporar una columna `destacado` y controles administrativos para elegir productos de portada y prioridad en la tienda.
+- Añadir una línea de tiempo unificada con diagnóstico, cotizaciones, cambios de estado y evidencia fotográfica antes/después para reforzar la trazabilidad de las reparaciones.
+- Considerar un código QR de seguimiento público que exponga únicamente el estado y los próximos pasos, sin datos personales ni capacidad de modificar la solicitud.
+- Revisar accesibilidad con teclado, foco visible, contraste y etiquetas; documentar el resultado junto con escenarios manuales reproducibles para cliente, técnico y administrador.
+
+## Valor para Expo Software
+
+La propuesta puede presentarse como una plataforma local que conecta el servicio técnico con la venta de repuestos: el cliente sigue una reparación, recibe y responde una cotización, y puede consultar productos desde la misma aplicación; el negocio administra técnicos, servicios e inventario desde un panel. El elemento diferenciador demostrable es la continuidad entre atención, seguimiento y operación del taller.
+
+Para sostener esa presentación, conviene mostrar con claridad qué partes ya guardan información en Supabase y cuáles, como pedidos e ingresos de tienda, siguen dependiendo de WhatsApp o están pendientes de integración. Las mejoras sugeridas aumentan la demostrabilidad del producto, pero no garantizan selección o premio; eso depende de los criterios de Expo Software.
