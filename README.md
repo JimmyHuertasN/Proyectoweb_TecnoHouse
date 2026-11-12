@@ -116,12 +116,12 @@ Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
 | Estilos | Tailwind CSS 4 |
 | Íconos | lucide-react |
 | Compilación | Vite |
-| Backend | Supabase: autenticación, base de datos PostgreSQL, almacenamiento de archivos y Realtime |
+| Backend | ASP.NET Core y Supabase: API, autenticación, PostgreSQL, almacenamiento y Realtime |
 | Revisión de código | oxlint |
 
 ## Arquitectura
 
-La aplicación es una SPA que se conecta directamente a Supabase. No tiene un servidor propio: la seguridad se aplica en la base de datos con políticas RLS (Row Level Security), de modo que cada usuario solo puede leer y modificar lo que le corresponde según su rol. Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
+La aplicación es una SPA. Supabase Auth administra las sesiones y la API ASP.NET Core atiende operaciones de dispositivos, servicios y perfiles con el JWT de Supabase. Las políticas RLS de PostgreSQL siguen controlando el acceso. Algunos módulos, como la tienda, todavía consultan Supabase directamente. Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
 
 ```
 src/
@@ -134,6 +134,7 @@ src/
 ├── utilidades/   Filtros, formatos, reportes, CSV, PDF, inventario y WhatsApp
 └── Aplicacion.jsx  Rutas de la aplicación
 supabase/         Scripts SQL de tablas, vistas, funciones y políticas
+backend/          API ASP.NET Core y configuración local
 ```
 
 ## Cómo ejecutarlo
@@ -141,10 +142,11 @@ supabase/         Scripts SQL de tablas, vistas, funciones y políticas
 Requisitos: Node.js 20.19 o superior y un proyecto de Supabase.
 
 1. Instala las dependencias con `npm install`.
-2. Crea un archivo `.env` en la raíz del proyecto (puedes copiar `.env.example`). En el Dashboard de Supabase, abre tu proyecto y pulsa **Connect** para copiar la URL y la clave pública. También puedes consultar las claves en **Settings → API Keys**:
+2. Crea un archivo `.env` en la raíz del proyecto. En el Dashboard de Supabase, abre tu proyecto y pulsa **Connect** para copiar la URL y la clave pública. También puedes consultar las claves en **Settings → API Keys**:
    ```
    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
    VITE_SUPABASE_ANON_KEY=tu-clave-publica
+   VITE_TECNOHOUSE_API_URL=http://localhost:5100
    ```
    Usa solo la clave **pública** (`anon` o `sb_publishable_...`). La clave secreta (`service_role` o `sb_secret_...`) nunca va en el navegador ni en el repositorio.
 3. Ejecuta `npm run dev` y abre la dirección que muestra la terminal. Si cambias el `.env`, reinicia el servidor.
@@ -179,6 +181,7 @@ Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual(
 
 ## Datos
 
+- **API ASP.NET**: abre `backend/TecnoHouse.Api.sln` en Visual Studio y configura sus secretos locales según `backend/README.md`. La API usa el JWT de Supabase y RLS para autorizar las solicitudes.
 - **Cuentas**: Supabase Auth. Hay que confirmar el correo antes de iniciar sesión.
 - **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico` o `admin`). Un trigger crea el perfil con rol `cliente` al registrarse; los técnicos los crea el administrador desde la aplicación y el rol `admin` se asigna desde la base de datos.
 - **Dispositivos**: tabla `dispositivos`.

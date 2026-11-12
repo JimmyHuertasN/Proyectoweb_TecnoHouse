@@ -8,6 +8,7 @@
 import { buscarOpcion, ESTADOS_COTIZACION, ESTADOS_FINALES, GRAVEDADES, NIVELES_CALIFICACION } from "../datos/opciones.js";
 import { CATEGORIAS_PROBLEMAS, OTROS_PROBLEMAS } from "../datos/categoriasProblemas.js";
 import { formatearPesos } from "../utilidades/formato.js";
+import { llamarApi } from "./backend.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 export const LONGITUD_MINIMA_DESCRIPCION = 15;
@@ -60,26 +61,34 @@ export const aSolicitud = (fila) => {
 
 /* Devuelve las solicitudes del usuario, de la más reciente a la más antigua. */
 export const listarSolicitudes = async (usuarioId) => {
-    const filas = verificar(
-        await obtenerCliente()
-            .from("servicios")
-            .select(COLUMNAS_SOLICITUD)
-            .eq("cliente_id", usuarioId)
-            .order("creado_en", { ascending: false })
-    );
-    return filas.map(aSolicitud);
+    const filas = await llamarApi("/api/servicios");
+    return filas
+        .filter((fila) => fila.clienteId === usuarioId)
+        .sort((a, b) => b.creadoEn.localeCompare(a.creadoEn))
+        .map((fila) => aSolicitud({
+            ...fila,
+            cliente_id: fila.clienteId,
+            dispositivo_id: fila.dispositivoId,
+            tecnico_id: fila.tecnicoId,
+            creado_en: fila.creadoEn,
+            dispositivo: fila.dispositivo,
+        }));
 };
 
 export const obtenerSolicitud = async (usuarioId, id) => {
-    const fila = verificar(
-        await obtenerCliente().from("servicios").select(COLUMNAS_SOLICITUD).eq("id", id).eq("cliente_id", usuarioId).maybeSingle()
-    );
+    const filas = await llamarApi("/api/servicios");
+    const fila = filas.find((registro) => String(registro.id) === String(id) && registro.clienteId === usuarioId);
     if (!fila) throw new Error("No encontramos esa solicitud.");
-    return aSolicitud(fila);
+    return aSolicitud({
+        ...fila,
+        cliente_id: fila.clienteId,
+        dispositivo_id: fila.dispositivoId,
+        tecnico_id: fila.tecnicoId,
+        creado_en: fila.creadoEn,
+    });
 };
 
 export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gravedad, categoria }) => {
-    const cliente = obtenerCliente();
     const descripcionLimpia = descripcion.trim();
 
     if (!GRAVEDADES.some((opcion) => opcion.valor === gravedad)) {
@@ -94,31 +103,32 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
         throw new Error(`Describe la falla con al menos ${LONGITUD_MINIMA_DESCRIPCION} caracteres.`);
     }
 
-    const enCurso = await cliente
-        .from("servicios")
-        .select("id", { count: "exact", head: true })
-        .eq("dispositivo_id", dispositivoId)
-        .not("estado", "in", `(${ESTADOS_FINALES.join(",")})`);
-    verificar(enCurso);
+    const servicios = await llamarApi("/api/servicios");
+    const enCurso = servicios.some((servicio) =>
+        String(servicio.dispositivoId) === String(dispositivoId) && !ESTADOS_FINALES.includes(servicio.estado)
+    );
 
-    if (enCurso.count > 0) {
+    if (enCurso) {
         throw new Error("Ese dispositivo ya tiene una solicitud en curso.");
     }
 
-    const fila = verificar(
-        await cliente
-            .from("servicios")
-            .insert({
-                cliente_id: usuarioId,
-                dispositivo_id: Number(dispositivoId),
-                problema: descripcionLimpia,
-                gravedad,
-                categoria,
-            })
-            .select(COLUMNAS_SOLICITUD)
-            .single()
-    );
-    return aSolicitud(fila);
+    const fila = await llamarApi("/api/servicios", {
+        metodo: "POST",
+        datos: {
+            clienteId: usuarioId,
+            dispositivoId: Number(dispositivoId),
+            problema: descripcionLimpia,
+            gravedad,
+            categoria,
+        },
+    });
+    return aSolicitud({
+        ...fila,
+        cliente_id: fila.clienteId,
+        dispositivo_id: fila.dispositivoId,
+        tecnico_id: fila.tecnicoId,
+        creado_en: fila.creadoEn,
+    });
 };
 
 /* Cualquier usuario con sesión puede leer el nombre y la especialidad de los técnicos. */
