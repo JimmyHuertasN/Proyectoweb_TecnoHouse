@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { BriefcaseBusiness, Clock, ThumbsUp, UsersRound, Wrench } from "lucide-react";
 import { obtenerMetricas, obtenerPorcentajeAprobadas, obtenerTiempoPromedio } from "../../api/admin.js";
+import { obtenerIngresosTienda } from "../../api/pedidos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
+import IngresosTotales from "../../componentes/panel/IngresosTotales.jsx";
 import ResumenIngresos from "../../componentes/panel/ResumenIngresos.jsx";
+import ResumenTienda from "../../componentes/panel/ResumenTienda.jsx";
 import SelectorRangoFechas from "../../componentes/panel/SelectorRangoFechas.jsx";
 import TarjetaMetrica from "../../componentes/panel/TarjetaMetrica.jsx";
 import TarjetaPorcentaje from "../../componentes/panel/TarjetaPorcentaje.jsx";
@@ -25,8 +28,13 @@ const Dashboard = () => {
         let vigente = true;
         const clave = `${desde}|${hasta}|${recargas}`;
 
-        Promise.all([obtenerMetricas(desde, hasta), obtenerTiempoPromedio(desde, hasta), obtenerPorcentajeAprobadas(desde, hasta)])
-            .then(([metricas, tiempo, aprobadas]) => vigente && setResultado({ clave, datos: { metricas, tiempo, aprobadas } }))
+        Promise.all([
+            obtenerMetricas(desde, hasta),
+            obtenerTiempoPromedio(desde, hasta),
+            obtenerPorcentajeAprobadas(desde, hasta),
+            obtenerIngresosTienda(desde, hasta),
+        ])
+            .then(([metricas, tiempo, aprobadas, ingresosTienda]) => vigente && setResultado({ clave, datos: { metricas, tiempo, aprobadas, ingresosTienda } }))
             .catch((errorApi) => vigente && setResultado({ clave, error: errorApi.message || "No se pudieron cargar las métricas." }));
 
         return () => {
@@ -42,7 +50,7 @@ const Dashboard = () => {
 
     return (
         <>
-            <EncabezadoPagina titulo="Dashboard" descripcion="Resumen general de TecnoHouse.">
+            <EncabezadoPagina titulo="Dashboard" descripcion="Resumen general de TecnoHouse: reparaciones y tienda.">
                 <button type="button" onClick={() => setRecargas((anterior) => anterior + 1)} className="boton-secundario">
                     ↻ Actualizar
                 </button>
@@ -56,6 +64,8 @@ const Dashboard = () => {
 
             {datos && (
                 <div aria-busy={actualizando} className={actualizando ? "opacity-60 transition-opacity" : "transition-opacity"}>
+                    <IngresosTotales reparaciones={datos.metricas.ingresos.realizados} tienda={datos.ingresosTienda} />
+
                     <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <TarjetaMetrica
                             icono={UsersRound}
@@ -119,6 +129,8 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
+
+            <ResumenTienda recargas={recargas} />
         </>
     );
 };

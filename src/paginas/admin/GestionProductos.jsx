@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Package } from "lucide-react";
+import { ExternalLink, Minus, Package, Plus, Star } from "lucide-react";
 import { actualizarProducto, borrarProducto, crearProducto, obtenerProductosAdmin, toggleActivo } from "../../api/productos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import ImagenProducto from "../../componentes/ImagenProducto.jsx";
@@ -8,6 +8,7 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FormularioProducto from "../../componentes/panel/FormularioProducto.jsx";
 import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
+import ResumenInventario from "../../componentes/panel/ResumenInventario.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { CATEGORIAS_PRODUCTO } from "../../datos/categoriasProductos.js";
 import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
@@ -42,9 +43,24 @@ const opcionesEstadoProducto = (productos) => {
     ];
 };
 
-const ENCABEZADOS = ["Producto", "Categoría", "Precio", "Stock", "Estado", "Acciones"];
+const ENCABEZADOS = ["Producto", "Categoría", "Precio", "Stock", "Estado", "Destacado", "Acciones"];
 
-const FilaProducto = ({ producto, ocupado, alEditar, alAlternar, alBorrar }) => (
+const CLASE_AJUSTE = "flex size-7 items-center justify-center rounded-md border border-borde text-slate-300 transition hover:border-marca hover:text-marca disabled:cursor-not-allowed disabled:opacity-40";
+
+/* Botones − y + para corregir el stock sin abrir el formulario. */
+const AjusteStock = ({ producto, ocupado, alAjustar }) => (
+    <div className="flex items-center gap-2">
+        <button type="button" disabled={ocupado || producto.stock === 0} onClick={() => alAjustar(producto, -1)} aria-label={`Restar una unidad a ${producto.nombre}`} className={CLASE_AJUSTE}>
+            <Minus size={14} aria-hidden="true" />
+        </button>
+        <span className={`min-w-6 text-center ${producto.stock === 0 ? "text-red-300" : ""}`}>{producto.stock}</span>
+        <button type="button" disabled={ocupado} onClick={() => alAjustar(producto, 1)} aria-label={`Sumar una unidad a ${producto.nombre}`} className={CLASE_AJUSTE}>
+            <Plus size={14} aria-hidden="true" />
+        </button>
+    </div>
+);
+
+const FilaProducto = ({ producto, ocupado, alEditar, alAlternar, alBorrar, alAjustarStock }) => (
     <tr className={producto.activo ? "" : "opacity-60"}>
         <td className="px-4 py-3">
             <div className="flex items-center gap-3">
@@ -54,9 +70,17 @@ const FilaProducto = ({ producto, ocupado, alEditar, alAlternar, alBorrar }) => 
         </td>
         <td className="px-4 py-3 text-slate-300">{producto.categoria}</td>
         <td className="px-4 py-3 whitespace-nowrap">{formatearPesos(producto.precio)}</td>
-        <td className={`px-4 py-3 ${producto.stock === 0 ? "text-red-300" : ""}`}>{producto.stock}</td>
+        <td className="px-4 py-3">
+            <AjusteStock producto={producto} ocupado={ocupado} alAjustar={alAjustarStock} />
+        </td>
         <td className="px-4 py-3">
             <span className={producto.activo ? "text-emerald-300" : "text-slate-400"}>{producto.activo ? "Activo" : "Inactivo"}</span>
+        </td>
+        <td className="px-4 py-3">
+            {/* PENDIENTE BASE: se activa cuando la tabla productos tenga la columna "destacado". */}
+            <button type="button" disabled title="Pendiente: falta la columna «destacado» en la base" aria-label={`Destacar ${producto.nombre} (pendiente)`} className="text-slate-600 disabled:cursor-not-allowed">
+                <Star size={18} aria-hidden="true" />
+            </button>
         </td>
         <td className="px-4 py-3">
             <div className="flex flex-wrap gap-2">
@@ -139,30 +163,38 @@ const GestionProductos = () => {
         confirmar({
             titulo: producto.activo ? "Desactivar producto" : "Activar producto",
             mensaje: producto.activo
-                ? `¿Ocultar ${producto.nombre} del catálogo? El producto no se borrará.`
-                : `¿Volver a mostrar ${producto.nombre} en el catálogo?`,
+                ? `¿Ocultar ${producto.nombre} de la tienda? El producto no se borrará.`
+                : `¿Volver a mostrar ${producto.nombre} en la tienda?`,
         }).then((aceptado) => {
             if (aceptado) {
                 return ejecutar(
                     producto,
                     () => toggleActivo(producto.id, !producto.activo),
-                    producto.activo ? `${producto.nombre} ya no se muestra en el catálogo.` : `${producto.nombre} vuelve a mostrarse en el catálogo.`
+                    producto.activo ? `${producto.nombre} ya no se muestra en la tienda.` : `${producto.nombre} vuelve a mostrarse en la tienda.`
                 );
             }
             return undefined;
         });
 
+    const ajustarStock = (producto, cambio) => {
+        const nuevoStock = producto.stock + cambio;
+        return ejecutar(producto, () => actualizarProducto(producto.id, { stock: nuevoStock }), `Stock de ${producto.nombre}: ${nuevoStock}.`);
+    };
+
     const borrar = async (producto) => {
         const aceptado = await confirmar({
             titulo: "Borrar producto",
-            mensaje: `¿Borrar ${producto.nombre}? Se elimina del catálogo y su imagen. No se puede deshacer. Si solo quieres ocultarlo, usa Desactivar.`,
+            mensaje: `¿Borrar ${producto.nombre}? Se elimina de la tienda junto con su imagen. No se puede deshacer. Si solo quieres ocultarlo, usa Desactivar.`,
         });
         if (aceptado) await ejecutar(producto, () => borrarProducto(producto.id), `Se borró ${producto.nombre}.`);
     };
 
     return (
         <>
-            <EncabezadoPagina titulo="Catálogo" descripcion="Productos y repuestos que se muestran en el sitio público. Los inactivos quedan ocultos.">
+            <EncabezadoPagina titulo="Tienda" descripcion="Productos y repuestos que se venden en la tienda. Los inactivos quedan ocultos.">
+                <a href="/tienda" target="_blank" rel="noopener noreferrer" className="boton-secundario">
+                    <ExternalLink size={16} aria-hidden="true" /> Ver tienda
+                </a>
                 {!formulario && (
                     <button type="button" onClick={() => abrirFormulario()} className="boton-primario">
                         + Crear producto
@@ -171,6 +203,8 @@ const GestionProductos = () => {
             </EncabezadoPagina>
 
             <Aviso texto={error} tipo="error" />
+
+            {!cargando && productos.length > 0 && <ResumenInventario productos={productos} />}
 
             {formulario && (
                 <FormularioProducto
@@ -203,8 +237,8 @@ const GestionProductos = () => {
 
                     <ResultadosPaginados id="productos" paginado={paginado}>
                         <div role="region" aria-label="Tabla de productos" tabIndex={0} className="overflow-x-auto rounded-xl border border-borde focus-visible:outline-2 focus-visible:outline-marca">
-                            <table className="w-full min-w-[46rem] text-left text-sm">
-                                <caption className="sr-only">Productos del catálogo con su categoría, precio, stock y estado</caption>
+                            <table className="w-full min-w-[52rem] text-left text-sm">
+                                <caption className="sr-only">Productos de la tienda con su categoría, precio, stock y estado</caption>
                                 <thead className="bg-tarjeta text-xs tracking-wide text-slate-400 uppercase">
                                     <tr>
                                         {ENCABEZADOS.map((encabezado) => (
@@ -221,6 +255,7 @@ const GestionProductos = () => {
                                             alEditar={abrirFormulario}
                                             alAlternar={alternar}
                                             alBorrar={borrar}
+                                            alAjustarStock={ajustarStock}
                                         />
                                     ))}
                                 </tbody>
