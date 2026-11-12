@@ -5,6 +5,7 @@
     (RLS) de Supabase impiden que un cliente lea o modifique equipos ajenos.
 */
 import { ESTADOS_FINALES, TIPOS_DISPOSITIVO } from "../datos/opciones.js";
+import { llamarApi } from "./backend.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 const COLUMNAS = "id, cliente_id, tipo, marca, modelo, serial, creado_en";
@@ -35,25 +36,42 @@ const prepararDatos = ({ tipo, marca, modelo, numeroSerie }) => {
 
 /* Devuelve los dispositivos del usuario, del más reciente al más antiguo. */
 export const listarDispositivos = async (usuarioId) => {
-    const filas = verificar(
-        await obtenerCliente()
-            .from("dispositivos")
-            .select(COLUMNAS)
-            .eq("cliente_id", usuarioId)
-            .order("creado_en", { ascending: false })
-    );
-    return filas.map(aDispositivo);
+    const filas = await llamarApi("/api/dispositivos");
+    return filas
+        .filter((fila) => fila.clienteId === usuarioId)
+        .sort((a, b) => b.creadoEn.localeCompare(a.creadoEn))
+        .map((fila) => aDispositivo({
+            id: fila.id,
+            cliente_id: fila.clienteId,
+            tipo: fila.tipo,
+            marca: fila.marca,
+            modelo: fila.modelo,
+            serial: fila.serial,
+            creado_en: fila.creadoEn,
+        }));
 };
 
 export const crearDispositivo = async (usuarioId, datosFormulario) => {
-    const fila = verificar(
-        await obtenerCliente()
-            .from("dispositivos")
-            .insert({ cliente_id: usuarioId, ...prepararDatos(datosFormulario) })
-            .select(COLUMNAS)
-            .single()
-    );
-    return aDispositivo(fila);
+    const datos = prepararDatos(datosFormulario);
+    const fila = await llamarApi("/api/dispositivos", {
+        metodo: "POST",
+        datos: {
+            clienteId: usuarioId,
+            tipo: datos.tipo,
+            marca: datos.marca,
+            modelo: datos.modelo,
+            serial: datos.serial,
+        },
+    });
+    return aDispositivo({
+        id: fila.id,
+        cliente_id: fila.clienteId,
+        tipo: fila.tipo,
+        marca: fila.marca,
+        modelo: fila.modelo,
+        serial: fila.serial,
+        creado_en: fila.creadoEn,
+    });
 };
 
 export const actualizarDispositivo = async (usuarioId, id, datosFormulario) => {

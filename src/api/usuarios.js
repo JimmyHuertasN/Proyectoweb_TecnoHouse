@@ -6,6 +6,7 @@
       Un trigger de la base de datos crea el perfil al registrarse, con rol "cliente".
 */
 import { obtenerCliente, verificar } from "./supabase.js";
+import { llamarApi } from "./backend.js";
 
 /*
     Devuelve { id: { nombre, telefono } } de varios usuarios a la vez, para mostrar
@@ -15,7 +16,7 @@ export const obtenerPerfiles = async (ids) => {
     const unicos = [...new Set(ids.filter(Boolean))];
     if (unicos.length === 0) return {};
 
-    const perfiles = verificar(await obtenerCliente().from("perfiles").select("id, nombre, telefono").in("id", unicos));
+    const perfiles = (await llamarApi("/api/perfiles")).filter((perfil) => unicos.includes(perfil.id));
     return Object.fromEntries(perfiles.map((perfil) => [perfil.id, { nombre: perfil.nombre, telefono: perfil.telefono ?? "" }]));
 };
 
@@ -49,13 +50,12 @@ export const registrarUsuario = async ({ nombre, correo, telefono, contrasena })
 
 /* Une la cuenta de Supabase Auth con su fila de "perfiles" en un solo objeto para la aplicación. */
 export const obtenerPerfil = async (usuarioAuth) => {
-    const { data: perfil, error } = await obtenerCliente()
-        .from("perfiles")
-        .select("nombre, telefono, rol, creado_en")
-        .eq("id", usuarioAuth.id)
-        .maybeSingle();
-
-    if (error) console.error("No se pudo leer el perfil:", error.message);
+    let perfil = null;
+    try {
+        perfil = (await llamarApi("/api/perfiles")).find((fila) => fila.id === usuarioAuth.id) ?? null;
+    } catch (error) {
+        console.error("No se pudo leer el perfil desde el API:", error.message);
+    }
 
     const metadatos = usuarioAuth.user_metadata ?? {};
     return {
@@ -64,7 +64,7 @@ export const obtenerPerfil = async (usuarioAuth) => {
         nombre: perfil?.nombre ?? metadatos.nombre ?? usuarioAuth.email,
         telefono: perfil?.telefono ?? metadatos.telefono ?? "",
         rol: perfil?.rol ?? "cliente",
-        creadoEn: perfil?.creado_en ?? usuarioAuth.created_at,
+        creadoEn: perfil?.creadoEn ?? usuarioAuth.created_at,
     };
 };
 
@@ -102,12 +102,8 @@ export const cambiarContrasena = async (contrasenaNueva) => {
 };
 
 export const actualizarPerfil = async (id, { nombre, telefono }) => {
-    const filas = verificar(
-        await obtenerCliente().from("perfiles").update({ nombre, telefono }).eq("id", id).select("id")
-    );
-
-    // Si las reglas de seguridad (RLS) no permiten el cambio, Supabase no da error: simplemente no actualiza nada.
-    if (filas.length === 0) {
-        throw new Error("No se pudieron guardar los cambios. Vuelve a iniciar sesión e inténtalo de nuevo.");
-    }
+    await llamarApi(`/api/perfiles/${encodeURIComponent(id)}`, {
+        metodo: "PUT",
+        datos: { nombre, telefono },
+    });
 };
