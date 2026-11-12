@@ -4,6 +4,8 @@
 
 Esta guía resume los cambios registrados en el historial de Git de la rama revisada, desde el primer commit (`b3a71d6`, 8 de septiembre de 2026) hasta `9060f95` (24 de octubre de 2026). El árbol de trabajo estaba limpio al hacer la revisión, así que no había modificaciones locales sin commit que pudieran atribuirse a una edición actual. La referencia `origin/main` contiene después un commit que actualiza los metadatos de contribuyentes de GitHub; ese commit no introduce cambios funcionales en la aplicación.
 
+Actualización del 3 de noviembre de 2026: se agregaron la tienda virtual, una portada que separa la tienda de las reparaciones y la gestión de la tienda en el panel del administrador. Esos cambios se describen en las secciones 7, 9 y 11.
+
 El historial permite describir qué se incorporó al proyecto, pero no demostrar por sí solo quién escribió cada línea. Por eso, el documento habla de cambios registrados en la rama y no atribuye autoría individual a cada implementación.
 
 ## 1. De sitio estático a aplicación React
@@ -70,17 +72,56 @@ En el último bloque de cambios revisado (`9060f95`) se añadieron o ampliaron:
 
 Las métricas usan la fecha de creación de la solicitud para asignar el periodo. Como el modelo actual no guarda una fecha de finalización, el tiempo promedio se estima desde la solicitud hasta la calificación del cliente; los ingresos mensuales consideran cotizaciones aprobadas asociadas a servicios terminados y se agrupan por la fecha de solicitud. Esta interpretación está documentada en `src/api/admin.js` y afecta cómo deben leerse esos indicadores.
 
+El dashboard también incorpora la tienda:
+
+- **Ingresos totales** (`IngresosTotales.jsx`): suma lo ganado en el periodo con reparaciones (cotizaciones aprobadas de servicios terminados) y con la tienda (pedidos entregados), y muestra cuánto aporta cada parte. La tarjeta anterior pasó a llamarse "Ingresos de reparaciones".
+- **Sección Tienda** (`ResumenTienda.jsx`): productos a la venta, agotados, con poco stock, valor del inventario, lista de productos por reponer, stock por categoría y pedidos por estado. Muestra el estado actual del inventario, por lo que no depende del periodo elegido.
+
+Mientras no exista la tabla de pedidos, los ingresos y los pedidos de la tienda se muestran en cero (ver sección 9).
+
 ## 8. Filtros, búsqueda y paginación
 
 Se añadieron utilidades reutilizables para buscar y filtrar listas por estado y fecha, junto con el hook `src/hooks/useFiltroPaginado.js`. Los componentes `BarraFiltros.jsx`, `ResultadosPaginados.jsx` y `Paginacion.jsx` se aplican a listados de administración, técnicos y clientes. Los filtros de solicitudes contemplan texto y fechas; al cambiar criterios se actualiza la paginación.
 
 La lógica común está en `src/utilidades/filtros.js`, lo que mantiene el comportamiento de las distintas listas más consistente. El listado de administración conserva como filtro inicial los servicios en curso.
 
-## 9. Catálogo de productos
+## 9. Tienda virtual y catálogo de productos
 
-El proyecto incorpora un catálogo público con filtros y consulta por WhatsApp, además de gestión de productos para el administrador. La sección pública está en `src/componentes/inicio/SeccionCatalogo.jsx`; el panel de administración y el formulario están en `src/paginas/admin/GestionProductos.jsx` y `src/componentes/panel/FormularioProducto.jsx`.
+Al principio, el catálogo era una sección de la página de inicio con filtros y consulta por WhatsApp. Después se reemplazó por una tienda virtual con páginas propias, y la sección `SeccionCatalogo.jsx` se eliminó.
 
-Las operaciones de catálogo se agrupan en `src/api/productos.js`, y `ImagenProducto.jsx` proporciona una imagen de respaldo cuando una imagen de producto no está disponible. Las categorías se definen en `src/datos/categoriasProductos.js`. El script `supabase/catalogo.sql` crea la estructura, la vista pública, las políticas RLS y el bucket para imágenes.
+### Tienda pública
+
+- **`/tienda`** (`src/paginas/tienda/Tienda.jsx`): banner, categorías con su cantidad de productos, filtro "Solo disponibles", buscador por nombre, descripción y categoría, orden (destacados, precio, nombre y más recientes) y cuadrícula de productos.
+- **`/tienda/:id`** (`src/paginas/tienda/DetalleProducto.jsx`): foto grande, precio, stock, descripción, selector de cantidad, botón para agregar al carrito, consulta por WhatsApp, enlace para solicitar la instalación y productos relacionados de la misma categoría.
+- **Carrito lateral** (`CarritoLateral.jsx`): permite cambiar cantidades, quitar productos y ver el total. El pedido se envía por WhatsApp con la lista y el total ya escritos. No permite pedir más unidades que el stock disponible.
+
+Las dos páginas comparten el diseño `DisenoTienda.jsx`, que carga los productos una sola vez. El estado de la tienda (productos y carrito) se maneja con `ContextoTienda.js`, `ProveedorTienda.jsx` y el hook `useTienda.js`, con el mismo patrón que usan el Toast y la sesión. El carrito guarda solo `{ id, cantidad }` en `localStorage`; el nombre y el precio se toman siempre del producto cargado. Los componentes de la tienda están en `src/componentes/tienda/` y los enlaces de WhatsApp en `src/utilidades/whatsapp.js`.
+
+### Gestión desde el panel del administrador
+
+La opción "Catálogo" del menú pasó a llamarse **Tienda**. La ruta sigue siendo `/admin/catalogo`. Además de crear, editar, activar o desactivar y borrar productos, la página `GestionProductos.jsx` ahora incluye:
+
+- un resumen del inventario y un aviso de productos por reponer (`ResumenInventario.jsx`);
+- botones − y + para ajustar el stock sin abrir el formulario;
+- un botón "Ver tienda" para revisar la tienda como la ve el cliente.
+
+Los cálculos del inventario están en `src/utilidades/inventario.js`, incluido el límite de "pocas unidades" que comparten el panel y la tienda.
+
+Se agregó la página **Pedidos** (`/admin/pedidos`, `PedidosTienda.jsx`), con los estados definidos en `src/datos/estadosPedido.js`: pendiente, confirmado, entregado y cancelado.
+
+### Pendiente en la base de datos
+
+Por decisión del equipo, en esta etapa no se modificó Supabase. Las partes que dependen de la base quedaron preparadas y marcadas en el código con el comentario `PENDIENTE BASE`:
+
+| Funcionalidad | Qué falta en Supabase | Dónde se conecta |
+|---|---|---|
+| Registrar pedidos del carrito | Tablas `pedidos` y `pedido_items`, con políticas RLS (cualquiera crea, solo el administrador lee y cambia el estado) | `src/api/pedidos.js`, `CarritoLateral.jsx` |
+| Lista y estados de pedidos | La misma tabla `pedidos` | `PedidosTienda.jsx`, `ResumenTienda.jsx` |
+| Descontar stock al confirmar | Lógica en la base al confirmar un pedido | `src/api/pedidos.js` |
+| Ingresos de la tienda | Pedidos entregados | `obtenerIngresosTienda` en `src/api/pedidos.js` |
+| Productos destacados | Columna `destacado` en `productos` | `GestionProductos.jsx`, `Tienda.jsx`, `Portada.jsx` |
+
+Las operaciones de productos siguen en `src/api/productos.js`, y `ImagenProducto.jsx` muestra un ícono cuando un producto no tiene imagen. Las categorías se definen en `src/datos/categoriasProductos.js`. El script `supabase/catalogo.sql` crea la estructura, la vista pública `productos_activos`, las políticas RLS y el bucket para imágenes. La tienda usa esa misma vista.
 
 ## 10. Comunicación y avisos en tiempo real
 
@@ -93,6 +134,24 @@ También se implementaron notificaciones en tiempo real para cambios de servicio
 La página de inicio recibió ajustes visuales y de navegación, incluyendo fondo degradado y animaciones. Se añadieron secciones de cómo funciona el servicio, preguntas frecuentes, contacto, ubicación y reseñas. Los datos de contacto centralizados están en `src/datos/contacto.js`; deben verificarse antes de publicar.
 
 También se incorporaron mejoras de correo y mapa en la sección de contacto/ubicación, una página 404 (`NoEncontrada.jsx`), estados de carga tipo skeleton, confirmaciones y mensajes toast para operaciones de la aplicación. Estos últimos se organizan en proveedores, contextos y hooks, de modo que las vistas puedan solicitar confirmación o mostrar el resultado de una acción sin repetir la implementación.
+
+### Portada y separación entre tienda y reparaciones
+
+Se cambió la entrada del sitio:
+
+| Ruta | Contenido |
+|---|---|
+| `/` | Portada nueva (`src/paginas/Portada.jsx`) |
+| `/reparaciones` | La página de inicio anterior (`Inicio.jsx`), sin la sección de catálogo |
+| `/tienda` | Tienda virtual (sección 9) |
+
+La portada muestra el nombre TecnoHouse con un resumen de lo que hace el negocio y tres datos destacados: tipos de servicio, cantidad de técnicos y seguimiento en línea. Debajo hay dos tarjetas:
+- **Tienda:** vista previa de hasta tres productos con stock y las categorías.
+- **Reparaciones:** los servicios con sus íconos.
+
+Al final hay una invitación a escribir por WhatsApp. La portada no tiene botones de sesión; se puede iniciar sesión desde la barra de reparaciones, el encabezado de la tienda o el pie de página.
+
+Los enlaces del pie de página a secciones (`#servicios`, `#contacto`, etc.) ahora apuntan a `/reparaciones#...`. Las barras de reparaciones y de la tienda enlazan entre sí. Los logos y la redirección al cerrar sesión llevan a la portada.
 
 ## 12. Exportación CSV
 
@@ -119,9 +178,10 @@ El archivo `README.md` describe la configuración básica de Supabase y enumera 
 | Técnico | `src/paginas/tecnico/` |
 | Administración | `src/paginas/admin/`, `src/api/admin.js` |
 | Integración Supabase | `src/api/`, `supabase/*.sql` |
-| Catálogo | `src/api/productos.js`, `src/paginas/admin/GestionProductos.jsx`, `src/componentes/inicio/SeccionCatalogo.jsx` |
-| Reportes y exportación | `src/utilidades/reportes.js`, `src/utilidades/csv.js`, `src/paginas/admin/Estadisticas.jsx` |
-| Interfaz pública | `src/componentes/inicio/`, `src/paginas/Inicio.jsx` |
+| Tienda pública | `src/paginas/tienda/`, `src/componentes/tienda/`, `src/contexto/ProveedorTienda.jsx`, `src/utilidades/whatsapp.js` |
+| Gestión de la tienda | `src/api/productos.js`, `src/api/pedidos.js`, `src/paginas/admin/GestionProductos.jsx`, `src/paginas/admin/PedidosTienda.jsx`, `src/utilidades/inventario.js` |
+| Reportes y exportación | `src/utilidades/reportes.js`, `src/utilidades/csv.js`, `src/paginas/admin/Estadisticas.jsx`, `src/componentes/panel/IngresosTotales.jsx`, `src/componentes/panel/ResumenTienda.jsx` |
+| Interfaz pública | `src/paginas/Portada.jsx`, `src/componentes/inicio/`, `src/paginas/Inicio.jsx` (`/reparaciones`) |
 
 ## Nota de implementación
 

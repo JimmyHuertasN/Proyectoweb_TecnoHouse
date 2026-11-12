@@ -6,7 +6,7 @@ const ResumenIngresos = ({ ingresos }) => {
 
     return (
         <section className="tarjeta">
-            <h2 className="text-lg font-semibold">Ingresos</h2>
+            <h2 className="text-lg font-semibold">Ingresos de reparaciones</h2>
             <p className="mt-1 text-sm text-slate-400">Suma de las cotizaciones aprobadas</p>
 
             <p className="mt-4 text-5xl font-semibold text-white">{formatearPesos(ingresos.total)}</p>
