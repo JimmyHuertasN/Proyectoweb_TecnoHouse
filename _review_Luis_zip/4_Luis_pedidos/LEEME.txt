@@ -1,0 +1,14 @@
+PASO 4 de 6 - rama Creacion_de_la_Tienda
+
+1. Espera a que el paso anterior ya este subido a GitHub.
+2. En tu copia del proyecto:
+     git switch Creacion_de_la_Tienda
+     git pull
+3. Copia la carpeta "src" de este paquete (o el archivo .md) dentro del proyecto,
+   reemplazando los archivos que ya existan.
+4. Revisa que compile:
+     npm run build
+5. Haz el commit y subelo:
+     git add src/api/pedidos.js src/datos/estadosPedido.js src/paginas/admin/PedidosTienda.jsx src/datos/menus.js src/Aplicacion.jsx
+     git commit -m "feat: preparar los pedidos de la tienda para conectarlos a la base"
+     git push

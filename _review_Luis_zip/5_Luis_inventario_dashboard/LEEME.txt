@@ -1,0 +1,14 @@
+PASO 5 de 6 - rama Creacion_de_la_Tienda
+
+1. Espera a que el paso anterior ya este subido a GitHub.
+2. En tu copia del proyecto:
+     git switch Creacion_de_la_Tienda
+     git pull
+3. Copia la carpeta "src" de este paquete (o el archivo .md) dentro del proyecto,
+   reemplazando los archivos que ya existan.
+4. Revisa que compile:
+     npm run build
+5. Haz el commit y subelo:
+     git add src/componentes/panel/ResumenInventario.jsx src/componentes/panel/ResumenTienda.jsx src/componentes/panel/IngresosTotales.jsx src/componentes/panel/ResumenIngresos.jsx src/paginas/admin/GestionProductos.jsx src/paginas/admin/Dashboard.jsx
+     git commit -m "feat: agregar el control de inventario y los ingresos totales al dashboard"
+     git push
