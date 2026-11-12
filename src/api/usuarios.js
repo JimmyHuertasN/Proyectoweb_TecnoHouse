@@ -50,21 +50,19 @@ export const registrarUsuario = async ({ nombre, correo, telefono, contrasena })
 
 /* Une la cuenta de Supabase Auth con su fila de "perfiles" en un solo objeto para la aplicación. */
 export const obtenerPerfil = async (usuarioAuth) => {
-    let perfil = null;
-    try {
-        perfil = (await llamarApi("/api/perfiles")).find((fila) => fila.id === usuarioAuth.id) ?? null;
-    } catch (error) {
-        console.error("No se pudo leer el perfil desde el API:", error.message);
+    const perfil = (await llamarApi("/api/perfiles")).find((fila) => fila.id === usuarioAuth.id) ?? null;
+    if (!perfil) {
+        throw new Error("La API respondió, pero no encontramos el perfil de esta cuenta. Verifica que exista en la tabla perfiles del mismo proyecto Supabase.");
     }
 
     const metadatos = usuarioAuth.user_metadata ?? {};
     return {
         id: usuarioAuth.id,
         correo: usuarioAuth.email,
-        nombre: perfil?.nombre ?? metadatos.nombre ?? usuarioAuth.email,
-        telefono: perfil?.telefono ?? metadatos.telefono ?? "",
-        rol: perfil?.rol ?? "cliente",
-        creadoEn: perfil?.creadoEn ?? usuarioAuth.created_at,
+        nombre: perfil.nombre ?? metadatos.nombre ?? usuarioAuth.email,
+        telefono: perfil.telefono ?? metadatos.telefono ?? "",
+        rol: perfil.rol,
+        creadoEn: perfil.creadoEn ?? usuarioAuth.created_at,
     };
 };
 

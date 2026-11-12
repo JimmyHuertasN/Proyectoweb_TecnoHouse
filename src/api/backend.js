@@ -18,11 +18,16 @@ export const llamarApi = async (ruta, { metodo = "GET", datos, publico = false }
         encabezados.Authorization = `Bearer ${data.session.access_token}`;
     }
 
-    const respuesta = await fetch(`${apiUrl}${ruta}`, {
-        method: metodo,
-        headers: encabezados,
-        ...(datos === undefined ? {} : { body: JSON.stringify(datos) }),
-    });
+    let respuesta;
+    try {
+        respuesta = await fetch(`${apiUrl}${ruta}`, {
+            method: metodo,
+            headers: encabezados,
+            ...(datos === undefined ? {} : { body: JSON.stringify(datos) }),
+        });
+    } catch (error) {
+        throw new Error(`No se pudo conectar con el API TecnoHouse en ${apiUrl}. Verifica que esté ejecutándose, que VITE_TECNOHOUSE_API_URL tenga esa dirección y que CORS permita el origen de Vite. Detalle: ${error.message}`);
+    }
 
     const texto = await respuesta.text();
     let resultado = null;

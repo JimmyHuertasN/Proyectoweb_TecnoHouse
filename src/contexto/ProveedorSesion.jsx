@@ -19,8 +19,14 @@ const ProveedorSesion = ({ children }) => {
         const { data } = supabase.auth.onAuthStateChange((_evento, sesion) => {
             // Supabase pide no esperar otras consultas dentro de este aviso: por eso se agenda aparte.
             setTimeout(async () => {
-                setUsuario(sesion ? await apiUsuarios.obtenerPerfil(sesion.user) : null);
-                setCargando(false);
+                try {
+                    setUsuario(sesion ? await apiUsuarios.obtenerPerfil(sesion.user) : null);
+                } catch (error) {
+                    console.error("No se pudo cargar el perfil autenticado:", error.message);
+                    setUsuario(null);
+                } finally {
+                    setCargando(false);
+                }
             }, 0);
         });
 
@@ -34,8 +40,12 @@ const ProveedorSesion = ({ children }) => {
 
         const actualizarAlVolver = async () => {
             if (document.visibilityState !== "visible") return;
-            const { data } = await supabase.auth.getSession();
-            if (data.session) setUsuario(await apiUsuarios.obtenerPerfil(data.session.user));
+            try {
+                const { data } = await supabase.auth.getSession();
+                if (data.session) setUsuario(await apiUsuarios.obtenerPerfil(data.session.user));
+            } catch (error) {
+                console.error("No se pudo actualizar el perfil al volver a la pestaña:", error.message);
+            }
         };
 
         document.addEventListener("visibilitychange", actualizarAlVolver);
