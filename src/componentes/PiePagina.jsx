@@ -1,5 +1,5 @@
 import { Camera, Mail, MapPin, Phone, UsersRound } from "lucide-react";
-import { CONTACTO } from "../../datos/contacto.js";
+import { CONTACTO } from "../datos/contacto.js";
 
 const ENLACES = [
     { href: "/reparaciones#servicios", texto: "Servicios" },

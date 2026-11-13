@@ -1,5 +1,5 @@
-import Estrellas from "./panel/Estrellas.jsx";
-import { iniciales } from "../utilidades/formato.js";
+import Estrellas from "../panel/Estrellas.jsx";
+import { iniciales } from "../../utilidades/formato.js";
 
 const TarjetaTecnico = ({ tecnico }) => {
     const calificacion = Number(tecnico.calificacion_promedio ?? tecnico.calificacion ?? 0);

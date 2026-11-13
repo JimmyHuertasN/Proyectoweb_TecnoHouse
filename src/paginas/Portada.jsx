@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, MessageCircle, ShieldCheck, ShoppingBag, UsersRound, Wrench } from "lucide-react";
 import { obtenerProductos } from "../api/productos.js";
 import ImagenProducto from "../componentes/ImagenProducto.jsx";
-import PiePagina from "../componentes/inicio/PiePagina.jsx";
+import PiePagina from "../componentes/PiePagina.jsx";
 import { CATEGORIAS_PRODUCTO } from "../datos/categoriasProductos.js";
 import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
