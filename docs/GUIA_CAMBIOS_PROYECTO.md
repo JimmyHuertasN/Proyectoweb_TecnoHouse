@@ -173,15 +173,17 @@ El archivo `README.md` describe la configuración básica de Supabase y enumera 
 | Área | Ubicación principal |
 |---|---|
 | Rutas y composición | `src/Aplicacion.jsx`, `src/principal.jsx` |
-| Sesión y roles | `src/contexto/`, `src/componentes/RutaProtegida.jsx`, `src/api/usuarios.js` |
-| Cliente | `src/paginas/panel/` |
-| Técnico | `src/paginas/tecnico/` |
-| Administración | `src/paginas/admin/`, `src/api/admin.js` |
-| Integración Supabase | `src/api/`, `supabase/*.sql` |
+| Sesión y roles | `src/contexto/`, `src/componentes/RutaProtegida.jsx`, `src/api/usuarios.js`, `src/paginas/autenticacion/`, `src/componentes/autenticacion/` |
+| Cliente | `src/paginas/cliente/`, `src/componentes/panel/cliente/` |
+| Técnico | `src/paginas/tecnico/`, `src/componentes/panel/tecnico/` |
+| Administración | `src/paginas/admin/`, `src/componentes/panel/admin/`, `src/api/admin.js` |
+| Integración Supabase y API | `src/api/`, `supabase/*.sql`, `backend/` |
 | Tienda pública | `src/paginas/tienda/`, `src/componentes/tienda/`, `src/contexto/ProveedorTienda.jsx`, `src/utilidades/whatsapp.js` |
 | Gestión de la tienda | `src/api/productos.js`, `src/api/pedidos.js`, `src/paginas/admin/GestionProductos.jsx`, `src/paginas/admin/PedidosTienda.jsx`, `src/utilidades/inventario.js` |
-| Reportes y exportación | `src/utilidades/reportes.js`, `src/utilidades/csv.js`, `src/paginas/admin/Estadisticas.jsx`, `src/componentes/panel/IngresosTotales.jsx`, `src/componentes/panel/ResumenTienda.jsx` |
-| Interfaz pública | `src/paginas/Portada.jsx`, `src/componentes/inicio/`, `src/paginas/Inicio.jsx` (`/reparaciones`) |
+| Reportes y exportación | `src/utilidades/reportes.js`, `src/utilidades/csv.js`, `src/paginas/admin/Estadisticas.jsx`, `src/componentes/panel/admin/IngresosTotales.jsx`, `src/componentes/panel/admin/ResumenTienda.jsx` |
+| Interfaz pública | `src/paginas/Portada.jsx`, `src/paginas/Reparaciones.jsx` (`/reparaciones`), `src/componentes/reparaciones/`, `src/componentes/PiePagina.jsx` |
+
+El 13 de noviembre de 2026 se reorganizaron las carpetas: las páginas de acceso pasaron a `paginas/autenticacion/`, las del cliente de `paginas/panel/` a `paginas/cliente/`, `paginas/Inicio.jsx` a `paginas/Reparaciones.jsx`, las secciones de `componentes/inicio/` a `componentes/reparaciones/`, y los componentes del panel que usa un solo rol a `componentes/panel/cliente/`, `tecnico/` o `admin/`. Las rutas que mencionan las secciones anteriores de esta guía corresponden a la ubicación que tenían en su momento. Los informes y esta guía están en `docs/`.
 
 ## Nota de implementación
 

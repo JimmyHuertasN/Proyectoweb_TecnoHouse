@@ -125,16 +125,29 @@ La aplicación es una SPA. Supabase Auth administra las sesiones y la API ASP.NE
 
 ```
 src/
-├── api/          Consultas a Supabase, agrupadas por tema
-├── componentes/  Componentes reutilizables (inicio, panel y tienda)
-├── contexto/     Sesión, tienda, avisos y confirmaciones compartidos por la app
-├── datos/        Datos fijos: servicios, estados, menús, categorías y contacto
-├── hooks/        Lógica reutilizable de las páginas
-├── paginas/      Páginas públicas, de la tienda y de cada panel
-├── utilidades/   Filtros, formatos, reportes, CSV, PDF, inventario y WhatsApp
-└── Aplicacion.jsx  Rutas de la aplicación
-supabase/         Scripts SQL de tablas, vistas, funciones y políticas
-backend/          API ASP.NET Core y configuración local
+├── api/                Consultas a Supabase y a la API, agrupadas por tema
+├── componentes/        Piezas compartidas (avisos, pie de página, ruta protegida...)
+│   ├── autenticacion/  Diseño y barra de las páginas de acceso
+│   ├── reparaciones/   Secciones de la página de reparaciones
+│   ├── tienda/         Encabezado, tarjetas y carrito de la tienda
+│   └── panel/          Piezas comunes de los tres paneles
+│       ├── cliente/    Solo del panel del cliente
+│       ├── tecnico/    Solo del panel del técnico
+│       └── admin/      Solo del panel del administrador
+├── contexto/           Sesión, tienda, avisos y confirmaciones compartidos por la app
+├── datos/              Datos fijos: servicios, estados, menús, categorías y contacto
+├── hooks/              Lógica reutilizable de las páginas
+├── paginas/            Portada, Reparaciones y página 404
+│   ├── autenticacion/  Iniciar sesión, registro y contraseñas
+│   ├── tienda/         Catálogo y detalle de producto
+│   ├── cliente/        Panel del cliente (/cliente)
+│   ├── tecnico/        Panel del técnico (/tecnico)
+│   └── admin/          Panel del administrador (/admin)
+├── utilidades/         Filtros, formatos, reportes, CSV, PDF, inventario y WhatsApp
+└── Aplicacion.jsx      Rutas de la aplicación
+supabase/               Scripts SQL de tablas, vistas, funciones y políticas
+backend/                API ASP.NET Core y configuración local
+docs/                   Guía de cambios, informes de revisión y capturas
 ```
 
 ## Cómo ejecutarlo
