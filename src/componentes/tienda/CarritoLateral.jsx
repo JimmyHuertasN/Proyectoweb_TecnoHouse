@@ -33,7 +33,6 @@ const LineaCarrito = ({ producto, cantidad }) => {
     );
 };
 
-/* Panel que se abre desde la derecha con los productos elegidos y el total. */
 const CarritoLateral = () => {
     const { lineas, total, cantidadEnCarrito, carritoAbierto, cerrarCarrito, vaciar } = useTienda();
     const botonCerrar = useRef(null);

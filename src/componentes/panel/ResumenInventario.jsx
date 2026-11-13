@@ -3,7 +3,6 @@ import { formatearPesos } from "../../utilidades/formato.js";
 import { productosPorReponer, resumenInventario } from "../../utilidades/inventario.js";
 import TarjetaMetrica from "./TarjetaMetrica.jsx";
 
-/* Métricas del inventario y la lista de productos que hay que reponer. */
 const ResumenInventario = ({ productos }) => {
     const resumen = resumenInventario(productos);
     const porReponer = productosPorReponer(productos);
