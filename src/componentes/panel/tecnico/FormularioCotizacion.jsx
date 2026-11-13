@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { prepararItems } from "../../api/tecnico.js";
-import { formatearPesos } from "../../utilidades/formato.js";
-import Aviso from "../Aviso.jsx";
-import useConfirmar from "../../hooks/useConfirmar.js";
+import { prepararItems } from "../../../api/tecnico.js";
+import { formatearPesos } from "../../../utilidades/formato.js";
+import Aviso from "../../Aviso.jsx";
+import useConfirmar from "../../../hooks/useConfirmar.js";
 
 // "clave" solo sirve para que React identifique cada fila al agregar o quitar ítems.
 const itemVacio = () => ({ clave: crypto.randomUUID(), concepto: "", precio: "" });

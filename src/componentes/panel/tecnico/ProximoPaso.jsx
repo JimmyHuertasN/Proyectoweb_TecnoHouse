@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { AVANCES_TECNICO, buscarOpcion, ESTADOS_SOLICITUD } from "../../datos/opciones.js";
-import Aviso from "../Aviso.jsx";
-import useConfirmar from "../../hooks/useConfirmar.js";
+import { AVANCES_TECNICO, buscarOpcion, ESTADOS_SOLICITUD } from "../../../datos/opciones.js";
+import Aviso from "../../Aviso.jsx";
+import useConfirmar from "../../../hooks/useConfirmar.js";
 
 /* Qué decirle al técnico cuando el siguiente paso no depende de un botón. */
 const ESPERAS = {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Aviso from "../Aviso.jsx";
+import Aviso from "../../Aviso.jsx";
 
 const VALORES_INICIALES = { hallazgos: "", recomendaciones: "" };
 

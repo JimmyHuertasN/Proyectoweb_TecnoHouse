@@ -4,7 +4,7 @@ import { cambiarDisponibilidad, listarCalificaciones, obtenerFichaTecnico } from
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import Estrellas from "../../componentes/panel/Estrellas.jsx";
-import InterruptorDisponibilidad from "../../componentes/panel/InterruptorDisponibilidad.jsx";
+import InterruptorDisponibilidad from "../../componentes/panel/tecnico/InterruptorDisponibilidad.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 

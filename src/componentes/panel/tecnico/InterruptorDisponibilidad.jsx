@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Aviso from "../Aviso.jsx";
+import Aviso from "../../Aviso.jsx";
 
 /* "alCambiar" la recibe del padre, que llama a la API. Si falla, el error se muestra aquí mismo. */
 const InterruptorDisponibilidad = ({ disponible, alCambiar }) => {
