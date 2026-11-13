@@ -121,7 +121,14 @@ Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
 
 ## Arquitectura
 
-La aplicación es una SPA. Supabase Auth administra las sesiones y la API ASP.NET Core atiende operaciones de dispositivos, servicios y perfiles con el JWT de Supabase. Las políticas RLS de PostgreSQL siguen controlando el acceso. Algunos módulos, como la tienda, todavía consultan Supabase directamente. Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
+La aplicación es una SPA. Supabase Auth administra las sesiones y la API ASP.NET Core recibe el JWT de Supabase en cada solicitud. Las políticas RLS de PostgreSQL siguen controlando el acceso en los dos caminos:
+
+| Camino | Módulos |
+|---|---|
+| API ASP.NET (`src/api/backend.js`) | Leer y actualizar perfiles; listar y crear dispositivos; listar, ver y crear solicitudes; reseñas públicas |
+| Supabase directo | Registro, inicio de sesión y contraseñas (Supabase Auth); editar y eliminar dispositivos; cotizaciones y calificación; tienda; paneles del técnico y del administrador; fotos, chat y notificaciones |
+
+Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
 
 ```
 src/
@@ -152,7 +159,7 @@ docs/                   Guía de cambios, informes de revisión y capturas
 
 ## Cómo ejecutarlo
 
-Requisitos: Node.js 20.19 o superior y un proyecto de Supabase.
+Requisitos: Node.js 20.19 o superior, un proyecto de Supabase y, para la API, el SDK de .NET 10 (Visual Studio 2026 es opcional).
 
 1. Instala las dependencias con `npm install`.
 2. Crea un archivo `.env` en la raíz del proyecto. En el Dashboard de Supabase, abre tu proyecto y pulsa **Connect** para copiar la URL y la clave pública. También puedes consultar las claves en **Settings → API Keys**:
@@ -162,7 +169,10 @@ Requisitos: Node.js 20.19 o superior y un proyecto de Supabase.
    VITE_TECNOHOUSE_API_URL=http://localhost:5100
    ```
    Usa solo la clave **pública** (`anon` o `sb_publishable_...`). La clave secreta (`service_role` o `sb_secret_...`) nunca va en el navegador ni en el repositorio.
-3. Ejecuta `npm run dev` y abre la dirección que muestra la terminal. Si cambias el `.env`, reinicia el servidor.
+3. Configura e inicia la API según [backend/README.md](./backend/README.md): abre `backend/TecnoHouse.Api.sln` y ejecuta el perfil `TecnoHouse.Api`, o usa `dotnet run` dentro de `backend/TecnoHouse.Api`. Scalar queda en `http://localhost:5100/scalar/v1`.
+4. En otra terminal, ejecuta `npm run dev` y abre la dirección que muestra la terminal. Si cambias el `.env`, reinicia el servidor.
+
+Cada integrante configura sus propios secretos de la API; la contraseña de la base de datos nunca se guarda en el repositorio. Vite no vigila la carpeta `backend/`, así que Visual Studio puede estar abierto mientras corre `npm run dev`.
 
 | Comando | Uso |
 |---|---|
@@ -192,6 +202,8 @@ Se hace una sola vez por proyecto.
 
 Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base.
 
+`supabase/esquema_para_api.sql` no forma parte de la instalación: es una consulta de solo lectura que lista columnas, relaciones y enums, y se usó para construir los modelos de la API.
+
 ## Datos
 
 - **API ASP.NET**: abre `backend/TecnoHouse.Api.sln` en Visual Studio y configura sus secretos locales según `backend/README.md`. La API usa el JWT de Supabase y RLS para autorizar las solicitudes.
@@ -212,5 +224,15 @@ Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambio
 
 ## Documentación
 
-- [GUIA_CAMBIOS_PROYECTO.md](./docs/GUIA_CAMBIOS_PROYECTO.md): evolución del proyecto y dónde está cada parte del código.
-- [VALIDACION_FINAL_Y_GUION_DEMO.md](./docs/VALIDACION_FINAL_Y_GUION_DEMO.md): checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios.
+| Documento | Contenido |
+|---|---|
+| [GUIA_CAMBIOS_PROYECTO.md](./docs/GUIA_CAMBIOS_PROYECTO.md) | Evolución del proyecto y dónde está cada parte del código. |
+| [VALIDACION_FINAL_Y_GUION_DEMO.md](./docs/VALIDACION_FINAL_Y_GUION_DEMO.md) | Checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios. |
+| [INFORME_REVISION_EXPOSOTWARE.md](./docs/INFORME_REVISION_EXPOSOTWARE.md) | Avances, riesgos y recomendaciones para la presentación. |
+| [INFORME_LINEA_BASE_TECNICA.md](./docs/INFORME_LINEA_BASE_TECNICA.md) | Diagnóstico técnico inicial: entorno, comandos y hallazgos. |
+| [INFORME_AUDITORIA_FLUJO_CLIENTE.md](./docs/INFORME_AUDITORIA_FLUJO_CLIENTE.md) | Auditoría del recorrido del cliente y escenarios manuales. |
+| [INFORME_AUDITORIA_TECNICO_ADMIN.md](./docs/INFORME_AUDITORIA_TECNICO_ADMIN.md) | Permisos y transiciones de técnico y administrador. |
+| [INFORME_REVISION_RESPONSIVE.md](./docs/INFORME_REVISION_RESPONSIVE.md) | Revisión visual, accesibilidad y pruebas responsive pendientes. |
+| [PLAN_ACCION_PULIDO.md](./docs/PLAN_ACCION_PULIDO.md) | Plan de trabajo por fases y su estado. |
+
+Los informes tienen fecha; cada uno incluye al inicio una sección con su estado actual.
