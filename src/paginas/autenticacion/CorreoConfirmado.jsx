@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { errorEnlaceCorreo } from "../../api/supabase.js";
-import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
+import DisenoAutenticacion from "../../componentes/autenticacion/DisenoAutenticacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { primerNombre } from "../../utilidades/formato.js";
 import { rutaInicio } from "../../utilidades/rutas.js";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { enviarRecuperacion } from "../../api/usuarios.js";
 import Aviso from "../../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
+import DisenoAutenticacion from "../../componentes/autenticacion/DisenoAutenticacion.jsx";
 import { esCorreoValido } from "../../utilidades/validaciones.js";
 
 /* Ruta /recuperar: pide el correo y envía el enlace para crear una contraseña nueva. */
