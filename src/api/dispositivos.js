@@ -39,7 +39,7 @@ export const listarDispositivos = async (usuarioId) => {
     const filas = await llamarApi("/api/dispositivos");
     return filas
         .filter((fila) => fila.clienteId === usuarioId)
-        .sort((a, b) => b.creadoEn.localeCompare(a.creadoEn))
+        .sort((dispositivoA, dispositivoB) => dispositivoB.creadoEn.localeCompare(dispositivoA.creadoEn))
         .map((fila) => aDispositivo({
             id: fila.id,
             cliente_id: fila.clienteId,

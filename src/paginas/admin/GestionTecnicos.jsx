@@ -37,7 +37,10 @@ const GestionTecnicos = () => {
     // Cada vez que aumenta, el useEffect vuelve a pedir la lista a Supabase.
     const [recargas, setRecargas] = useState(0);
     // Los activos primero; dentro de cada grupo se conserva el orden por nombre que trae la API.
-    const ordenados = useMemo(() => [...tecnicos].sort((a, b) => Number(b.activo) - Number(a.activo)), [tecnicos]);
+    const ordenados = useMemo(
+        () => [...tecnicos].sort((tecnicoA, tecnicoB) => Number(tecnicoB.activo) - Number(tecnicoA.activo)),
+        [tecnicos]
+    );
     const paginado = useFiltroPaginado(ordenados, cumpleFiltrosTecnico, FILTROS_VACIOS);
 
     useEffect(() => {

@@ -26,11 +26,11 @@ export const stockPorCategoria = (productos) => {
 
     return Object.keys(suma)
         .map((categoria) => ({ categoria, unidades: suma[categoria] }))
-        .sort((a, b) => b.unidades - a.unidades);
+        .sort((categoriaA, categoriaB) => categoriaB.unidades - categoriaA.unidades);
 };
 
 /* Productos a la venta que están agotados o casi, empezando por los de menos stock. */
 export const productosPorReponer = (productos) =>
     productos
         .filter((producto) => producto.activo && producto.stock <= POCAS_UNIDADES)
-        .sort((a, b) => a.stock - b.stock);
+        .sort((productoA, productoB) => productoA.stock - productoB.stock);

@@ -29,7 +29,7 @@ const BarraNavegacion = () => {
         const observador = new IntersectionObserver((entradas) => {
             const visibles = entradas
                 .filter((entrada) => entrada.isIntersecting)
-                .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+                .sort((entradaA, entradaB) => entradaB.intersectionRatio - entradaA.intersectionRatio);
             if (visibles[0]) setSeccionActiva(visibles[0].target.id);
         }, { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.15, 0.4, 0.7] });
 

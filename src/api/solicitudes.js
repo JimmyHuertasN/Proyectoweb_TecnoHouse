@@ -64,7 +64,7 @@ export const listarSolicitudes = async (usuarioId) => {
     const filas = await llamarApi("/api/servicios");
     return filas
         .filter((fila) => fila.clienteId === usuarioId)
-        .sort((a, b) => b.creadoEn.localeCompare(a.creadoEn))
+        .sort((solicitudA, solicitudB) => solicitudB.creadoEn.localeCompare(solicitudA.creadoEn))
         .map((fila) => aSolicitud({
             ...fila,
             cliente_id: fila.clienteId,
@@ -156,7 +156,7 @@ const aCotizacion = (fila) => ({
     creadaEn: fila.creado_en,
     items: fila.items
         .map((item) => ({ id: item.id, concepto: item.concepto, precio: Number(item.precio) }))
-        .sort((a, b) => a.id - b.id),
+        .sort((itemA, itemB) => itemA.id - itemB.id),
 });
 
 /* El total no se calcula aquí: la base de datos lo actualiza cada vez que cambian los ítems. */
@@ -230,5 +230,5 @@ export const obtenerHistorial = async (solicitud) => {
         })),
     ];
 
-    return eventos.sort((a, b) => b.fecha.localeCompare(a.fecha));
+    return eventos.sort((eventoA, eventoB) => eventoB.fecha.localeCompare(eventoA.fecha));
 };
