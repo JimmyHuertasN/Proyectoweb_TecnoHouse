@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registrarUsuario } from "../api/usuarios.js";
-import Aviso from "../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
-import ReenviarConfirmacion from "../componentes/ReenviarConfirmacion.jsx";
-import { validarDatosPersonales } from "../utilidades/validaciones.js";
+import { registrarUsuario } from "../../api/usuarios.js";
+import Aviso from "../../componentes/Aviso.jsx";
+import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../../componentes/ReenviarConfirmacion.jsx";
+import { validarDatosPersonales } from "../../utilidades/validaciones.js";
 
 const CAMPOS = [
     { nombre: "nombre", etiqueta: "Nombre completo", tipo: "text", placeholder: "Ej. Ana Pérez", autoComplete: "name" },

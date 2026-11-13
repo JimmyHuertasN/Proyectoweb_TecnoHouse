@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { errorEnlaceCorreo } from "../api/supabase.js";
-import { cambiarContrasena } from "../api/usuarios.js";
-import Aviso from "../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
-import { useSesion } from "../contexto/ContextoSesion.js";
-import { rutaInicio } from "../utilidades/rutas.js";
+import { errorEnlaceCorreo } from "../../api/supabase.js";
+import { cambiarContrasena } from "../../api/usuarios.js";
+import Aviso from "../../componentes/Aviso.jsx";
+import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
+import { useSesion } from "../../contexto/ContextoSesion.js";
+import { rutaInicio } from "../../utilidades/rutas.js";
 
 /*
     Ruta /nueva-contrasena: aquí llega el enlace del correo de recuperación.

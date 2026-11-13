@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { useSesion } from "../contexto/ContextoSesion.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 
 /*
     Ruta /salir. Se cierra la sesión desde aquí (fuera del panel) porque si se

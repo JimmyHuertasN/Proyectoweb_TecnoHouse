@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Aviso from "../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../componentes/DisenoAutenticacion.jsx";
-import ReenviarConfirmacion from "../componentes/ReenviarConfirmacion.jsx";
-import { useSesion } from "../contexto/ContextoSesion.js";
-import { rutaInicio } from "../utilidades/rutas.js";
+import Aviso from "../../componentes/Aviso.jsx";
+import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../../componentes/ReenviarConfirmacion.jsx";
+import { useSesion } from "../../contexto/ContextoSesion.js";
+import { rutaInicio } from "../../utilidades/rutas.js";
 
 const IniciarSesion = () => {
     const [correo, setCorreo] = useState("");
