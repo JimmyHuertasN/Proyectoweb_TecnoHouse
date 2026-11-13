@@ -14,7 +14,7 @@
 
 ## Comprobaciones realizadas
 
-- El editor no reporta errores en [BarraNavegacion.jsx](./src/componentes/BarraNavegacion.jsx) ni [principal.css](./src/estilos/principal.css).
+- El editor no reporta errores en [BarraNavegacion.jsx](../src/componentes/reparaciones/BarraNavegacion.jsx) ni [principal.css](../src/estilos/principal.css).
 - `git diff --check` termina correctamente.
 - `npm run lint` termina correctamente y conserva únicamente las cuatro advertencias ya conocidas en otros archivos.
 - Los anclajes usados por la navegación pública tienen secciones correspondientes: `inicio`, `servicios`, `tecnicos`, `catalogo` y `ubicacion`.

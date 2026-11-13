@@ -199,5 +199,5 @@ Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambio
 
 ## Documentación
 
-- [GUIA_CAMBIOS_PROYECTO.md](./GUIA_CAMBIOS_PROYECTO.md): evolución del proyecto y dónde está cada parte del código.
-- [VALIDACION_FINAL_Y_GUION_DEMO.md](./VALIDACION_FINAL_Y_GUION_DEMO.md): checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios.
+- [GUIA_CAMBIOS_PROYECTO.md](./docs/GUIA_CAMBIOS_PROYECTO.md): evolución del proyecto y dónde está cada parte del código.
+- [VALIDACION_FINAL_Y_GUION_DEMO.md](./docs/VALIDACION_FINAL_Y_GUION_DEMO.md): checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios.

@@ -20,7 +20,7 @@ La validación estática ejecutada el **2026-11-01** fue:
 
 ## 2. Cuentas y datos ficticios
 
-Usar solo en una base de desarrollo creada para la demo. El script [datos_prueba.sql](./supabase/datos_prueba.sql) crea estas cuentas confirmadas:
+Usar solo en una base de desarrollo creada para la demo. El script [datos_prueba.sql](../supabase/datos_prueba.sql) crea estas cuentas confirmadas:
 
 | Rol | Correo ficticio | Uso en la demo |
 |---|---|---|
@@ -33,8 +33,8 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 ### Preparación
 
 1. Configurar `.env` con una URL y clave pública de Supabase de desarrollo.
-2. Ejecutar las migraciones indicadas en [README.md](./README.md), incluidas funciones RPC, políticas RLS, notificaciones y fotos.
-3. Ejecutar [datos_prueba.sql](./supabase/datos_prueba.sql).
+2. Ejecutar las migraciones indicadas en [README.md](../README.md), incluidas funciones RPC, políticas RLS, notificaciones y fotos.
+3. Ejecutar [datos_prueba.sql](../supabase/datos_prueba.sql).
 4. Confirmar que existen al menos un producto activo, un dispositivo libre de María y un técnico disponible.
 5. Abrir la aplicación con `npm run dev` y comprobar que la URL de autenticación vuelve al origen local.
 6. Para fotos, preparar al menos una imagen pequeña asociada al servicio de la historia.
@@ -73,14 +73,14 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 | Área | Precondición y acción | Resultado esperado | Resultado observado/evidencia | Estado |
 |---|---|---|---|---|
-| Catálogo público | Abrir `/#catalogo`, esperar carga y buscar por nombre/categoría | Productos activos, precio, stock, imagen y vacío filtrado son comprensibles; el CTA abre WhatsApp | La bandera `CONTACTO.whatsappConfigurado` quedó centralizada en [contacto.js](./src/datos/contacto.js); falta validar el clic en navegador | Pendiente |
+| Catálogo público | Abrir `/#catalogo`, esperar carga y buscar por nombre/categoría | Productos activos, precio, stock, imagen y vacío filtrado son comprensibles; el CTA abre WhatsApp | La bandera `CONTACTO.whatsappConfigurado` quedó centralizada en [contacto.js](../src/datos/contacto.js); falta validar el clic en navegador | Pendiente |
 | Contacto | Abrir `/#contacto`, completar formulario y probar canales | Los canales configurados funcionan; los pendientes no parecen enlaces activos | Correo tiene formato; horario, redes y datos públicos requieren confirmación del propietario | Pendiente |
 | Ubicación | Abrir `/#ubicacion` | Dirección/mapa solo se muestran como definitivos si están confirmados | Hay dirección de referencia y coordenadas pendientes de confirmar | Pendiente |
 | Notificaciones | Provocar asignación, cambio de estado y mensaje | Cada participante recibe aviso pertinente; admin no recibe acciones de edición | Depende de triggers y RLS de `supabase/notificaciones.sql` | Pendiente |
-| Chat | Enviar desde cliente y técnico; abrir como admin | Participantes escriben; admin lee sin formulario | Implementado en [ChatServicio.jsx](./src/componentes/panel/ChatServicio.jsx); falta prueba contra RLS | Pendiente |
-| Fotos | Cargar, listar y abrir una foto | URL firmada válida para participantes; error visible si Storage niega acceso | Depende de bucket/políticas de [fotos_servicio.sql](./supabase/fotos_servicio.sql) | Pendiente |
+| Chat | Enviar desde cliente y técnico; abrir como admin | Participantes escriben; admin lee sin formulario | Implementado en [ChatServicio.jsx](../src/componentes/panel/ChatServicio.jsx); falta prueba contra RLS | Pendiente |
+| Fotos | Cargar, listar y abrir una foto | URL firmada válida para participantes; error visible si Storage niega acceso | Depende de bucket/políticas de [fotos_servicio.sql](../supabase/fotos_servicio.sql) | Pendiente |
 | Exportación | Admin aplica texto, estado y fechas; exporta | CSV contiene todas las coincidencias filtradas, no solo la página visible | Código usa `paginado.filtrados`; falta ejecución con datos reales | Pendiente |
-| Paginación | Ir a una página alta y cambiar filtros | La página vuelve a 1 y el contador coincide | Implementado en [useFiltroPaginado.js](./src/hooks/useFiltroPaginado.js) | OK estático |
+| Paginación | Ir a una página alta y cambiar filtros | La página vuelve a 1 y el contador coincide | Implementado en [useFiltroPaginado.js](../src/hooks/useFiltroPaginado.js) | OK estático |
 | Responsive | Probar 390 px, 768 px y 1440 px; navegar con teclado | Menú, tablas, formularios, modal, chat y CSV siguen siendo utilizables | Requiere revisión visual manual; no se certifica por consola | Pendiente |
 
 ## 5. Fallos clasificados
@@ -95,7 +95,7 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 - Ejecutar la historia contra Supabase y adjuntar capturas de cada estado.
 - Verificar RPC `aceptar_servicio` y `responder_cotizacion`, triggers de notificación, políticas RLS y Storage.
-- Confirmar teléfono, WhatsApp, horario, dirección, coordenadas, redes y correo público en [contacto.js](./src/datos/contacto.js).
+- Confirmar teléfono, WhatsApp, horario, dirección, coordenadas, redes y correo público en [contacto.js](../src/datos/contacto.js).
 
 No se deben presentar como métricas reales los totales del dashboard, calificaciones, ingresos ni cantidades del CSV: todos los valores de esta validación son ficticios o dependen de la instancia de desarrollo.
 
