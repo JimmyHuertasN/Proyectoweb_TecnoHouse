@@ -4,7 +4,11 @@
 
 Esta guía resume los cambios registrados en el historial de Git de la rama revisada, desde el primer commit (`b3a71d6`, 8 de septiembre de 2026) hasta `9060f95` (24 de octubre de 2026). El árbol de trabajo estaba limpio al hacer la revisión, así que no había modificaciones locales sin commit que pudieran atribuirse a una edición actual. La referencia `origin/main` contiene después un commit que actualiza los metadatos de contribuyentes de GitHub; ese commit no introduce cambios funcionales en la aplicación.
 
-Actualización del 3 de noviembre de 2026: se agregaron la tienda virtual, una portada que separa la tienda de las reparaciones y la gestión de la tienda en el panel del administrador. Esos cambios se describen en las secciones 7, 9 y 11.
+Actualizaciones posteriores, hasta el commit `dc3e185` (13 de noviembre de 2026):
+
+- Tienda virtual, portada que separa la tienda de las reparaciones y gestión de la tienda en el panel del administrador (secciones 7, 9 y 11).
+- API ASP.NET Core conectada a Supabase (sección 15).
+- Reorganización de carpetas y correcciones de código limpio (sección 16).
 
 El historial permite describir qué se incorporó al proyecto, pero no demostrar por sí solo quién escribió cada línea. Por eso, el documento habla de cambios registrados en la rama y no atribuye autoría individual a cada implementación.
 
@@ -142,7 +146,7 @@ Se cambió la entrada del sitio:
 | Ruta | Contenido |
 |---|---|
 | `/` | Portada nueva (`src/paginas/Portada.jsx`) |
-| `/reparaciones` | La página de inicio anterior (`Inicio.jsx`), sin la sección de catálogo |
+| `/reparaciones` | La página de inicio anterior, sin la sección de catálogo. Hoy se llama `Reparaciones.jsx` (sección 16) |
 | `/tienda` | Tienda virtual (sección 9) |
 
 La portada muestra el nombre TecnoHouse con un resumen de lo que hace el negocio y tres datos destacados: tipos de servicio, cantidad de técnicos y seguimiento en línea. Debajo hay dos tarjetas:
@@ -168,6 +172,8 @@ El proyecto utiliza React 19, Vite, React Router, Tailwind CSS 4 y el cliente de
 
 El archivo `README.md` describe la configuración básica de Supabase y enumera varios scripts SQL. Para que todas las funciones estén disponibles, además de las variables de entorno, deben estar aplicados los scripts correspondientes a roles, reseñas, gravedad/categoría, fotos, creación de técnicos, mensajería, notificaciones y catálogo, según los módulos que se vayan a utilizar.
 
+La API se compila y ejecuta con el SDK de .NET 10 (`dotnet run` en `backend/TecnoHouse.Api` o el perfil `TecnoHouse.Api` de Visual Studio). El frontend la encuentra con la variable `VITE_TECNOHOUSE_API_URL`. Para que Visual Studio y Vite puedan trabajar a la vez, `vite.config.js` excluye la carpeta `backend/` de la vigilancia de archivos.
+
 ## 14. Archivos principales por área
 
 | Área | Ubicación principal |
@@ -182,8 +188,44 @@ El archivo `README.md` describe la configuración básica de Supabase y enumera 
 | Gestión de la tienda | `src/api/productos.js`, `src/api/pedidos.js`, `src/paginas/admin/GestionProductos.jsx`, `src/paginas/admin/PedidosTienda.jsx`, `src/utilidades/inventario.js` |
 | Reportes y exportación | `src/utilidades/reportes.js`, `src/utilidades/csv.js`, `src/paginas/admin/Estadisticas.jsx`, `src/componentes/panel/admin/IngresosTotales.jsx`, `src/componentes/panel/admin/ResumenTienda.jsx` |
 | Interfaz pública | `src/paginas/Portada.jsx`, `src/paginas/Reparaciones.jsx` (`/reparaciones`), `src/componentes/reparaciones/`, `src/componentes/PiePagina.jsx` |
+| API ASP.NET | `backend/TecnoHouse.Api/` (controladores, modelos, middleware), `src/api/backend.js` |
 
-El 13 de noviembre de 2026 se reorganizaron las carpetas: las páginas de acceso pasaron a `paginas/autenticacion/`, las del cliente de `paginas/panel/` a `paginas/cliente/`, `paginas/Inicio.jsx` a `paginas/Reparaciones.jsx`, las secciones de `componentes/inicio/` a `componentes/reparaciones/`, y los componentes del panel que usa un solo rol a `componentes/panel/cliente/`, `tecnico/` o `admin/`. Las rutas que mencionan las secciones anteriores de esta guía corresponden a la ubicación que tenían en su momento. Los informes y esta guía están en `docs/`.
+## 15. API ASP.NET Core
+
+Se agregó una API en `backend/TecnoHouse.Api` (solución `TecnoHouse.Api.sln`) que se conecta a las tablas existentes de Supabase con EF Core y Npgsql. No crea ni migra tablas: modela las que ya existen, con sus relaciones y enums.
+
+- **Controladores:** `GET` y `POST` para perfiles, técnicos, dispositivos, servicios, diagnósticos, cotizaciones, ítems, calificaciones, mensajes, fotos, notificaciones y productos; `PUT` para el perfil actual; `GET` de solo lectura para las vistas públicas (`tecnicos-publicos`, `resenas-publicas`, `productos-activos`).
+- **Seguridad:** valida el JWT de Supabase y pasa la identidad a PostgreSQL (`SupabaseRlsMiddleware`), así que las políticas RLS siguen aplicando. Los errores se devuelven con un formato común (`ApiExceptionMiddleware`).
+- **Exploración:** en desarrollo, Scalar muestra los endpoints en `http://localhost:5100/scalar/v1`.
+
+En el frontend, `src/api/backend.js` envía el token de la sesión en cada llamada y explica qué revisar si la API no responde. Hoy usan la API la lectura y actualización de perfiles, el listado y la creación de dispositivos, el listado, detalle y creación de solicitudes y las reseñas públicas. Un ajuste posterior muestra los errores al cargar el perfil desde la API en vez de dejar la pantalla vacía. El resto de módulos sigue consultando Supabase directamente.
+
+Cada integrante configura en su equipo los secretos `Supabase:Url` y `ConnectionStrings:TecnoHouse` (Session pooler, puerto 5432), según `backend/README.md`. La contraseña de la base nunca se guarda en el repositorio. `supabase/esquema_para_api.sql` es la consulta de solo lectura con la que se obtuvieron columnas, relaciones y enums para los modelos.
+
+## 16. Reorganización de carpetas y código limpio
+
+El 13 de noviembre de 2026 se reorganizó `src/` para que cada carpeta tenga una sola responsabilidad y el nombre coincida con su ruta:
+
+| Antes | Ahora |
+|---|---|
+| `paginas/` (páginas de acceso sueltas) | `paginas/autenticacion/` |
+| `componentes/` (barra y diseño de acceso) | `componentes/autenticacion/` |
+| `paginas/panel/` | `paginas/cliente/` |
+| `paginas/Inicio.jsx` | `paginas/Reparaciones.jsx` |
+| `componentes/inicio/` y las tarjetas de la página de reparaciones | `componentes/reparaciones/` |
+| `componentes/inicio/PiePagina.jsx` y su copia en `componentes/` | Un solo `componentes/PiePagina.jsx` |
+| `componentes/panel/` (39 archivos juntos) | Los compartidos siguen en `panel/`; los de un solo rol pasaron a `panel/cliente/`, `panel/tecnico/` y `panel/admin/` |
+| Informes y esta guía en la raíz | `docs/` |
+
+En el mismo trabajo se aplicaron las prácticas de código limpio vistas en clase:
+
+- **Nombres con significado:** los ordenamientos que usaban `(a, b)` ahora dicen qué comparan, por ejemplo `(productoA, productoB)`.
+- **Formato consistente:** `vite.config.js` y `src/principal.jsx` usan el mismo estilo que el resto (4 espacios, comillas dobles y punto y coma). Las líneas largas se dividieron.
+- **Comentarios con criterio:** se corrigieron comentarios desactualizados y se quitaron los que solo repetían el nombre del componente.
+- **Sin código muerto:** se eliminó un `PiePagina.jsx` que solo reexportaba otro archivo y no se usaba.
+- **Importaciones ordenadas:** en `src/Aplicacion.jsx` las páginas se agrupan por área, en el mismo orden que las rutas.
+
+Los cambios se subieron en commits pequeños (uno por carpeta o tema) y cada uno compila por sí solo. Las rutas que mencionan las secciones anteriores de esta guía corresponden a la ubicación que tenían en su momento.
 
 ## Nota de implementación
 

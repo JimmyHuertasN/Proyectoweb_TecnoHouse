@@ -1,5 +1,21 @@
 # Plan de acción para pulir TecnoHouse
 
+## Estado al 13 de noviembre de 2026
+
+| Fase | Estado | Resultado |
+|---|---|---|
+| 1. Línea base técnica | Hecha | [INFORME_LINEA_BASE_TECNICA.md](./INFORME_LINEA_BASE_TECNICA.md) |
+| 2. Catálogo en la portada | Superada | El catálogo pasó a ser una tienda con páginas propias (`/tienda`), y la portada separa tienda y reparaciones. |
+| 3. Contenido público y contacto | Hecha en código | Datos centralizados en `src/datos/contacto.js`; falta la confirmación del negocio. |
+| 4. Pulido visual y responsive | Parcial | [INFORME_REVISION_RESPONSIVE.md](./INFORME_REVISION_RESPONSIVE.md); faltan las pruebas en navegador. |
+| 5. Flujo del cliente | Hecha | [INFORME_AUDITORIA_FLUJO_CLIENTE.md](./INFORME_AUDITORIA_FLUJO_CLIENTE.md) |
+| 6. Técnico y administrador | Hecha | [INFORME_AUDITORIA_TECNICO_ADMIN.md](./INFORME_AUDITORIA_TECNICO_ADMIN.md) |
+| 7. Supabase y datos de demo | Parcial | El README documenta el orden de los scripts y la API; falta ejecutar la historia en una instancia de desarrollo. |
+| 8. Calidad, lint y build | Parcial | El build funciona con Node 20.19+; se aplicaron correcciones de código limpio; siguen las 4 advertencias de lint. |
+| 9. Validación y guion | Hecha | [VALIDACION_FINAL_Y_GUION_DEMO.md](./VALIDACION_FINAL_Y_GUION_DEMO.md), actualizada con la tienda y la API. |
+
+Del criterio de "terminado" del final, quedan pendientes: confirmar los datos de contacto, ejecutar la historia completa contra Supabase y guardar los pedidos de la tienda en la base. La "Situación conocida" y los prompts de abajo describen el proyecto al 31 de octubre; las rutas de archivos corresponden a esa fecha (ver la sección 16 de la [guía de cambios](./GUIA_CAMBIOS_PROYECTO.md)).
+
 ## Contexto previo
 
 TecnoHouse ya cuenta con una base funcional amplia para una plataforma de servicio técnico: portada pública, autenticación con Supabase, perfiles por rol, paneles de cliente/técnico/administrador, solicitudes de reparación, dispositivos, diagnósticos, cotizaciones, reseñas, fotos, chat, notificaciones, catálogo, estadísticas y exportación CSV.

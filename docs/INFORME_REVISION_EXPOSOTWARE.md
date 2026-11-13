@@ -1,7 +1,7 @@
 # Informe de revisión del proyecto — TecnoHouse
 
-**Actualizado:** 12 de noviembre de 2026
-**Alcance:** revisión estática del código, rutas, componentes, documentación y scripts SQL presentes en el repositorio. Se consideraron los cambios recientes de la tienda y del panel administrativo. No se ejecutaron pruebas ni se verificó una instancia de Supabase desplegada.
+**Actualizado:** 13 de noviembre de 2026
+**Alcance:** revisión estática del código, rutas, componentes, documentación y scripts SQL presentes en el repositorio. Se consideraron los cambios recientes de la tienda, del panel administrativo, la API ASP.NET y la reorganización de carpetas. Se ejecutaron lint y build (frontend y API) sin errores; no se ejecutaron pruebas funcionales ni se verificó la historia completa en una instancia de Supabase.
 
 ## Resumen ejecutivo
 
@@ -15,7 +15,9 @@ La principal limitación para presentar la tienda como un flujo comercial comple
 - **Seguimiento y comunicación.** Las fotos privadas, el chat del servicio, las notificaciones en tiempo real y la barra de progreso aportan trazabilidad y mantienen informado al cliente (`src/api/fotos.js`, `src/api/mensajes.js`, `src/api/notificaciones.js`).
 - **Tienda pública funcional para consulta y contacto.** La portada separa tienda y reparaciones, muestra una vista previa de productos y ofrece accesos directos. La tienda incluye categorías, búsqueda, filtro de disponibilidad, orden por precio/nombre/fecha y detalle del producto (`src/paginas/Portada.jsx`, `src/paginas/tienda/Tienda.jsx`, `src/paginas/tienda/DetalleProducto.jsx`).
 - **Carrito con límites de inventario.** El carrito persiste en el navegador, toma el precio vigente del producto y no permite agregar más unidades que el stock cargado. El pedido se compone con productos y total para abrir WhatsApp (`src/contexto/ProveedorTienda.jsx`, `src/componentes/tienda/CarritoLateral.jsx`, `src/utilidades/whatsapp.js`).
-- **Operación administrativa ampliada.** El panel permite administrar productos, imágenes, precios y stock; tiene resúmenes de inventario y tienda, ingresos combinados en el dashboard, estadísticas por periodo y exportación CSV. Se añadió una sección de pedidos, aunque depende de una futura tabla en Supabase (`src/paginas/admin/`, `src/componentes/panel/ResumenTienda.jsx`, `src/api/pedidos.js`).
+- **Operación administrativa ampliada.** El panel permite administrar productos, imágenes, precios y stock; tiene resúmenes de inventario y tienda, ingresos combinados en el dashboard, estadísticas por periodo y exportación CSV. Se añadió una sección de pedidos, aunque depende de una futura tabla en Supabase (`src/paginas/admin/`, `src/componentes/panel/admin/ResumenTienda.jsx`, `src/api/pedidos.js`).
+- **API propia en ASP.NET Core.** Perfiles, dispositivos, solicitudes del cliente y reseñas públicas pasan por una API que valida el JWT de Supabase y conserva las políticas RLS. Se puede explorar con Scalar (`backend/`, `src/api/backend.js`).
+- **Código organizado y legible.** Las carpetas se separaron por responsabilidad y por rol (`autenticacion`, `reparaciones`, `cliente`, `tecnico`, `admin`, `tienda`), se eliminó código sin uso y se aplicaron prácticas de código limpio: nombres descriptivos, formato uniforme y comentarios que explican el porqué.
 - **Base de seguridad y roles.** La aplicación protege las rutas por rol y delega el aislamiento de datos a políticas RLS y vistas públicas de Supabase. Esto depende de aplicar correctamente los scripts SQL del repositorio y configurar permisos en el proyecto correspondiente.
 - **Documentación de puesta en marcha.** El README describe las rutas, roles, tecnología, variables de entorno, scripts SQL y comandos disponibles. `package.json` declara scripts de desarrollo, compilación, vista previa y lint.
 
@@ -25,9 +27,10 @@ La principal limitación para presentar la tienda como un flujo comercial comple
 2. **El stock no se descuenta al vender.** El carrito limita cantidades según el stock leído, pero no hay confirmación transaccional ni descuento de inventario al completar una venta. El valor mostrado puede quedar desactualizado si hay compras concurrentes.
 3. **Los destacados no tienen selección administrativa persistida.** La portada muestra productos disponibles en el orden recibido y tanto ella como el selector de tienda marcan el soporte de la columna `destacado` como pendiente (`src/paginas/Portada.jsx`, `src/paginas/tienda/Tienda.jsx`).
 4. **Faltan datos públicos por validar.** En `src/datos/contacto.js`, el teléfono, WhatsApp y correo están marcados como configurados; el horario sigue sin confirmar, las redes no tienen URL y el comentario indica que las coordenadas son de referencia hasta validar la dirección. Confirmar la información directamente con el negocio antes de publicar o exponerla.
-5. **La instalación depende de Supabase y de scripts SQL.** La aplicación requiere credenciales públicas válidas, URLs de autenticación, tablas, vistas, buckets y políticas. El README presenta un orden de scripts, pero no hay evidencia en el repositorio que confirme su aplicación o las políticas RLS del entorno de demostración.
+5. **La instalación depende de Supabase, de scripts SQL y de la API.** La aplicación requiere credenciales públicas válidas, URLs de autenticación, tablas, vistas, buckets y políticas. Además, la API debe estar encendida con sus secretos configurados en cada equipo; sin ella no cargan el perfil, los dispositivos ni las solicitudes del cliente. El README presenta un orden de scripts, pero no hay evidencia en el repositorio que confirme su aplicación o las políticas RLS del entorno de demostración.
 6. **Filtros y paginación del panel se aplican sobre datos cargados.** Es adecuado para un volumen pequeño de demostración; con muchos registros convendría filtrar y paginar desde Supabase.
-7. **No se declara un conjunto automatizado de pruebas.** El `package.json` incluye `lint`, pero no scripts de test. Esta revisión fue estática y no certifica funcionamiento visual, accesibilidad, reglas RLS ni flujos contra una instancia real.
+7. **No se declara un conjunto automatizado de pruebas.** El `package.json` incluye `lint`, pero no scripts de test. Lint y build pasan, pero eso no certifica funcionamiento visual, accesibilidad, reglas RLS ni flujos contra una instancia real.
+8. **Hay dos caminos hacia los datos.** Parte de los módulos usa la API y otra parte consulta Supabase directamente. Funciona, pero conviene explicarlo en la presentación y decidir si el resto de módulos migrará a la API.
 
 ## Recomendaciones priorizadas
 

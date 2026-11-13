@@ -9,14 +9,18 @@ Esta checklist está preparada para una instancia de desarrollo de Supabase con 
 - **Bloqueante**: no permite completar la historia principal.
 - **Pendiente**: depende de configuración externa, credenciales, RLS, archivos o confirmación del propietario.
 
-La validación estática ejecutada el **2026-11-01** fue:
+La validación estática ejecutada el **2026-11-13** (Node 24.20.0, commit `dc3e185`) fue:
 
 | Comprobación | Resultado observado | Clasificación | Evidencia |
 |---|---|---|---|
 | `npm run lint` | Termina sin errores; conserva cuatro advertencias React preexistentes | Importante | Salida de consola: `ChatServicio`, `GaleriaFotosServicio`, `PiePagina`, `useNotificaciones` |
-| `npm run build` | No termina con Node 18: Rolldown solicita `node:util.styleText` | Bloqueante para build local | Actualizar Node a la versión compatible con Vite/Rolldown |
+| `npm run build` | Compila sin errores | OK | Salida de Vite (`✓ built`) |
 | `git diff --check` | Sin errores de espacios | OK | Salida de Git |
+| `dotnet build` de la API | Compila sin errores | OK | Salida de .NET (`0 Errores`) |
+| API contra Supabase | Con los secretos configurados, `GET /api/productos-activos` y `GET /api/tecnicos-publicos` devolvieron datos (2026-11-12) | OK parcial | Solo se probaron endpoints públicos; los protegidos requieren sesión |
 | Historia contra Supabase | No ejecutada en esta sesión | Pendiente | Requiere URL, RLS, RPC, Storage y una instancia de desarrollo accesible |
+
+La validación del **2026-11-01** no pudo compilar porque usaba Node 18; ese bloqueo quedó resuelto al usar Node 20.19 o superior.
 
 ## 2. Cuentas y datos ficticios
 
@@ -32,12 +36,13 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 ### Preparación
 
-1. Configurar `.env` con una URL y clave pública de Supabase de desarrollo.
+1. Configurar `.env` con una URL y clave pública de Supabase de desarrollo y `VITE_TECNOHOUSE_API_URL=http://localhost:5100`.
 2. Ejecutar las migraciones indicadas en [README.md](../README.md), incluidas funciones RPC, políticas RLS, notificaciones y fotos.
 3. Ejecutar [datos_prueba.sql](../supabase/datos_prueba.sql).
-4. Confirmar que existen al menos un producto activo, un dispositivo libre de María y un técnico disponible.
-5. Abrir la aplicación con `npm run dev` y comprobar que la URL de autenticación vuelve al origen local.
-6. Para fotos, preparar al menos una imagen pequeña asociada al servicio de la historia.
+4. Confirmar que existen al menos un producto activo con stock, un dispositivo libre de María y un técnico disponible.
+5. Configurar los secretos de la API según [backend/README.md](../backend/README.md) e iniciarla; comprobar que Scalar abre en `http://localhost:5100/scalar/v1`. Sin la API no cargan el perfil, los dispositivos ni las solicitudes del cliente.
+6. Abrir la aplicación con `npm run dev` y comprobar que la URL de autenticación vuelve al origen local.
+7. Para fotos, preparar al menos una imagen pequeña asociada al servicio de la historia.
 
 ## 3. Historia principal de extremo a extremo
 
@@ -73,9 +78,12 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 | Área | Precondición y acción | Resultado esperado | Resultado observado/evidencia | Estado |
 |---|---|---|---|---|
-| Catálogo público | Abrir `/#catalogo`, esperar carga y buscar por nombre/categoría | Productos activos, precio, stock, imagen y vacío filtrado son comprensibles; el CTA abre WhatsApp | La bandera `CONTACTO.whatsappConfigurado` quedó centralizada en [contacto.js](../src/datos/contacto.js); falta validar el clic en navegador | Pendiente |
-| Contacto | Abrir `/#contacto`, completar formulario y probar canales | Los canales configurados funcionan; los pendientes no parecen enlaces activos | Correo tiene formato; horario, redes y datos públicos requieren confirmación del propietario | Pendiente |
-| Ubicación | Abrir `/#ubicacion` | Dirección/mapa solo se muestran como definitivos si están confirmados | Hay dirección de referencia y coordenadas pendientes de confirmar | Pendiente |
+| Portada | Abrir `/` | Muestra el nombre, el resumen y las tarjetas de Tienda y Reparaciones; cada tarjeta lleva a su sección | Implementado en [Portada.jsx](../src/paginas/Portada.jsx) | Pendiente |
+| Tienda | Abrir `/tienda`, filtrar por categoría, buscar, ordenar y abrir un producto | Productos activos con precio, stock e imagen; el filtro vacío es comprensible; el detalle muestra relacionados | Implementado en [Tienda.jsx](../src/paginas/tienda/Tienda.jsx) y [DetalleProducto.jsx](../src/paginas/tienda/DetalleProducto.jsx) | Pendiente |
+| Carrito | Agregar productos, cambiar cantidades, recargar y enviar el pedido | No supera el stock; se conserva al recargar; WhatsApp abre con la lista y el total | Implementado en [CarritoLateral.jsx](../src/componentes/tienda/CarritoLateral.jsx); falta validar el clic en el dispositivo de demo | Pendiente |
+| Tienda (admin) | Ajustar stock con − y +, revisar el aviso "Por reponer" y abrir `/admin/pedidos` | El stock se guarda; el aviso refleja productos con 3 unidades o menos; Pedidos explica que falta la tabla en la base | Pedidos e ingresos de tienda en cero hasta crear `pedidos` (`PENDIENTE BASE`) | Pendiente |
+| Contacto | Abrir `/reparaciones#contacto`, completar formulario y probar canales | Los canales configurados funcionan; los pendientes no parecen enlaces activos | Correo tiene formato; horario, redes y datos públicos requieren confirmación del propietario | Pendiente |
+| Ubicación | Abrir `/reparaciones#ubicacion` | Dirección/mapa solo se muestran como definitivos si están confirmados | Hay dirección de referencia y coordenadas pendientes de confirmar | Pendiente |
 | Notificaciones | Provocar asignación, cambio de estado y mensaje | Cada participante recibe aviso pertinente; admin no recibe acciones de edición | Depende de triggers y RLS de `supabase/notificaciones.sql` | Pendiente |
 | Chat | Enviar desde cliente y técnico; abrir como admin | Participantes escriben; admin lee sin formulario | Implementado en [ChatServicio.jsx](../src/componentes/panel/ChatServicio.jsx); falta prueba contra RLS | Pendiente |
 | Fotos | Cargar, listar y abrir una foto | URL firmada válida para participantes; error visible si Storage niega acceso | Depende de bucket/políticas de [fotos_servicio.sql](../supabase/fotos_servicio.sql) | Pendiente |
@@ -87,7 +95,8 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 ### Importantes
 
-- El build no puede certificarse con Node 18 porque la versión instalada de Rolldown requiere `node:util.styleText`. La demo puede probarse con el servidor de desarrollo si arranca, pero la entrega debe validarse con una versión compatible de Node.
+- Los pedidos del carrito no se guardan en la base: se envían por WhatsApp. La lista de `/admin/pedidos` y los ingresos de la tienda aparecen en cero hasta crear las tablas `pedidos` y `pedido_items`. En la demo hay que presentarlo como pendiente, no como dato real.
+- La API debe estar encendida durante la demo; si no responde, el panel del cliente muestra el error de conexión.
 - El botón de WhatsApp quedó habilitado mediante `CONTACTO.whatsappConfigurado`; falta comprobar manualmente que el número abre el chat correcto en el dispositivo de demo.
 - Las cuatro advertencias de lint de React no bloquean el flujo, pero conviene resolverlas antes de publicar.
 
@@ -101,11 +110,17 @@ No se deben presentar como métricas reales los totales del dashboard, calificac
 
 ## 6. Guion de presentación — aproximadamente tres minutos
 
-### 0:00–0:30 · Problema
+### 0:00–0:20 · Problema
 
-“TecnoHouse organiza una reparación completa en un solo recorrido. El cliente puede describir su falla y seguirla; el técnico trabaja con una cola clara y estados controlados; el administrador supervisa la operación sin intervenir en las acciones de los otros roles. Todo lo que veremos usa datos ficticios de desarrollo.”
+“TecnoHouse organiza una reparación completa en un solo recorrido y suma una tienda de repuestos. El cliente puede describir su falla y seguirla; el técnico trabaja con una cola clara y estados controlados; el administrador supervisa la operación y el inventario. Todo lo que veremos usa datos ficticios de desarrollo.”
 
-### 0:30–1:20 · Cliente y técnico
+### 0:20–0:35 · Portada y tienda
+
+1. Mostrar la portada y entrar a la tienda.
+2. Filtrar por categoría, abrir un producto y agregarlo al carrito.
+3. Abrir el carrito y señalar que el pedido sale por WhatsApp con el total.
+
+### 0:35–1:20 · Cliente y técnico
 
 1. Entrar como María y mostrar el panel del cliente.
 2. Crear una solicitud con un equipo, gravedad y descripción concreta. Señalar el código generado y el estado `Solicitado`.
@@ -126,15 +141,15 @@ Remarcar: “Las confirmaciones aparecen antes de los cambios importantes y los 
 
 ### 2:05–2:45 · Administrador
 
-1. Entrar como administrador y mostrar métricas etiquetadas como datos de prueba.
+1. Entrar como administrador y mostrar el dashboard: ingresos totales (reparaciones y tienda) e inventario, etiquetados como datos de prueba.
 2. Abrir servicios, filtrar por estado/texto/fecha y cambiar de página.
 3. Abrir el servicio terminado: mostrar cliente, técnico, diagnóstico, cotización y chat en solo lectura.
-4. Abrir técnicos y productos para mostrar disponibilidad, confirmaciones y catálogo.
+4. Abrir Tienda: ajustar el stock de un producto y mostrar el aviso de productos por reponer.
 5. Exportar el resultado filtrado y mencionar que el CSV usa todas las coincidencias, no solo la página actual.
 
 ### 2:45–3:00 · Cierre de valor
 
-“Para el cliente, el beneficio es claridad y seguimiento. Para el técnico, una cola priorizada y un flujo de trabajo sin ambigüedades. Para el administrador, visibilidad, permisos separados y reportes operativos. El siguiente paso antes de publicar es ejecutar esta misma checklist en Supabase con RLS, Storage y datos reales confirmados por el propietario.”
+“Para el cliente, el beneficio es claridad y seguimiento. Para el técnico, una cola priorizada y un flujo de trabajo sin ambigüedades. Para el administrador, visibilidad, permisos separados y reportes operativos. El siguiente paso antes de publicar es guardar los pedidos de la tienda en la base y ejecutar esta misma checklist en Supabase con RLS, Storage y datos reales confirmados por el propietario.”
 
 ## 7. Registro de ejecución para la presentación
 

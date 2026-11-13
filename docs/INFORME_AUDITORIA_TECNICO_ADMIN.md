@@ -1,5 +1,17 @@
 # Auditoría de técnico y administrador
 
+## Estado al 13 de noviembre de 2026
+
+Los paneles del técnico y del administrador siguen consultando Supabase directamente (`src/api/tecnico.js` y `src/api/admin.js`), así que la matriz de permisos y las transiciones de este informe siguen vigentes. Después de esta auditoría se agregó al panel del administrador:
+
+| Recurso/acción | Cliente | Técnico | Administrador | Control efectivo |
+|---|---:|---:|---:|---|
+| Ajustar stock con − y + | No | No | Sí | Mismo update de `productos` que el formulario; RLS solo de admin |
+| Ver pedidos de la tienda | No | No | Sí | Pantalla preparada; falta la tabla `pedidos` (`PENDIENTE BASE`) |
+| Ver ingresos totales e inventario | No | No | Sí | Dashboard; los ingresos de tienda están en cero hasta crear `pedidos` |
+
+En el caso manual 6, "catálogo" corresponde hoy a la opción **Tienda** del menú (ruta `/admin/catalogo`). Los componentes que usa un solo rol pasaron a `src/componentes/panel/tecnico/` y `src/componentes/panel/admin/`.
+
 ## Alcance y resultado
 
 La revisión estática cubre las rutas protegidas, consultas de `src/api/`, componentes de acción, filtros/paginación, exportación CSV y scripts RLS disponibles en `supabase/`. No se hizo una prueba contra una instancia Supabase real, por lo que la existencia y estado de las funciones, políticas, triggers, buckets y tablas debe comprobarse en el proyecto conectado.

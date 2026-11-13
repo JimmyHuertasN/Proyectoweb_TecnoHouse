@@ -3,6 +3,12 @@
 **Fecha:** 31 de octubre de 2026
 **Rama:** `correcciones-como-funciona`
 
+## Estado al 13 de noviembre de 2026
+
+- **El build ya funciona** (Node 20.19 o superior), así que las comprobaciones en navegador de este informe ya se pueden hacer. Siguen pendientes de ejecutar.
+- **La navegación cambió:** la barra de la página de reparaciones tiene los anclajes `inicio`, `servicios`, `tecnicos` y `ubicacion`, más un enlace a la tienda. El anclaje `catalogo` ya no existe.
+- **Hay pantallas nuevas que también hay que revisar** en móvil, tablet y escritorio: la portada (`/`), la tienda (`/tienda`), el detalle de producto (`/tienda/:id`) y el carrito lateral. El carrito ya cierra con Escape y bloquea el desplazamiento del fondo mientras está abierto.
+
 ## Cambios aplicados
 
 - Se añadió un estilo global consistente para el foco visible de enlaces, botones, campos y elementos desplegables.

@@ -4,6 +4,13 @@
 **Rama:** `correcciones-como-funciona`
 **Alcance:** revisión estática de autenticación, rutas, páginas del panel, hooks, APIs y componentes del recorrido cliente. No se ejecutó contra una instancia real de Supabase.
 
+## Estado al 13 de noviembre de 2026
+
+- **Build:** el pendiente de compilar con Node 20.19 o superior quedó resuelto.
+- **API ASP.NET:** el perfil, el listado y la creación de dispositivos y el listado, detalle y creación de solicitudes ahora pasan por la API (`src/api/backend.js`). La API recibe el token de la sesión y conserva las políticas RLS, así que los controles de esta auditoría siguen aplicando. Editar o eliminar dispositivos, responder la cotización y calificar siguen yendo directo a Supabase.
+- **Nuevo requisito para los escenarios A a F:** la API debe estar encendida. Si no responde, el panel muestra un error de conexión en lugar de una lista vacía.
+- **Ubicación de archivos:** las páginas del cliente están en `src/paginas/cliente/` y las de acceso en `src/paginas/autenticacion/`. Los enlaces de este informe ya apuntan ahí.
+
 ## Resultado de la auditoría
 
 | Área | Resultado | Observación |

@@ -4,6 +4,22 @@
 **Rama revisada:** `correcciones-como-funciona`
 **Alcance:** diagnóstico estático y ejecución de comandos disponibles. No se modificó lógica funcional durante esta fase.
 
+## Estado al 13 de noviembre de 2026
+
+| Hallazgo de esta línea base | Estado actual |
+|---|---|
+| Build bloqueado por Node 18.19.1 | **Resuelto.** Con Node 24.20.0, `npm run build` compila sin errores. El requisito es Node 20.19 o superior. |
+| Cuatro advertencias de Oxlint | **Siguen.** Son las mismas cuatro: `src/componentes/panel/ChatServicio.jsx`, `src/componentes/panel/GaleriaFotosServicio.jsx`, `src/hooks/useNotificaciones.js` y `src/componentes/PiePagina.jsx`. |
+| La portada mostraba un marcador en lugar del catálogo | **Superado.** El catálogo se convirtió en una tienda con páginas propias (`/tienda` y `/tienda/:id`), y la portada (`/`) separa la tienda de las reparaciones (`/reparaciones`). |
+| Sin checklist ni guion de demo | **Resuelto** en [VALIDACION_FINAL_Y_GUION_DEMO.md](./VALIDACION_FINAL_Y_GUION_DEMO.md). |
+| Sin pruebas automatizadas | **Sigue.** `package.json` no tiene script de pruebas. |
+| Datos de contacto por validar | **Sigue.** Pendiente de confirmar con el negocio. |
+
+Cambios posteriores que afectan este diagnóstico:
+- Se agregó una API ASP.NET Core en `backend/`, que requiere el SDK de .NET 10 y la variable `VITE_TECNOHOUSE_API_URL`.
+- Se agregaron las rutas `/reparaciones`, `/tienda`, `/tienda/:id` y `/admin/pedidos`.
+- Las carpetas se reorganizaron (ver la sección 16 de la [guía de cambios](./GUIA_CAMBIOS_PROYECTO.md)). Las rutas de archivos de este informe corresponden a la ubicación del 31 de octubre.
+
 ## 1. Estado del repositorio
 
 - La rama de trabajo parte del commit `9060f95` (`Prompt 3.4: reportes, métricas y exportación CSV`).
