@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registrarUsuario } from "../../api/usuarios.js";
 import Aviso from "../../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
-import ReenviarConfirmacion from "../../componentes/ReenviarConfirmacion.jsx";
+import DisenoAutenticacion from "../../componentes/autenticacion/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../../componentes/autenticacion/ReenviarConfirmacion.jsx";
 import { validarDatosPersonales } from "../../utilidades/validaciones.js";
 
 const CAMPOS = [

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Aviso from "../../componentes/Aviso.jsx";
-import DisenoAutenticacion from "../../componentes/DisenoAutenticacion.jsx";
-import ReenviarConfirmacion from "../../componentes/ReenviarConfirmacion.jsx";
+import DisenoAutenticacion from "../../componentes/autenticacion/DisenoAutenticacion.jsx";
+import ReenviarConfirmacion from "../../componentes/autenticacion/ReenviarConfirmacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { rutaInicio } from "../../utilidades/rutas.js";
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { reenviarConfirmacion } from "../api/usuarios.js";
+import { reenviarConfirmacion } from "../../api/usuarios.js";
 
 /* Botón para volver a pedir el correo de confirmación de la cuenta. */
 const ReenviarConfirmacion = ({ correo }) => {
