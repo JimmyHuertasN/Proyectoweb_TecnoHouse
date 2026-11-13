@@ -4,7 +4,7 @@ import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
-import TarjetaPendiente from "../../componentes/panel/TarjetaPendiente.jsx";
+import TarjetaPendiente from "../../componentes/panel/tecnico/TarjetaPendiente.jsx";
 import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import { usePendientes } from "../../hooks/usePendientes.js";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";

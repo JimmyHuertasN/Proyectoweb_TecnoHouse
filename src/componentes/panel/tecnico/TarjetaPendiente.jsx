@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
-import { formatearFecha } from "../../utilidades/formato.js";
-import Aviso from "../Aviso.jsx";
-import { EtiquetaGravedad } from "./Etiquetas.jsx";
-import useConfirmar from "../../hooks/useConfirmar.js";
+import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../../datos/opciones.js";
+import { formatearFecha } from "../../../utilidades/formato.js";
+import Aviso from "../../Aviso.jsx";
+import { EtiquetaGravedad } from "../Etiquetas.jsx";
+import useConfirmar from "../../../hooks/useConfirmar.js";
 
 /* "alTomar" la recibe del padre, que llama a la API. Si falla, el error se muestra en la tarjeta. */
 const TarjetaPendiente = ({ solicitud, alTomar }) => {
