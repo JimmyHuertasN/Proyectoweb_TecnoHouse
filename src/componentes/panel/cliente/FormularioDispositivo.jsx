@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
-import Aviso from "../Aviso.jsx";
+import { TIPOS_DISPOSITIVO } from "../../../datos/opciones.js";
+import Aviso from "../../Aviso.jsx";
 
 const VALORES_INICIALES = { tipo: "computador", marca: "", modelo: "", numeroSerie: "" };
 
