@@ -7,15 +7,40 @@ import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
 import ProveedorConfirmacion from "./contexto/ProveedorConfirmacion.jsx";
 import ProveedorToast from "./contexto/ProveedorToast.jsx";
 import { MENU_ADMIN, MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
+
+// Sitio público
+import NoEncontrada from "./paginas/NoEncontrada.jsx";
+import Portada from "./paginas/Portada.jsx";
+import Reparaciones from "./paginas/Reparaciones.jsx";
+
+// Tienda
+import DetalleProducto from "./paginas/tienda/DetalleProducto.jsx";
+import DisenoTienda from "./componentes/tienda/DisenoTienda.jsx";
+import Tienda from "./paginas/tienda/Tienda.jsx";
+
+// Autenticación
 import CerrarSesion from "./paginas/autenticacion/CerrarSesion.jsx";
 import CorreoConfirmado from "./paginas/autenticacion/CorreoConfirmado.jsx";
 import IniciarSesion from "./paginas/autenticacion/IniciarSesion.jsx";
-import Reparaciones from "./paginas/Reparaciones.jsx";
 import NuevaContrasena from "./paginas/autenticacion/NuevaContrasena.jsx";
-import NoEncontrada from "./paginas/NoEncontrada.jsx";
-import Portada from "./paginas/Portada.jsx";
 import RecuperarContrasena from "./paginas/autenticacion/RecuperarContrasena.jsx";
 import Registro from "./paginas/autenticacion/Registro.jsx";
+
+// Panel del cliente
+import DetalleSolicitud from "./paginas/cliente/DetalleSolicitud.jsx";
+import MisDispositivos from "./paginas/cliente/MisDispositivos.jsx";
+import MisSolicitudes from "./paginas/cliente/MisSolicitudes.jsx";
+import NuevaSolicitud from "./paginas/cliente/NuevaSolicitud.jsx";
+import Perfil from "./paginas/cliente/Perfil.jsx";
+import ResumenPanel from "./paginas/cliente/ResumenPanel.jsx";
+
+// Panel del técnico
+import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
+import MisServicios from "./paginas/tecnico/MisServicios.jsx";
+import PerfilTecnico from "./paginas/tecnico/PerfilTecnico.jsx";
+import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
+
+// Panel del administrador
 import Dashboard from "./paginas/admin/Dashboard.jsx";
 import DetalleCliente from "./paginas/admin/DetalleCliente.jsx";
 import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
@@ -24,19 +49,6 @@ import GestionClientes from "./paginas/admin/GestionClientes.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
 import PedidosTienda from "./paginas/admin/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
-import DetalleSolicitud from "./paginas/cliente/DetalleSolicitud.jsx";
-import MisDispositivos from "./paginas/cliente/MisDispositivos.jsx";
-import MisSolicitudes from "./paginas/cliente/MisSolicitudes.jsx";
-import NuevaSolicitud from "./paginas/cliente/NuevaSolicitud.jsx";
-import Perfil from "./paginas/cliente/Perfil.jsx";
-import ResumenPanel from "./paginas/cliente/ResumenPanel.jsx";
-import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
-import MisServicios from "./paginas/tecnico/MisServicios.jsx";
-import PerfilTecnico from "./paginas/tecnico/PerfilTecnico.jsx";
-import SolicitudesPendientes from "./paginas/tecnico/SolicitudesPendientes.jsx";
-import DisenoTienda from "./componentes/tienda/DisenoTienda.jsx";
-import DetalleProducto from "./paginas/tienda/DetalleProducto.jsx";
-import Tienda from "./paginas/tienda/Tienda.jsx";
 
 // Se descarga solo cuando el administrador abre el catálogo.
 const GestionProductos = lazy(() => import("./paginas/admin/GestionProductos.jsx"));
