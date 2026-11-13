@@ -14,7 +14,7 @@ import BarraProgreso from "../../componentes/panel/BarraProgreso.jsx";
 import { EtiquetaEstado, EtiquetaGravedad } from "../../componentes/panel/Etiquetas.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import ChatServicio from "../../componentes/panel/ChatServicio.jsx";
-import FormularioCalificacion from "../../componentes/panel/FormularioCalificacion.jsx";
+import FormularioCalificacion from "../../componentes/panel/cliente/FormularioCalificacion.jsx";
 import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";

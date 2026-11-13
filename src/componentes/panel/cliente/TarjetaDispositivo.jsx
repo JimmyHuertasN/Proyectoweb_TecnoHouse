@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
-import { formatearFecha } from "../../utilidades/formato.js";
+import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../../datos/opciones.js";
+import { formatearFecha } from "../../../utilidades/formato.js";
 
 const TarjetaDispositivo = ({ dispositivo, alEditar, alEliminar }) => {
     const tipo = buscarOpcion(TIPOS_DISPOSITIVO, dispositivo.tipo);

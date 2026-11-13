@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
-import { buscarOpcion, NIVELES_CALIFICACION } from "../../datos/opciones.js";
-import Aviso from "../Aviso.jsx";
+import { buscarOpcion, NIVELES_CALIFICACION } from "../../../datos/opciones.js";
+import Aviso from "../../Aviso.jsx";
 
 const LONGITUD_MAXIMA_COMENTARIO = 300;
 
