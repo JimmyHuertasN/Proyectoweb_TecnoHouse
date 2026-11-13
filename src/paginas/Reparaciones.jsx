@@ -12,7 +12,7 @@ import SeccionUbicacion from "../componentes/inicio/SeccionUbicacion.jsx";
 import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
 
-const Inicio = () => {
+const Reparaciones = () => {
     const { tecnicos, cargando, error } = useTecnicos();
 
     useEffect(() => {
@@ -92,4 +92,4 @@ const Inicio = () => {
     );
 };
 
-export default Inicio;
+export default Reparaciones;
