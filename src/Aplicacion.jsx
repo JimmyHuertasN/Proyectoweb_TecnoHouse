@@ -10,7 +10,7 @@ import { MENU_ADMIN, MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
 import CerrarSesion from "./paginas/autenticacion/CerrarSesion.jsx";
 import CorreoConfirmado from "./paginas/autenticacion/CorreoConfirmado.jsx";
 import IniciarSesion from "./paginas/autenticacion/IniciarSesion.jsx";
-import Inicio from "./paginas/Inicio.jsx";
+import Reparaciones from "./paginas/Reparaciones.jsx";
 import NuevaContrasena from "./paginas/autenticacion/NuevaContrasena.jsx";
 import NoEncontrada from "./paginas/NoEncontrada.jsx";
 import Portada from "./paginas/Portada.jsx";
@@ -55,7 +55,7 @@ const Aplicacion = () => {
                 <Routes>
                     {/* Sitio público */}
                     <Route path="/" element={<Portada />} />
-                    <Route path="/reparaciones" element={<Inicio />} />
+                    <Route path="/reparaciones" element={<Reparaciones />} />
                     <Route path="/login" element={<IniciarSesion />} />
                     <Route path="/registro" element={<Registro />} />
                     <Route path="/salir" element={<CerrarSesion />} />
