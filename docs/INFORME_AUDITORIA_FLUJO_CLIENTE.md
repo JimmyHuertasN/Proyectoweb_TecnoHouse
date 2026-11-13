@@ -26,8 +26,8 @@
 
 ## Correcciones aplicadas
 
-- Se añadió estado de envío a [IniciarSesion.jsx](./src/paginas/IniciarSesion.jsx) y [Registro.jsx](./src/paginas/Registro.jsx) para prevenir peticiones duplicadas.
-- Se añadió una comprobación derivada del historial en [DetalleSolicitud.jsx](./src/paginas/panel/DetalleSolicitud.jsx) para no mostrar una segunda calificación.
+- Se añadió estado de envío a [IniciarSesion.jsx](../src/paginas/autenticacion/IniciarSesion.jsx) y [Registro.jsx](../src/paginas/autenticacion/Registro.jsx) para prevenir peticiones duplicadas.
+- Se añadió una comprobación derivada del historial en [DetalleSolicitud.jsx](../src/paginas/cliente/DetalleSolicitud.jsx) para no mostrar una segunda calificación.
 - Todo el código añadido para estas correcciones incluye comentarios explicativos.
 
 ## Seguridad y alcance de datos
