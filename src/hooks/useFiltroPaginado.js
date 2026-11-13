@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
-const sonIguales = (a, b) => Object.keys({ ...a, ...b }).every((clave) => a[clave] === b[clave]);
+const sonIguales = (filtrosA, filtrosB) =>
+    Object.keys({ ...filtrosA, ...filtrosB }).every((clave) => filtrosA[clave] === filtrosB[clave]);
 
 /*
     Filtra y pagina una lista en el navegador.

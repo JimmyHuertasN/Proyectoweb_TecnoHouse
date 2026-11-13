@@ -109,7 +109,9 @@ export const contarPorDispositivo = (servicios) => {
         const dispositivo = etiquetaDispositivo(servicio.dispositivo?.tipo);
         conteo.set(dispositivo, (conteo.get(dispositivo) ?? 0) + 1);
     }
-    return [...conteo].map(([dispositivo, cantidad]) => ({ dispositivo, cantidad })).sort((a, b) => b.cantidad - a.cantidad);
+    return [...conteo]
+        .map(([dispositivo, cantidad]) => ({ dispositivo, cantidad }))
+        .sort((dispositivoA, dispositivoB) => dispositivoB.cantidad - dispositivoA.cantidad);
 };
 
 /* Filas cuya fecha (por omisión "creado_en") cae en el rango. */

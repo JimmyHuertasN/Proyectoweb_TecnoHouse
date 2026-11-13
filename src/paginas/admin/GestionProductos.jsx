@@ -27,7 +27,7 @@ const cumpleFiltrosProducto = (producto, { texto, categoria, estado }) =>
 const opcionesCategoria = (productos) => [
     { valor: "todas", etiqueta: `Todas (${productos.length})` },
     ...[...new Set(productos.map((producto) => producto.categoria))]
-        .sort((a, b) => a.localeCompare(b))
+        .sort((categoriaA, categoriaB) => categoriaA.localeCompare(categoriaB))
         .map((categoria) => ({
             valor: categoria,
             etiqueta: `${categoria} (${productos.filter((producto) => producto.categoria === categoria).length})`,

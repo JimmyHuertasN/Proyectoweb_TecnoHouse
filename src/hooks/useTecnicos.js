@@ -16,7 +16,8 @@ export const useTecnicos = () => {
         const cargar = async () => {
             try {
                 const filas = await llamarApi("/api/tecnicos-publicos", { publico: true });
-                if (vigente) setTecnicos(filas.sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "")));
+                const porNombre = (tecnicoA, tecnicoB) => (tecnicoA.nombre ?? "").localeCompare(tecnicoB.nombre ?? "");
+                if (vigente) setTecnicos(filas.sort(porNombre));
             } catch (errorConsulta) {
                 if (vigente) setError(`No se pudieron cargar los técnicos: ${errorConsulta.message}`);
             } finally {

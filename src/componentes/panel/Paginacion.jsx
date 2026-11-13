@@ -15,7 +15,9 @@ const rangoPaginas = (actual, total) => {
     if (actual <= 3) [2, 3, 4].forEach((numero) => visibles.add(numero));
     if (actual >= total - 2) [total - 3, total - 2, total - 1].forEach((numero) => visibles.add(numero));
 
-    const numeros = [...visibles].filter((numero) => numero >= 1 && numero <= total).sort((a, b) => a - b);
+    const numeros = [...visibles]
+        .filter((numero) => numero >= 1 && numero <= total)
+        .sort((numeroA, numeroB) => numeroA - numeroB);
     return numeros.flatMap((numero, indice) => {
         const anterior = numeros[indice - 1];
         if (anterior === undefined || numero - anterior === 1) return [numero];

@@ -186,7 +186,7 @@ export const listarTecnicos = async () => {
                 serviciosEnCurso: serviciosEnCurso.filter((servicio) => servicio.tecnico_id === ficha.perfil_id).length,
             };
         })
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+        .sort((tecnicoA, tecnicoB) => tecnicoA.nombre.localeCompare(tecnicoB.nombre));
 };
 
 /*
@@ -319,11 +319,11 @@ const contarProblemas = (servicios) => {
     // De más a menos frecuente; "Otros" siempre al final.
     return [...conteo]
         .map(([categoria, cantidad]) => ({ categoria, cantidad }))
-        .sort((a, b) => {
-            if (a.categoria === OTROS_PROBLEMAS || b.categoria === OTROS_PROBLEMAS) {
-                return a.categoria === b.categoria ? 0 : a.categoria === OTROS_PROBLEMAS ? 1 : -1;
+        .sort((problemaA, problemaB) => {
+            if (problemaA.categoria === OTROS_PROBLEMAS || problemaB.categoria === OTROS_PROBLEMAS) {
+                return problemaA.categoria === problemaB.categoria ? 0 : problemaA.categoria === OTROS_PROBLEMAS ? 1 : -1;
             }
-            return b.cantidad - a.cantidad;
+            return problemaB.cantidad - problemaA.cantidad;
         });
 };
 
@@ -339,7 +339,7 @@ const rankingTecnicos = async (calificaciones, limite = 5) => {
     const perfiles = await obtenerPerfiles([...porTecnico.keys()]);
     return [...porTecnico]
         .map(([id, { suma, cantidad }]) => ({ id, nombre: perfiles[id]?.nombre ?? "Técnico", promedio: suma / cantidad, cantidad }))
-        .sort((a, b) => b.promedio - a.promedio || b.cantidad - a.cantidad)
+        .sort((tecnicoA, tecnicoB) => tecnicoB.promedio - tecnicoA.promedio || tecnicoB.cantidad - tecnicoA.cantidad)
         .slice(0, limite);
 };
 

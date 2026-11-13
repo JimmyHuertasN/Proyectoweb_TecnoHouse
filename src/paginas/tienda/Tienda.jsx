@@ -15,10 +15,10 @@ const BENEFICIOS = [
 const ORDENES = {
     // PENDIENTE BASE: con la columna "destacado", poner primero los productos destacados.
     destacados: { etiqueta: "Destacados", comparar: () => 0 },
-    "precio-menor": { etiqueta: "Precio: menor a mayor", comparar: (a, b) => a.precio - b.precio },
-    "precio-mayor": { etiqueta: "Precio: mayor a menor", comparar: (a, b) => b.precio - a.precio },
-    nombre: { etiqueta: "Nombre (A-Z)", comparar: (a, b) => a.nombre.localeCompare(b.nombre) },
-    recientes: { etiqueta: "Más recientes", comparar: (a, b) => new Date(b.creadoEn) - new Date(a.creadoEn) },
+    "precio-menor": { etiqueta: "Precio: menor a mayor", comparar: (productoA, productoB) => productoA.precio - productoB.precio },
+    "precio-mayor": { etiqueta: "Precio: mayor a menor", comparar: (productoA, productoB) => productoB.precio - productoA.precio },
+    nombre: { etiqueta: "Nombre (A-Z)", comparar: (productoA, productoB) => productoA.nombre.localeCompare(productoB.nombre) },
+    recientes: { etiqueta: "Más recientes", comparar: (productoA, productoB) => new Date(productoB.creadoEn) - new Date(productoA.creadoEn) },
 };
 
 const FILTROS_VACIOS = { texto: "", categoria: "todas", orden: "destacados", soloDisponibles: false };
@@ -44,7 +44,9 @@ const Tienda = () => {
         productos.forEach((producto) => {
             conteo[producto.categoria] = (conteo[producto.categoria] ?? 0) + 1;
         });
-        return Object.keys(conteo).sort((a, b) => a.localeCompare(b)).map((nombre) => ({ nombre, cantidad: conteo[nombre] }));
+        return Object.keys(conteo)
+            .sort((categoriaA, categoriaB) => categoriaA.localeCompare(categoriaB))
+            .map((nombre) => ({ nombre, cantidad: conteo[nombre] }));
     }, [productos]);
 
     const visibles = useMemo(
