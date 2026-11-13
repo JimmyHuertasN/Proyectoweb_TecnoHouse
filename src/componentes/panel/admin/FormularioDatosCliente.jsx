@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { validarNombreYTelefono } from "../../utilidades/validaciones.js";
-import Aviso from "../Aviso.jsx";
+import { validarNombreYTelefono } from "../../../utilidades/validaciones.js";
+import Aviso from "../../Aviso.jsx";
 
 /* "alGuardar" la recibe del padre, que llama a la API. Si falla, el error se muestra en el formulario. */
 const FormularioDatosCliente = ({ cliente, alGuardar }) => {

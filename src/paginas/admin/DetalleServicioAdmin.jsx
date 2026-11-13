@@ -10,7 +10,7 @@ import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import ChatServicio from "../../componentes/panel/ChatServicio.jsx";
 import GaleriaFotosServicio from "../../componentes/panel/GaleriaFotosServicio.jsx";
 import ListaDiagnosticos from "../../componentes/panel/ListaDiagnosticos.jsx";
-import SelectorTecnico from "../../componentes/panel/SelectorTecnico.jsx";
+import SelectorTecnico from "../../componentes/panel/admin/SelectorTecnico.jsx";
 import TarjetaCotizacion from "../../componentes/panel/TarjetaCotizacion.jsx";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha } from "../../utilidades/formato.js";

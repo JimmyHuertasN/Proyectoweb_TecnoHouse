@@ -1,5 +1,5 @@
 import { ShoppingBag, Wrench } from "lucide-react";
-import { formatearPesos } from "../../utilidades/formato.js";
+import { formatearPesos } from "../../../utilidades/formato.js";
 
 const porcentaje = (parte, total) => (total > 0 ? Math.round((parte / total) * 100) : 0);
 

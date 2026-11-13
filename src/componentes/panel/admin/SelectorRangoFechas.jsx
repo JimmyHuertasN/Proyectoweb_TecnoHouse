@@ -1,4 +1,4 @@
-import { RANGOS_PREDEFINIDOS } from "../../utilidades/reportes.js";
+import { RANGOS_PREDEFINIDOS } from "../../../utilidades/reportes.js";
 
 /* Selector de periodo de los reportes. "rango" es lo que devuelve useRangoFechas. */
 const SelectorRangoFechas = ({ id, rango }) => {

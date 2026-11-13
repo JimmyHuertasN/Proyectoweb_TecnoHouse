@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { obtenerPedidos } from "../../api/pedidos.js";
-import { obtenerProductosAdmin } from "../../api/productos.js";
-import { ESTADOS_PEDIDO } from "../../datos/estadosPedido.js";
-import { stockPorCategoria } from "../../utilidades/inventario.js";
-import Aviso from "../Aviso.jsx";
-import GraficoBarras from "./GraficoBarras.jsx";
-import ResumenInventario from "./ResumenInventario.jsx";
-import Skeleton from "./Skeleton.jsx";
+import { obtenerPedidos } from "../../../api/pedidos.js";
+import { obtenerProductosAdmin } from "../../../api/productos.js";
+import { ESTADOS_PEDIDO } from "../../../datos/estadosPedido.js";
+import { stockPorCategoria } from "../../../utilidades/inventario.js";
+import Aviso from "../../Aviso.jsx";
+import GraficoBarras from "../GraficoBarras.jsx";
+import ResumenInventario from "../ResumenInventario.jsx";
+import Skeleton from "../Skeleton.jsx";
 
 const EnlaceSeccion = ({ ruta, texto }) => (
     <Link to={ruta} className="inline-flex items-center gap-1 text-sm font-semibold text-marca hover:underline">

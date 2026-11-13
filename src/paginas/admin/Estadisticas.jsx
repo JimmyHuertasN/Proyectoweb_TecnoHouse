@@ -3,8 +3,8 @@ import { obtenerEstadisticas, obtenerIngresosPorMes, obtenerServiciosPorDisposit
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
-import GraficoColumnas from "../../componentes/panel/GraficoColumnas.jsx";
-import SelectorRangoFechas from "../../componentes/panel/SelectorRangoFechas.jsx";
+import GraficoColumnas from "../../componentes/panel/admin/GraficoColumnas.jsx";
+import SelectorRangoFechas from "../../componentes/panel/admin/SelectorRangoFechas.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { useRangoFechas } from "../../hooks/useRangoFechas.js";
 import { formatearPesos } from "../../utilidades/formato.js";

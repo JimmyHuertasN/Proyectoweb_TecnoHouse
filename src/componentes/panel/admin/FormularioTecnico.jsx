@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { validarDatosPersonales } from "../../utilidades/validaciones.js";
-import Aviso from "../Aviso.jsx";
+import { validarDatosPersonales } from "../../../utilidades/validaciones.js";
+import Aviso from "../../Aviso.jsx";
 
 const VALORES_INICIALES = { nombre: "", correo: "", telefono: "", especialidad: "", contrasena: "" };
 

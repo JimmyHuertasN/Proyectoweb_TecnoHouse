@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { iniciales } from "../../utilidades/formato.js";
-import Aviso from "../Aviso.jsx";
-import useConfirmar from "../../hooks/useConfirmar.js";
+import { iniciales } from "../../../utilidades/formato.js";
+import Aviso from "../../Aviso.jsx";
+import useConfirmar from "../../../hooks/useConfirmar.js";
 
 const preguntaConfirmacion = (tecnico) =>
     tecnico.activo

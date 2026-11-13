@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Aviso from "../Aviso.jsx";
-import useConfirmar from "../../hooks/useConfirmar.js";
+import Aviso from "../../Aviso.jsx";
+import useConfirmar from "../../../hooks/useConfirmar.js";
 
 const describirTecnico = (tecnico) =>
     `${tecnico.nombre} · ${tecnico.especialidad || "Sin especialidad"}${tecnico.disponible ? "" : " (no disponible)"}`;
