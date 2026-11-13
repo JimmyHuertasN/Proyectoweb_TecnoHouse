@@ -5,12 +5,12 @@ import { obtenerIngresosTienda } from "../../api/pedidos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
-import IngresosTotales from "../../componentes/panel/IngresosTotales.jsx";
-import ResumenIngresos from "../../componentes/panel/ResumenIngresos.jsx";
-import ResumenTienda from "../../componentes/panel/ResumenTienda.jsx";
-import SelectorRangoFechas from "../../componentes/panel/SelectorRangoFechas.jsx";
+import IngresosTotales from "../../componentes/panel/admin/IngresosTotales.jsx";
+import ResumenIngresos from "../../componentes/panel/admin/ResumenIngresos.jsx";
+import ResumenTienda from "../../componentes/panel/admin/ResumenTienda.jsx";
+import SelectorRangoFechas from "../../componentes/panel/admin/SelectorRangoFechas.jsx";
 import TarjetaMetrica from "../../componentes/panel/TarjetaMetrica.jsx";
-import TarjetaPorcentaje from "../../componentes/panel/TarjetaPorcentaje.jsx";
+import TarjetaPorcentaje from "../../componentes/panel/admin/TarjetaPorcentaje.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { useRangoFechas } from "../../hooks/useRangoFechas.js";
 

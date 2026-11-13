@@ -5,7 +5,7 @@ import { obtenerFichaCliente } from "../../api/admin.js";
 import { actualizarPerfil } from "../../api/usuarios.js";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import FilaSolicitud from "../../componentes/panel/FilaSolicitud.jsx";
-import FormularioDatosCliente from "../../componentes/panel/FormularioDatosCliente.jsx";
+import FormularioDatosCliente from "../../componentes/panel/admin/FormularioDatosCliente.jsx";
 import { buscarOpcion, TIPOS_DISPOSITIVO } from "../../datos/opciones.js";
 import { formatearFecha, iniciales } from "../../utilidades/formato.js";
 import useToast from "../../hooks/useToast.js";

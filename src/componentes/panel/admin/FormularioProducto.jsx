@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { TAMANO_MAXIMO_IMAGEN, TIPOS_IMAGEN_PERMITIDOS, validarImagenProducto } from "../../api/productos.js";
-import Aviso from "../Aviso.jsx";
-import ImagenProducto from "../ImagenProducto.jsx";
+import { TAMANO_MAXIMO_IMAGEN, TIPOS_IMAGEN_PERMITIDOS, validarImagenProducto } from "../../../api/productos.js";
+import Aviso from "../../Aviso.jsx";
+import ImagenProducto from "../../ImagenProducto.jsx";
 
 const VALORES_INICIALES = { nombre: "", descripcion: "", categoria: "", precio: "", stock: "0", activo: true };
 

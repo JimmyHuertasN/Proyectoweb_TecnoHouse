@@ -1,4 +1,4 @@
-import { formatearPesos } from "../../utilidades/formato.js";
+import { formatearPesos } from "../../../utilidades/formato.js";
 
 /* Total de ingresos y una barra que muestra qué parte ya se cobró. */
 const ResumenIngresos = ({ ingresos }) => {

@@ -6,7 +6,7 @@ import ImagenProducto from "../../componentes/ImagenProducto.jsx";
 import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
-import FormularioProducto from "../../componentes/panel/FormularioProducto.jsx";
+import FormularioProducto from "../../componentes/panel/admin/FormularioProducto.jsx";
 import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import ResumenInventario from "../../componentes/panel/ResumenInventario.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
