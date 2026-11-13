@@ -47,7 +47,7 @@ const ENCABEZADOS = ["Producto", "Categoría", "Precio", "Stock", "Estado", "Des
 
 const CLASE_AJUSTE = "flex size-7 items-center justify-center rounded-md border border-borde text-slate-300 transition hover:border-marca hover:text-marca disabled:cursor-not-allowed disabled:opacity-40";
 
-/* Botones − y + para corregir el stock sin abrir el formulario. */
+// Para corregir el stock rápido, sin abrir el formulario.
 const AjusteStock = ({ producto, ocupado, alAjustar }) => (
     <div className="flex items-center gap-2">
         <button type="button" disabled={ocupado || producto.stock === 0} onClick={() => alAjustar(producto, -1)} aria-label={`Restar una unidad a ${producto.nombre}`} className={CLASE_AJUSTE}>

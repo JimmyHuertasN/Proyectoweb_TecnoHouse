@@ -50,7 +50,7 @@ import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
 import PedidosTienda from "./paginas/admin/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 
-// Se descarga solo cuando el administrador abre el catálogo.
+// Se descarga solo cuando el administrador abre la gestión de la tienda.
 const GestionProductos = lazy(() => import("./paginas/admin/GestionProductos.jsx"));
 
 const RedireccionPanel = () => {

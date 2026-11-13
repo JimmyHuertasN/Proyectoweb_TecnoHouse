@@ -2,7 +2,6 @@ import { Minus, Plus } from "lucide-react";
 
 const CLASE_BOTON = "flex size-9 items-center justify-center text-slate-300 transition hover:text-marca disabled:cursor-not-allowed disabled:opacity-40";
 
-/* Botones − y + para elegir cuántas unidades llevar, entre "minimo" y "maximo". */
 const SelectorCantidad = ({ cantidad, maximo, minimo = 1, alCambiar, nombre = "" }) => (
     <div className="inline-flex items-center rounded-lg border border-slate-600 bg-fondo">
         <button type="button" className={CLASE_BOTON} disabled={cantidad <= minimo} onClick={() => alCambiar(cantidad - 1)} aria-label={`Quitar una unidad ${nombre}`}>

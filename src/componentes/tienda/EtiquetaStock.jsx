@@ -1,6 +1,5 @@
 import { POCAS_UNIDADES } from "../../utilidades/inventario.js";
 
-/* Muestra si el producto está agotado, por acabarse o disponible. */
 const EtiquetaStock = ({ stock }) => {
     if (stock <= 0) {
         return <span className="rounded-full bg-slate-500/15 px-2.5 py-0.5 text-xs font-semibold text-slate-400">Agotado</span>;

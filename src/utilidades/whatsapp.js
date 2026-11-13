@@ -1,4 +1,4 @@
-/* Enlaces de WhatsApp con un mensaje ya escrito. Los usan el catálogo del inicio y la tienda. */
+/* Enlaces de WhatsApp con un mensaje ya escrito: consulta de un producto o pedido del carrito. */
 import { CONTACTO } from "../datos/contacto.js";
 import { formatearPesos } from "./formato.js";
 

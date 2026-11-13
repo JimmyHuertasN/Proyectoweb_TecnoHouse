@@ -39,7 +39,7 @@ const InterruptorDisponibilidad = ({ disponible, alCambiar }) => {
                         {disponible ? "Disponible" : "No disponible"}
                     </p>
                     <p className="text-sm text-slate-400">
-                        {disponible ? "Los clientes te ven disponible en la página de inicio." : "Los clientes te ven como no disponible."}
+                        {disponible ? "Los clientes te ven disponible en la página de reparaciones." : "Los clientes te ven como no disponible."}
                     </p>
                 </div>
             </div>
