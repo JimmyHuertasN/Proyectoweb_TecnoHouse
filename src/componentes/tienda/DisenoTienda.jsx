@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import ProveedorTienda from "../../contexto/ProveedorTienda.jsx";
-import PiePagina from "../inicio/PiePagina.jsx";
+import PiePagina from "../PiePagina.jsx";
 import CarritoLateral from "./CarritoLateral.jsx";
 import EncabezadoTienda from "./EncabezadoTienda.jsx";
 

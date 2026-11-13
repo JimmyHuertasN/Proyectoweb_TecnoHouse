@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useSesion } from "../contexto/ContextoSesion.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
 
 const TarjetaServicio = ({ icono: Icono, titulo, descripcion }) => {
     const { usuario } = useSesion();

@@ -1,14 +1,14 @@
 import { useEffect } from "react";
-import BarraNavegacion from "../componentes/BarraNavegacion.jsx";
-import TarjetaServicio from "../componentes/TarjetaServicio.jsx";
-import TarjetaTecnico from "../componentes/TarjetaTecnico.jsx";
+import BarraNavegacion from "../componentes/reparaciones/BarraNavegacion.jsx";
+import TarjetaServicio from "../componentes/reparaciones/TarjetaServicio.jsx";
+import TarjetaTecnico from "../componentes/reparaciones/TarjetaTecnico.jsx";
 import Skeleton from "../componentes/panel/Skeleton.jsx";
-import ComoFunciona from "../componentes/inicio/ComoFunciona.jsx";
-import PiePagina from "../componentes/inicio/PiePagina.jsx";
-import PreguntasFrecuentes from "../componentes/inicio/PreguntasFrecuentes.jsx";
-import SeccionContacto from "../componentes/inicio/SeccionContacto.jsx";
-import SeccionResenas from "../componentes/inicio/SeccionResenas.jsx";
-import SeccionUbicacion from "../componentes/inicio/SeccionUbicacion.jsx";
+import ComoFunciona from "../componentes/reparaciones/ComoFunciona.jsx";
+import PiePagina from "../componentes/PiePagina.jsx";
+import PreguntasFrecuentes from "../componentes/reparaciones/PreguntasFrecuentes.jsx";
+import SeccionContacto from "../componentes/reparaciones/SeccionContacto.jsx";
+import SeccionResenas from "../componentes/reparaciones/SeccionResenas.jsx";
+import SeccionUbicacion from "../componentes/reparaciones/SeccionUbicacion.jsx";
 import { SERVICIOS } from "../datos/servicios.js";
 import { useTecnicos } from "../hooks/useTecnicos.js";
 

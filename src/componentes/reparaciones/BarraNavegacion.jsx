@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { useSesion } from "../contexto/ContextoSesion.js";
-import { primerNombre } from "../utilidades/formato.js";
-import { rutaInicio } from "../utilidades/rutas.js";
+import { useSesion } from "../../contexto/ContextoSesion.js";
+import { primerNombre } from "../../utilidades/formato.js";
+import { rutaInicio } from "../../utilidades/rutas.js";
 
 const ENLACES = [
     { href: "#inicio", texto: "Inicio" },
