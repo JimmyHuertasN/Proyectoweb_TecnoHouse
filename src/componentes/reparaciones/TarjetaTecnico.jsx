@@ -2,7 +2,8 @@ import Estrellas from "../panel/Estrellas.jsx";
 import { iniciales } from "../../utilidades/formato.js";
 
 const TarjetaTecnico = ({ tecnico }) => {
-    const calificacion = Number(tecnico.calificacion_promedio ?? tecnico.calificacion ?? 0);
+    // La API entrega "calificacionPromedio"; los otros nombres son de consultas anteriores a Supabase.
+    const calificacion = Number(tecnico.calificacionPromedio ?? tecnico.calificacion_promedio ?? tecnico.calificacion ?? 0);
 
     return (
         <li className="flex items-center gap-4 rounded-2xl border border-borde bg-tarjeta p-5">
