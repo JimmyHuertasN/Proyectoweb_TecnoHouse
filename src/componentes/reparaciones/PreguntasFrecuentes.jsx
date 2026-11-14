@@ -8,18 +8,24 @@ const PREGUNTAS = [
 ];
 
 const PreguntasFrecuentes = () => (
-    <section id="preguntas-frecuentes" data-animacion-entrada aria-labelledby="titulo-preguntas" className="scroll-mt-20 border-t border-borde bg-[#080d16] px-6 py-20 sm:px-[8%] sm:py-24">
-        <div className="mx-auto max-w-3xl">
-            <p className="antetitulo text-center">Resolvemos tus dudas</p>
-            <h2 id="titulo-preguntas" className="mb-10 text-center text-3xl font-bold sm:text-4xl">PREGUNTAS FRECUENTES</h2>
-            <div className="space-y-3">
+    <section id="preguntas-frecuentes" data-animacion-entrada aria-labelledby="titulo-preguntas" className="seccion">
+        <div className="contenedor grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
+            <div>
+                <p className="antetitulo">Preguntas frecuentes</p>
+                <h2 id="titulo-preguntas" className="titulo-seccion">Lo que más nos preguntan</h2>
+                <p className="texto-seccion">
+                    ¿No encuentras tu duda? <a href="#contacto" className="enlace">Escríbenos</a>.
+                </p>
+            </div>
+
+            <div className="border-b border-white/10">
                 {PREGUNTAS.map(({ pregunta, respuesta }) => (
-                    <details key={pregunta} className="group rounded-xl border border-borde bg-tarjeta open:border-marca/50">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca [&::-webkit-details-marker]:hidden">
+                    <details key={pregunta} className="group border-t border-white/10">
+                        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium text-white marker:hidden [&::-webkit-details-marker]:hidden">
                             {pregunta}
-                            <ChevronDown size={20} className="shrink-0 text-marca transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
+                            <ChevronDown size={20} className="shrink-0 text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true" />
                         </summary>
-                        <p className="px-5 pb-5 leading-relaxed text-slate-400">{respuesta}</p>
+                        <p className="max-w-2xl pb-5 leading-relaxed text-slate-400">{respuesta}</p>
                     </details>
                 ))}
             </div>

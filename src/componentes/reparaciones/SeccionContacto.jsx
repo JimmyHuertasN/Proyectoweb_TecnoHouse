@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { Clock3, Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { CONTACTO } from "../../datos/contacto.js";
+import { enlaceWhatsApp, whatsappConfigurado } from "../../utilidades/whatsapp.js";
 
-const telefonoWhatsApp = CONTACTO.whatsapp.replace(/\D/g, "");
-const whatsappConfigurado = CONTACTO.whatsappConfigurado && telefonoWhatsApp.length >= 8 && telefonoWhatsApp.length <= 15;
 const telefonoConfigurado = CONTACTO.telefono.replace(/\D/g, "").length >= 7;
 const correoConfigurado = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(CONTACTO.correo);
+
+const DatoContacto = ({ Icono, titulo, children }) => (
+    <li className="flex items-start gap-3.5">
+        <Icono size={20} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
+        <div>
+            <p className="text-sm font-semibold text-white">{titulo}</p>
+            <div className="text-sm text-slate-400">{children}</div>
+        </div>
+    </li>
+);
 
 const SeccionContacto = () => {
     const [error, setError] = useState("");
@@ -21,7 +30,7 @@ const SeccionContacto = () => {
         const destino = evento.nativeEvent.submitter?.value;
 
         if (destino === "whatsapp" && whatsappConfigurado) {
-            window.open(`https://wa.me/${telefonoWhatsApp}?text=${encodeURIComponent(cuerpo)}`, "_blank", "noopener,noreferrer");
+            window.open(enlaceWhatsApp(cuerpo), "_blank", "noopener,noreferrer");
             return;
         }
 
@@ -31,54 +40,45 @@ const SeccionContacto = () => {
             return;
         }
 
-        setError("El canal de contacto aún no está configurado. Escríbenos por los datos disponibles al pie de esta sección.");
+        setError("Ese canal de contacto aún no está disponible. Usa los datos que aparecen junto al formulario.");
     };
 
     return (
-        <section id="contacto" data-animacion-entrada aria-labelledby="titulo-contacto" className="scroll-mt-20 border-t border-borde bg-gradient-to-b from-[#0a1422] to-fondo px-6 py-20 sm:px-[8%] sm:py-24">
-            <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-2 lg:gap-14">
+        <section id="contacto" data-animacion-entrada aria-labelledby="titulo-contacto" className="seccion">
+            <div className="contenedor grid gap-10 lg:grid-cols-2 lg:gap-16">
                 <div>
-                    <p className="antetitulo">Estamos para ayudarte</p>
-                    <h2 id="titulo-contacto" className="mb-4 text-3xl font-bold sm:text-4xl">CONTÁCTANOS</h2>
-                    <p className="mb-8 max-w-xl leading-relaxed text-slate-300">Cuéntanos qué le ocurre a tu equipo. Puedes abrir WhatsApp o preparar un borrador de correo con tus datos y tu mensaje.</p>
+                    <p className="antetitulo">Contacto</p>
+                    <h2 id="titulo-contacto" className="titulo-seccion">Cuéntanos qué le pasa a tu equipo</h2>
+                    <p className="texto-seccion">Escribe tu mensaje y envíalo por WhatsApp, o prepara un correo con tus datos.</p>
 
-                    <ul className="space-y-5">
-                        <li className="flex items-start gap-3">
-                            <Phone size={19} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
-                            <div>
-                                <p className="text-sm font-semibold">Teléfono</p>
-                                {telefonoConfigurado ? <a className="text-sm text-slate-400 hover:text-marca" href={`tel:${CONTACTO.telefono.replace(/[^\d+]/g, "")}`}>{CONTACTO.telefono}</a> : <p className="text-sm text-slate-500">{CONTACTO.telefono}</p>}
-                            </div>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <Mail size={19} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
-                            <div>
-                                <p className="text-sm font-semibold">Correo</p>
-                                {correoConfigurado ? <a className="text-sm text-slate-400 hover:text-marca" href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a> : <p className="text-sm text-slate-500">{CONTACTO.correo}</p>}
-                            </div>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <Clock3 size={19} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
-                            <div>
-                                <p className="text-sm font-semibold">Horario de atención</p>
-                                <p className="text-sm text-slate-400">{CONTACTO.horario}</p>
-                            </div>
-                        </li>
+                    <ul className="mt-8 space-y-5">
+                        <DatoContacto Icono={Phone} titulo="Teléfono">
+                            {telefonoConfigurado ? <a className="hover:text-white" href={`tel:${CONTACTO.telefono.replace(/[^\d+]/g, "")}`}>{CONTACTO.telefono}</a> : CONTACTO.telefono}
+                        </DatoContacto>
+                        <DatoContacto Icono={Mail} titulo="Correo">
+                            {correoConfigurado ? <a className="break-all hover:text-white" href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a> : CONTACTO.correo}
+                        </DatoContacto>
+                        {/* El horario se publica solo cuando el negocio lo confirma en datos/contacto.js. */}
+                        {CONTACTO.horarioConfigurado && (
+                            <DatoContacto Icono={Clock3} titulo="Horario de atención">{CONTACTO.horario}</DatoContacto>
+                        )}
                     </ul>
                 </div>
 
-                <form onSubmit={enviarMensaje} className="tarjeta space-y-5" aria-label="Formulario de contacto">
-                    <div>
-                        <label htmlFor="contacto-nombre" className="etiqueta">Nombre</label>
-                        <input id="contacto-nombre" name="nombre" type="text" autoComplete="name" required maxLength={100} className="campo" placeholder="Tu nombre" />
-                    </div>
-                    <div>
-                        <label htmlFor="contacto-correo" className="etiqueta">Correo electrónico</label>
-                        <input id="contacto-correo" name="correo" type="email" autoComplete="email" required maxLength={254} className="campo" placeholder="tu@correo.com" />
+                <form onSubmit={enviarMensaje} className="tarjeta space-y-5 sm:p-8" aria-label="Formulario de contacto">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label htmlFor="contacto-nombre" className="etiqueta">Nombre</label>
+                            <input id="contacto-nombre" name="nombre" type="text" autoComplete="name" required maxLength={100} className="campo" placeholder="Tu nombre" />
+                        </div>
+                        <div>
+                            <label htmlFor="contacto-correo" className="etiqueta">Correo electrónico</label>
+                            <input id="contacto-correo" name="correo" type="email" autoComplete="email" required maxLength={254} className="campo" placeholder="tu@correo.com" />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="contacto-mensaje" className="etiqueta">Mensaje</label>
-                        <textarea id="contacto-mensaje" name="mensaje" required minLength={5} maxLength={1000} rows={4} className="campo resize-y" placeholder="Cuéntanos cómo podemos ayudarte." />
+                        <textarea id="contacto-mensaje" name="mensaje" required minLength={5} maxLength={1000} rows={5} className="campo resize-y" placeholder="Ej. Mi portátil no enciende desde ayer." />
                     </div>
                     {error && <p className="text-sm text-amber-300" role="alert">{error}</p>}
                     <div className="flex flex-col gap-3 sm:flex-row">
@@ -89,8 +89,7 @@ const SeccionContacto = () => {
                             <Send size={17} aria-hidden="true" /> Preparar correo
                         </button>
                     </div>
-                    {(!whatsappConfigurado || !correoConfigurado) && <p className="text-xs text-slate-500">Reemplaza los datos pendientes en `src/datos/contacto.js` para habilitar los canales de contacto.</p>}
-                    {correoConfigurado && <p className="text-xs text-slate-500">El botón abre un borrador en la aplicación de correo configurada en tu dispositivo; tendrás que enviarlo desde allí.</p>}
+                    {correoConfigurado && <p className="text-xs leading-relaxed text-slate-500">"Preparar correo" abre un borrador en la aplicación de correo de tu dispositivo; lo envías desde allí.</p>}
                 </form>
             </div>
         </section>
