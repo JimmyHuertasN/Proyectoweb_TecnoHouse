@@ -49,7 +49,7 @@ Durante todo el proceso, cliente y técnico pueden escribirse en la conversació
 
 ![Tienda](docs/capturas/tienda.png)
 
-**Reparaciones**: servicios que ofrece el negocio.
+**Reparaciones**: cómo pedir una reparación y servicios que ofrece el negocio.
 
 ![Servicios de reparación](docs/capturas/reparaciones.png)
 
@@ -133,8 +133,9 @@ Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activ
 ```
 src/
 ├── api/                Consultas a Supabase y a la API, agrupadas por tema
-├── componentes/        Piezas compartidas (avisos, pie de página, ruta protegida...)
-│   ├── autenticacion/  Diseño y barra de las páginas de acceso
+├── componentes/        Piezas compartidas (encabezado del sitio, pie de página, avisos...)
+│   ├── autenticacion/  Diseño de las páginas de acceso
+│   ├── portada/        Ilustración de la portada
 │   ├── reparaciones/   Secciones de la página de reparaciones
 │   ├── tienda/         Encabezado, tarjetas y carrito de la tienda
 │   └── panel/          Piezas comunes de los tres paneles
@@ -221,6 +222,11 @@ Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambio
 - Tablas `pedidos` y `pedido_items` para registrar los pedidos del carrito, listarlos en `/admin/pedidos` y cambiar su estado. Mientras no existan, los pedidos y los ingresos de la tienda se muestran en cero.
 - Descontar el stock cuando se confirma un pedido.
 - Columna `destacado` en `productos` para que el administrador elija los productos que aparecen primero en la tienda y en la portada.
+
+También falta contenido real del negocio:
+
+- La foto del producto "Pantalla Lenovo Legion 6" no corresponde al producto (es la imagen de un videojuego). Hay que reemplazarla desde **Tienda** en el panel del administrador.
+- El horario de atención y las redes sociales no aparecen en el sitio hasta que se confirmen en `src/datos/contacto.js`.
 
 ## Documentación
 
