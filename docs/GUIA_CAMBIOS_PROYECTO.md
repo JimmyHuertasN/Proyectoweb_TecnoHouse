@@ -9,6 +9,7 @@ Actualizaciones posteriores, hasta el commit `dc3e185` (13 de noviembre de 2026)
 - Tienda virtual, portada que separa la tienda de las reparaciones y gestión de la tienda en el panel del administrador (secciones 7, 9 y 11).
 - API ASP.NET Core conectada a Supabase (sección 15).
 - Reorganización de carpetas y correcciones de código limpio (sección 16).
+- Rediseño visual del sitio público y de los paneles (sección 17).
 
 El historial permite describir qué se incorporó al proyecto, pero no demostrar por sí solo quién escribió cada línea. Por eso, el documento habla de cambios registrados en la rama y no atribuye autoría individual a cada implementación.
 
@@ -226,6 +227,36 @@ En el mismo trabajo se aplicaron las prácticas de código limpio vistas en clas
 - **Importaciones ordenadas:** en `src/Aplicacion.jsx` las páginas se agrupan por área, en el mismo orden que las rutas.
 
 Los cambios se subieron en commits pequeños (uno por carpeta o tema) y cada uno compila por sí solo. Las rutas que mencionan las secciones anteriores de esta guía corresponden a la ubicación que tenían en su momento.
+
+## 17. Rediseño visual
+
+El 13 de noviembre de 2026 se rediseñó la presentación del sitio sin cambiar rutas, permisos, consultas ni reglas de negocio.
+
+**Sistema visual** (`src/estilos/principal.css`): fondo casi negro, bandas de sección (`superficie`) y tarjetas (`tarjeta`) con tonos más neutros. El azul de la marca queda para botones, enlaces y el estado activo. Se agregaron las clases `contenedor`, `seccion`, `titulo-seccion`, `texto-seccion` y `enlace` para que todas las páginas compartan anchos, espacios y títulos. Botones y campos miden al menos 44 px de alto.
+
+**Navegación y pie:**
+
+- `EncabezadoSitio.jsx` es el encabezado único de la portada, reparaciones, la tienda y las pantallas de acceso: logotipo, Inicio, Reparaciones, Tienda y el acceso a la cuenta o al panel. La tienda le agrega el carrito (`EncabezadoTienda.jsx`). Reemplazó a `BarraNavegacion.jsx` y `BarraNavegacionAutenticacion.jsx`.
+- `NavegacionSecciones.jsx` es la barra de anclajes de la página de reparaciones y resalta la sección visible.
+- `Logotipo.jsx` reúne el nombre de la marca, que antes se repetía en cinco archivos.
+- `PiePagina.jsx` muestra solo los canales configurados en `datos/contacto.js`; el horario y las redes aparecen cuando el negocio los confirme.
+
+**Portada** (`Portada.jsx`): presenta el negocio con un título, las acciones "Solicitar una reparación" y "Ver la tienda" y una ilustración propia (`componentes/portada/EjemploSeguimiento.jsx`) marcada como ejemplo. Después siguen los equipos que se atienden, una selección de productos con stock, los cuatro pasos del servicio (`datos/pasosServicio.js`, compartidos con reparaciones), el seguimiento en línea y el contacto.
+
+**Reparaciones** (`Reparaciones.jsx`): primera sección con el resumen de cómo pedir una reparación, servicios, pasos en línea de tiempo, técnicos, reseñas, preguntas, ubicación y contacto, alternando fondos y composiciones. `rutaSolicitarReparacion` (`utilidades/rutas.js`) decide a dónde lleva "Solicitar": registro sin sesión, nueva solicitud para el cliente y el panel propio para técnico o administrador.
+
+**Tienda:** el buscador está en el encabezado de la página, las categorías son una fila deslizable en celulares y una lista lateral en escritorio, y `CuadriculaProductos.jsx` mantiene el ancho de las tarjetas aunque haya pocos productos. `ImagenProducto.jsx` tiene la opción `contener` para mostrar la foto completa sin recortes. El detalle y el carrito destacan el precio y el total. Hay estados propios para carga, error, catálogo vacío, búsqueda sin resultados, imagen ausente y producto agotado.
+
+**Acceso y paneles:** `DisenoAutenticacion.jsx` usa el encabezado del sitio y resume lo que permite la cuenta. En los paneles, `MenuLateral.jsx` muestra el rol y marca la página activa; `BarraProgreso.jsx` destaca el estado actual y el paso que sigue; `ProximoPaso.jsx` y `TarjetaCotizacion.jsx` resaltan la acción pendiente y el total.
+
+**Correcciones encontradas en la revisión:**
+
+- La calificación de los técnicos no se mostraba en la página pública: la API la entrega como `calificacionPromedio` y la tarjeta buscaba `calificacion_promedio`.
+- Los avisos emergentes tapaban el menú y el carrito; ahora aparecen debajo del encabezado.
+- El menú lateral cerrado en celulares seguía recibiendo el foco del teclado.
+- El año del pie de página se calculaba en cada dibujo, lo que generaba un aviso del linter.
+
+La animación de entrada de las secciones se extrajo al hook `useAnimacionEntrada.js` y se desactiva con `prefers-reduced-motion`.
 
 ## Nota de implementación
 
