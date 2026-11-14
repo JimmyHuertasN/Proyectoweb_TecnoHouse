@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react";
-import { MessageCircle, SearchX, ShieldCheck, Wrench } from "lucide-react";
-import Skeleton from "../../componentes/panel/Skeleton.jsx";
-import TarjetaProductoTienda from "../../componentes/tienda/TarjetaProductoTienda.jsx";
+import { MessageCircle, PackageOpen, Search, SearchX, ShieldCheck, TriangleAlert, Wrench } from "lucide-react";
+import CuadriculaProductos from "../../componentes/tienda/CuadriculaProductos.jsx";
 import useTienda from "../../hooks/useTienda.js";
 import { coincideTexto } from "../../utilidades/filtros.js";
 
-const BENEFICIOS = [
-    { Icono: MessageCircle, titulo: "Pide por WhatsApp", texto: "Arma tu carrito y envíanos el pedido." },
-    { Icono: ShieldCheck, titulo: "Stock real", texto: "Solo mostramos productos a la venta." },
-    { Icono: Wrench, titulo: "¿Lo instalamos?", texto: "Nuestros técnicos pueden hacerlo." },
+const VENTAJAS = [
+    { icono: MessageCircle, titulo: "Pide por WhatsApp", texto: "Arma tu carrito y envíanos el pedido." },
+    { icono: ShieldCheck, titulo: "Solo lo que está a la venta", texto: "Cada producto muestra su disponibilidad." },
+    { icono: Wrench, titulo: "¿Lo instalamos?", texto: "Nuestros técnicos pueden hacerlo." },
 ];
 
 /* Cada opción del selector "Ordenar por" con su forma de comparar dos productos. */
@@ -23,15 +22,29 @@ const ORDENES = {
 
 const FILTROS_VACIOS = { texto: "", categoria: "todas", orden: "destacados", soloDisponibles: false };
 
-const BotonCategoria = ({ activa, alElegir, children }) => (
+/* En celulares es una píldora dentro de una fila deslizable; en escritorio, una fila de la lista lateral. */
+const BotonCategoria = ({ activa, alElegir, nombre, cantidad }) => (
     <button
         type="button"
         onClick={alElegir}
         aria-pressed={activa}
-        className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${activa ? "bg-marca/15 font-semibold text-marca" : "text-slate-300 hover:bg-white/5 hover:text-white"}`}
+        className={`flex min-h-11 shrink-0 cursor-pointer items-center justify-between gap-2 rounded-full border px-4 text-sm transition lg:w-full lg:rounded-lg lg:border-transparent lg:px-3 ${
+            activa ? "border-white bg-white font-semibold text-slate-950" : "border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white lg:hover:bg-white/5"
+        }`}
     >
-        {children}
+        {nombre}
+        <span className={`text-xs tabular-nums ${activa ? "text-slate-600" : "text-slate-500"}`}>{cantidad}</span>
     </button>
+);
+
+/* Mensaje central para los estados sin productos: error, catálogo vacío o búsqueda sin resultados. */
+const MensajeTienda = ({ icono: Icono, titulo, texto, children }) => (
+    <div className="rounded-2xl border border-dashed border-slate-700 px-6 py-16 text-center" role="status">
+        <Icono className="mx-auto size-10 text-slate-500" strokeWidth={1.5} aria-hidden="true" />
+        <p className="mt-4 text-lg font-semibold text-white">{titulo}</p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-slate-400">{texto}</p>
+        {children && <div className="mt-6">{children}</div>}
+    </div>
 );
 
 const Tienda = () => {
@@ -60,96 +73,106 @@ const Tienda = () => {
     );
 
     const cambiarFiltro = (nombre, valor) => setFiltros((anteriores) => ({ ...anteriores, [nombre]: valor }));
-    const hayFiltros = filtros.texto !== "" || filtros.categoria !== "todas" || filtros.soloDisponibles;
+    const hayProductos = !cargando && !error && productos.length > 0;
 
     return (
         <>
-            <section aria-labelledby="titulo-tienda" className="border-b border-borde bg-gradient-to-br from-[#00aaff]/10 via-[#05060a] to-[#05060a] px-6 py-12 sm:px-[8%]">
-                <div className="mx-auto max-w-6xl">
-                    <p className="antetitulo">Tienda TecnoHouse</p>
-                    <h1 id="titulo-tienda" className="text-3xl font-bold sm:text-4xl">Repuestos y accesorios para tus equipos</h1>
-                    <p className="mt-3 max-w-2xl text-slate-400">Pantallas, baterías, cargadores y más, con el respaldo de nuestro servicio técnico.</p>
+            <section aria-labelledby="titulo-tienda" className="border-b border-white/10 bg-gradient-to-b from-superficie to-fondo">
+                <div className="contenedor py-10 sm:py-14">
+                    <p className="antetitulo">Tienda</p>
+                    <h1 id="titulo-tienda" className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Repuestos y accesorios</h1>
+                    <p className="mt-3 max-w-2xl leading-relaxed text-slate-400">Pantallas, baterías, cargadores y más para tus equipos, con el respaldo de nuestro servicio técnico.</p>
 
-                    <ul className="mt-8 grid gap-4 sm:grid-cols-3">
-                        {BENEFICIOS.map(({ Icono, titulo, texto }) => (
-                            <li key={titulo} className="flex items-start gap-3 rounded-xl border border-borde bg-tarjeta/60 p-4">
-                                <Icono className="mt-0.5 size-5 shrink-0 text-marca" aria-hidden="true" />
-                                <div>
-                                    <p className="text-sm font-semibold">{titulo}</p>
-                                    <p className="text-xs text-slate-400">{texto}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    <div role="search" className="relative mt-7 max-w-xl">
+                        <label htmlFor="tienda-texto" className="sr-only">Buscar productos</label>
+                        <Search size={18} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-slate-500" aria-hidden="true" />
+                        <input
+                            id="tienda-texto"
+                            type="search"
+                            className="campo min-h-12 bg-tarjeta pl-11"
+                            placeholder="Buscar por nombre o categoría"
+                            autoComplete="off"
+                            value={filtros.texto}
+                            onChange={(evento) => cambiarFiltro("texto", evento.target.value)}
+                        />
+                    </div>
                 </div>
             </section>
 
-            <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 sm:px-[4%] lg:grid-cols-[15rem_1fr] xl:px-0">
-                <aside aria-label="Categorías" className="lg:sticky lg:top-24 lg:self-start">
-                    <h2 className="mb-3 text-sm font-semibold tracking-wider text-white uppercase">Categorías</h2>
-                    <div className="flex flex-wrap gap-1 lg:flex-col">
-                        <BotonCategoria activa={filtros.categoria === "todas"} alElegir={() => cambiarFiltro("categoria", "todas")}>
-                            Todas <span className="text-xs text-slate-500">{productos.length}</span>
-                        </BotonCategoria>
-                        {categorias.map(({ nombre, cantidad }) => (
-                            <BotonCategoria key={nombre} activa={filtros.categoria === nombre} alElegir={() => cambiarFiltro("categoria", nombre)}>
-                                {nombre} <span className="text-xs text-slate-500">{cantidad}</span>
-                            </BotonCategoria>
-                        ))}
-                    </div>
-
-                    <label className="mt-5 flex cursor-pointer items-center gap-2 text-sm text-slate-300">
-                        <input type="checkbox" checked={filtros.soloDisponibles} onChange={(evento) => cambiarFiltro("soloDisponibles", evento.target.checked)} className="size-4 accent-marca" />
-                        Solo disponibles
-                    </label>
-                </aside>
-
-                <section aria-label="Productos">
-                    <div role="search" className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <div className="flex-1">
-                            <label htmlFor="tienda-texto" className="etiqueta">Buscar</label>
-                            <input id="tienda-texto" type="search" className="campo" placeholder="Ej. batería, pantalla Samsung" autoComplete="off" value={filtros.texto} onChange={(evento) => cambiarFiltro("texto", evento.target.value)} />
+            <div className="contenedor grid gap-8 py-8 sm:py-10 lg:grid-cols-[13rem_1fr] lg:gap-10">
+                {hayProductos && (
+                    <aside aria-label="Filtros" className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+                        <h2 className="mb-3 hidden text-sm font-semibold text-white lg:block">Categorías</h2>
+                        {/* La fila se desliza dentro de su propio contenedor; los márgenes negativos la llevan hasta el borde de la pantalla. */}
+                        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0">
+                            <BotonCategoria activa={filtros.categoria === "todas"} alElegir={() => cambiarFiltro("categoria", "todas")} nombre="Todas" cantidad={productos.length} />
+                            {categorias.map(({ nombre, cantidad }) => (
+                                <BotonCategoria key={nombre} activa={filtros.categoria === nombre} alElegir={() => cambiarFiltro("categoria", nombre)} nombre={nombre} cantidad={cantidad} />
+                            ))}
                         </div>
-                        <div className="sm:w-56">
-                            <label htmlFor="tienda-orden" className="etiqueta">Ordenar por</label>
-                            <select id="tienda-orden" className="campo" value={filtros.orden} onChange={(evento) => cambiarFiltro("orden", evento.target.value)}>
-                                {Object.entries(ORDENES).map(([valor, { etiqueta }]) => (
-                                    <option key={valor} value={valor}>{etiqueta}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
 
-                    {cargando && <Skeleton tipo="tarjeta" cantidad={6} etiqueta="Cargando productos" />}
-                    {!cargando && error && <p className="tarjeta text-center text-slate-400" role="status">{error}</p>}
-                    {!cargando && !error && productos.length === 0 && (
-                        <p className="tarjeta text-center text-slate-400" role="status">Pronto publicaremos nuestros productos.</p>
+                        <label className="mt-4 flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-slate-300 lg:mt-5 lg:border-t lg:border-white/10 lg:pt-4">
+                            <input type="checkbox" checked={filtros.soloDisponibles} onChange={(evento) => cambiarFiltro("soloDisponibles", evento.target.checked)} className="size-4 cursor-pointer accent-marca" />
+                            Solo disponibles
+                        </label>
+                    </aside>
+                )}
+
+                <section aria-label="Productos" className={`min-w-0 ${hayProductos ? "" : "lg:col-span-2"}`}>
+                    {cargando && <CuadriculaProductos cargando />}
+
+                    {!cargando && error && (
+                        <MensajeTienda icono={TriangleAlert} titulo="No pudimos cargar la tienda" texto="Revisa tu conexión e inténtalo de nuevo.">
+                            <button type="button" onClick={() => window.location.reload()} className="boton-secundario">Volver a intentar</button>
+                        </MensajeTienda>
                     )}
 
-                    {!cargando && productos.length > 0 && (
+                    {!cargando && !error && productos.length === 0 && (
+                        <MensajeTienda icono={PackageOpen} titulo="Pronto publicaremos nuestros productos" texto="Estamos preparando el catálogo. Mientras tanto, puedes escribirnos para consultar por un repuesto." />
+                    )}
+
+                    {hayProductos && (
                         <>
-                            <p aria-live="polite" className="mb-4 text-sm text-slate-400">
-                                {visibles.length} {visibles.length === 1 ? "producto" : "productos"}
-                                {filtros.categoria !== "todas" && ` en ${filtros.categoria}`}
-                            </p>
+                            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                                <p aria-live="polite" className="text-sm text-slate-400">
+                                    {visibles.length} {visibles.length === 1 ? "producto" : "productos"}
+                                    {filtros.categoria !== "todas" && ` en ${filtros.categoria}`}
+                                </p>
+                                <div className="flex items-center gap-2.5">
+                                    <label htmlFor="tienda-orden" className="text-sm whitespace-nowrap text-slate-400">Ordenar por</label>
+                                    <select id="tienda-orden" className="campo w-auto py-2" value={filtros.orden} onChange={(evento) => cambiarFiltro("orden", evento.target.value)}>
+                                        {Object.entries(ORDENES).map(([valor, { etiqueta }]) => (
+                                            <option key={valor} value={valor}>{etiqueta}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
 
                             {visibles.length === 0 ? (
-                                <div className="tarjeta text-center">
-                                    <SearchX className="mx-auto mb-3 size-8 text-marca" aria-hidden="true" />
-                                    <p className="font-medium">No hay productos con ese criterio.</p>
-                                    {hayFiltros && (
-                                        <button type="button" onClick={() => setFiltros(FILTROS_VACIOS)} className="boton-secundario mt-4">Limpiar filtros</button>
-                                    )}
-                                </div>
+                                <MensajeTienda icono={SearchX} titulo="No hay productos con ese criterio" texto="Prueba con otra palabra o quita los filtros.">
+                                    <button type="button" onClick={() => setFiltros(FILTROS_VACIOS)} className="boton-secundario">Limpiar filtros</button>
+                                </MensajeTienda>
                             ) : (
-                                <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                                    {visibles.map((producto) => <TarjetaProductoTienda key={producto.id} producto={producto} />)}
-                                </ul>
+                                <CuadriculaProductos productos={visibles} />
                             )}
                         </>
                     )}
                 </section>
             </div>
+
+            <section aria-label="Cómo comprar" className="border-t border-white/10 bg-superficie">
+                <ul className="contenedor grid gap-8 py-10 sm:grid-cols-3">
+                    {VENTAJAS.map(({ icono: Icono, titulo, texto }) => (
+                        <li key={titulo} className="flex gap-3.5">
+                            <Icono size={20} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
+                            <div>
+                                <p className="text-sm font-semibold text-white">{titulo}</p>
+                                <p className="mt-0.5 text-sm text-slate-400">{texto}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </section>
         </>
     );
 };
