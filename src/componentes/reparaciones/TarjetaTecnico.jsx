@@ -5,21 +5,31 @@ const TarjetaTecnico = ({ tecnico }) => {
     const calificacion = Number(tecnico.calificacion_promedio ?? tecnico.calificacion ?? 0);
 
     return (
-        <article data-animacion-entrada className="tarjeta-elevable w-full max-w-sm text-center leading-relaxed sm:w-70">
-            <div role="img" aria-label={`Iniciales de ${tecnico.nombre}`} className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full border border-marca/30 bg-marca/10 text-2xl font-bold text-marca">
+        <li className="flex items-center gap-4 rounded-2xl border border-borde bg-tarjeta p-5">
+            <div role="img" aria-label={`Iniciales de ${tecnico.nombre}`} className="flex size-14 shrink-0 items-center justify-center rounded-full bg-slate-800 text-lg font-semibold text-slate-200">
                 {iniciales(tecnico.nombre)}
             </div>
-            <h3 className="mb-1 text-xl leading-snug font-bold text-white">{tecnico.nombre}</h3>
-            <p className="mb-4 font-semibold text-slate-400">{tecnico.especialidad || "Técnico de TecnoHouse"}</p>
-            <div className="mb-4 flex flex-col items-center gap-1">
-                <Estrellas puntuacion={calificacion} />
-                <span className="text-sm text-slate-400">{calificacion.toFixed(1)} / 5</span>
+
+            <div className="min-w-0 flex-1">
+                <h3 className="truncate font-semibold text-white">{tecnico.nombre}</h3>
+                <p className="line-clamp-2 text-sm text-slate-400">{tecnico.especialidad || "Técnico de TecnoHouse"}</p>
+
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    {/* Un técnico sin calificaciones tiene promedio 0: se indica en lugar de mostrar 0 estrellas. */}
+                    {calificacion > 0 ? (
+                        <span className="flex items-center gap-1.5 text-slate-300">
+                            <Estrellas puntuacion={calificacion} tamano="text-sm" /> {calificacion.toFixed(1)}
+                        </span>
+                    ) : (
+                        <span className="text-slate-500">Sin calificaciones aún</span>
+                    )}
+                    <span className={`inline-flex items-center gap-1.5 ${tecnico.disponible ? "text-emerald-300" : "text-slate-500"}`}>
+                        <span className={`size-1.5 rounded-full ${tecnico.disponible ? "bg-emerald-400" : "bg-slate-600"}`} aria-hidden="true" />
+                        {tecnico.disponible ? "Disponible" : "No disponible"}
+                    </span>
+                </div>
             </div>
-            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${tecnico.disponible ? "bg-emerald-500/10 text-emerald-300" : "bg-slate-700/60 text-slate-300"}`}>
-                <span className={`size-2 rounded-full ${tecnico.disponible ? "bg-emerald-400" : "bg-slate-500"}`} aria-hidden="true" />
-                {tecnico.disponible ? "Disponible" : "No disponible"}
-            </span>
-        </article>
+        </li>
     );
 };
 
