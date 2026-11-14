@@ -35,17 +35,20 @@ const ProximoPaso = ({ estado, alAvanzar }) => {
     };
 
     return (
-        <section className="tarjeta mb-6">
-            <h2 className="mb-3 text-lg font-semibold">Próximo paso</h2>
+        <section className="mb-6 rounded-2xl border border-marca/40 bg-marca/5 p-5 sm:p-6">
             <Aviso texto={error} tipo="error" />
 
-            {avance ? (
-                <button type="button" onClick={avanzar} disabled={avanzando} className="boton-primario">
-                    {avanzando ? "Guardando..." : avance.accion}
-                </button>
-            ) : (
-                <p className="text-sm text-slate-300">{ESPERAS[estado]}</p>
-            )}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 className="text-xs font-medium tracking-wide text-sky-300 uppercase">Próximo paso</h2>
+                    <p className="mt-1 text-white">{avance ? "Cuando termines esta etapa, actualiza el estado del servicio." : ESPERAS[estado]}</p>
+                </div>
+                {avance && (
+                    <button type="button" onClick={avanzar} disabled={avanzando} className="boton-primario shrink-0">
+                        {avanzando ? "Guardando..." : avance.accion}
+                    </button>
+                )}
+            </div>
         </section>
     );
 };

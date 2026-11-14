@@ -109,7 +109,7 @@ const DetalleSolicitud = () => {
                 <Aviso texto={`¡Listo! Registramos tu solicitud ${solicitud.codigo}. Te contactaremos cuando un técnico la revise.`} tipo="exito" />
             )}
             {ubicacion.state?.errorFotos && <Aviso texto={`La solicitud se creó, pero no se pudieron guardar las fotos: ${ubicacion.state.errorFotos}`} tipo="error" />}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-marca">{solicitud.codigo}</p>
                     <h1 className="mt-1 text-2xl font-bold sm:text-3xl">

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Menu } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Logotipo from "../Logotipo.jsx";
 import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
 import MenuLateral from "./MenuLateral.jsx";
 
@@ -10,26 +11,20 @@ import MenuLateral from "./MenuLateral.jsx";
 */
 const DisenoPanel = ({ menu }) => {
     const [menuAbierto, setMenuAbierto] = useState(false);
+    // Función fija: el menú lateral la usa dentro de un useEffect.
+    const cerrarMenu = useCallback(() => setMenuAbierto(false), []);
 
     return (
-        <div className="min-h-screen bg-black text-white lg:flex">
-            <MenuLateral menu={menu} abierto={menuAbierto} alCerrar={() => setMenuAbierto(false)} />
+        <div className="min-h-screen bg-fondo lg:flex">
+            <MenuLateral menu={menu} abierto={menuAbierto} alCerrar={cerrarMenu} />
 
             <div className="min-w-0 flex-1">
                 {/* Barra superior solo para celulares y tabletas. */}
-                <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-borde bg-fondo/95 px-4 backdrop-blur lg:hidden">
-                    <button
-                        type="button"
-                        onClick={() => setMenuAbierto(true)}
-                        className="cursor-pointer rounded-lg p-2 text-2xl leading-none text-slate-300 hover:bg-white/5"
-                        aria-label="Abrir menú"
-                    >
+                <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-white/10 bg-fondo/90 px-4 backdrop-blur lg:hidden">
+                    <button type="button" onClick={() => setMenuAbierto(true)} className="flex size-11 cursor-pointer items-center justify-center rounded-lg text-slate-300 hover:bg-white/5" aria-label="Abrir menú">
                         <Menu size={24} aria-hidden="true" />
                     </button>
-                    <Link to={menu.inicio} className="text-lg font-bold">
-                        TECNO<span className="text-marca">HOUSE</span>
-                    </Link>
-                    {/* Campana visible en el encabezado móvil del panel. */}
+                    <Logotipo destino={menu.inicio} className="text-lg" />
                     <CampanaNotificaciones />
                 </header>
 

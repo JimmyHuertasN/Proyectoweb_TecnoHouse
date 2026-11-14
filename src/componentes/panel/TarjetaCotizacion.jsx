@@ -28,7 +28,7 @@ const TablaItems = ({ items }) => {
                 {items.map((item) => (
                     <tr key={item.id} className="border-b border-borde/60">
                         <td className="py-2 pr-4">{item.concepto}</td>
-                        <td className="py-2 text-right whitespace-nowrap">{formatearPesos(item.precio)}</td>
+                        <td className="py-2 text-right whitespace-nowrap tabular-nums">{formatearPesos(item.precio)}</td>
                     </tr>
                 ))}
             </tbody>
@@ -73,7 +73,7 @@ const TarjetaCotizacion = ({ cotizacion, alResponder, servicio, cliente }) => {
     };
 
     return (
-        <section className={`tarjeta mb-6 ${pendiente ? "border-orange-500/50" : ""}`}>
+        <section className={`tarjeta mb-6 ${pendiente ? "border-amber-400/60" : ""}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <h2 className="text-lg font-semibold">Cotización</h2>
@@ -91,14 +91,14 @@ const TarjetaCotizacion = ({ cotizacion, alResponder, servicio, cliente }) => {
             <Aviso texto={error} tipo="error" />
             <TablaItems items={cotizacion.items} />
 
-            <p className="mt-4 flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span>{formatearPesos(cotizacion.total)}</span>
+            <p className="mt-4 flex items-baseline justify-between gap-4 rounded-xl bg-fondo px-4 py-3">
+                <span className="text-sm font-medium text-slate-300">Total de la cotización</span>
+                <span className="text-2xl font-bold text-white tabular-nums">{formatearPesos(cotizacion.total)}</span>
             </p>
 
             {pendiente && (
                 <div className="mt-6 flex flex-col gap-3 border-t border-borde pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm text-slate-300">Revisa el detalle y dinos si quieres hacer la reparación.</p>
+                    <p className="text-sm font-medium text-amber-200">Esta cotización espera tu respuesta. Revisa el detalle y dinos si quieres hacer la reparación.</p>
                     <div className="flex flex-col-reverse gap-3 sm:flex-row">
                         <button type="button" onClick={() => responder(false)} disabled={respondiendo} className="boton-peligro">
                             Rechazar
