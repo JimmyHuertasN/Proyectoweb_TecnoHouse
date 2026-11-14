@@ -5,14 +5,21 @@
 */
 @import "tailwindcss";
 
-/* Colores de la marca TecnoHouse: se usan como bg-marca, text-marca, border-borde, etc. */
+/*
+    Colores de TecnoHouse: se usan como bg-fondo, bg-superficie, text-marca, border-borde, etc.
+    - fondo: color de la página.
+    - superficie: bandas de sección que alternan con el fondo.
+    - tarjeta: bloques que deben destacar sobre las dos anteriores.
+    - marca: azul de acento, reservado para acciones y estados activos.
+*/
 @theme {
     --font-sans: "Inter", sans-serif;
     --color-marca: #00aaff;
-    --color-marca-oscuro: #0088cc;
-    --color-tarjeta: #111c31;
-    --color-borde: #1e293b;
-    --color-fondo: #05060a;
+    --color-marca-oscuro: #0090dd;
+    --color-fondo: #06080d;
+    --color-superficie: #0b111b;
+    --color-tarjeta: #101826;
+    --color-borde: #1c2636;
 }
 
 @layer base {
@@ -21,7 +28,7 @@
     }
 
     body {
-        @apply overflow-x-hidden bg-black text-white;
+        @apply bg-fondo text-slate-100 antialiased;
     }
 
     :where(a, button, input, select, textarea, summary):focus-visible {
@@ -29,56 +36,77 @@
     }
 }
 
-/* Piezas que se repiten en los formularios y botones de todo el sitio. */
+/* Piezas que se repiten en todo el sitio. */
 @layer components {
+    /* Ancho máximo y márgenes laterales del contenido público. */
+    .contenedor {
+        @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+    }
+
+    /* Separación vertical entre secciones del sitio público. */
+    .seccion {
+        @apply scroll-mt-32 py-16 sm:py-20;
+    }
+
+    .titulo-seccion {
+        @apply text-2xl font-bold tracking-tight text-white sm:text-3xl;
+    }
+
+    .texto-seccion {
+        @apply mt-3 max-w-2xl leading-relaxed text-slate-400;
+    }
+
+    /* Texto corto que acompaña a un título (ej. "Servicio técnico"). */
+    .antetitulo {
+        @apply mb-3 text-xs font-semibold tracking-[0.18em] text-sky-300 uppercase;
+    }
+
     .tarjeta {
-        @apply rounded-xl border border-borde bg-tarjeta p-5 sm:p-6;
+        @apply rounded-2xl border border-borde bg-tarjeta p-5 sm:p-6;
     }
 
     .etiqueta {
-        @apply mb-2 block text-sm font-semibold text-slate-300;
+        @apply mb-2 block text-sm font-medium text-slate-300;
     }
 
     .campo {
-        @apply w-full rounded-lg border border-slate-600 bg-fondo px-3 py-2.5 text-white placeholder:text-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/15 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca;
+        @apply min-h-11 w-full rounded-lg border border-slate-700 bg-fondo px-3.5 py-2.5 text-white transition placeholder:text-slate-500 hover:border-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/20 focus:outline-none;
     }
 
+    /* Los botones miden al menos 44 px de alto para tocarlos con comodidad. */
     .boton-primario {
-        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-marca px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-marca-oscuro disabled:cursor-not-allowed disabled:opacity-50;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-marca px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-sky-300 active:bg-marca-oscuro disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-marca;
     }
 
     .boton-secundario {
-        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-marca hover:text-marca;
-    }
-
-    /* Antetítulo azul en mayúsculas (ej. "SERVICIO TÉCNICO PROFESIONAL"). */
-    .antetitulo {
-        @apply mb-5 text-sm font-bold tracking-widest text-marca uppercase;
-    }
-
-    /* Tarjeta que se eleva al pasar el mouse (servicios y técnicos del inicio). */
-    .tarjeta-elevable {
-        @apply rounded-xl border border-borde bg-tarjeta p-8 text-left transition duration-300 hover:-translate-y-1 hover:border-marca hover:shadow-[0_10px_30px_rgba(0,170,255,0.12)];
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-slate-400 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50;
     }
 
     .boton-peligro {
-        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-500/40 px-4 py-2.5 text-sm font-semibold text-red-300 transition hover:bg-red-500/10;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-500/40 px-5 py-2.5 text-sm font-semibold text-red-300 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50;
     }
 
-    [data-animacion-entrada] {
-        will-change: opacity, transform;
+    /* Enlace de texto con flecha o subrayado (ej. "Ver todos los servicios"). */
+    .enlace {
+        @apply inline-flex items-center gap-1.5 font-semibold text-sky-300 underline-offset-4 transition hover:text-white hover:underline;
     }
 
+    /* Tarjeta que reacciona al pasar el mouse (técnicos y productos). */
+    .tarjeta-elevable {
+        @apply rounded-2xl border border-borde bg-tarjeta transition duration-200 hover:-translate-y-0.5 hover:border-slate-500;
+    }
+
+    /* Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada. */
     @media (prefers-reduced-motion: no-preference) {
         [data-animacion-entrada] {
             opacity: 0;
-            transform: translateY(1.25rem);
-            transition: opacity 600ms ease, transform 600ms ease;
+            transform: translateY(0.75rem);
+            transition: opacity 400ms ease, transform 400ms ease;
         }
 
         [data-animacion-entrada].entrada-visible {
             opacity: 1;
-            transform: translateY(0);
+            transform: none;
         }
     }
 
@@ -87,11 +115,12 @@
             scroll-behavior: auto;
         }
 
-        [data-animacion-entrada] {
-            opacity: 1;
-            transform: none;
-            transition: none;
-            will-change: auto;
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
         }
     }
 }
