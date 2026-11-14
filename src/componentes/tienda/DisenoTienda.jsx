@@ -8,7 +8,7 @@ import EncabezadoTienda from "./EncabezadoTienda.jsx";
 const DisenoTienda = () => (
     <ProveedorTienda>
         <EncabezadoTienda />
-        <main className="min-h-screen bg-fondo">
+        <main className="min-h-[60vh]">
             <Outlet />
         </main>
         <CarritoLateral />
