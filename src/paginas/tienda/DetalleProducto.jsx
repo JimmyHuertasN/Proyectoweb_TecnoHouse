@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronRight, MessageCircle, PackageX, ShoppingCart, Wrench } from "lucide-react";
-import ImagenProducto from "../../componentes/ImagenProducto.jsx";
 import CuadriculaProductos from "../../componentes/tienda/CuadriculaProductos.jsx";
+import GaleriaProducto from "../../componentes/tienda/GaleriaProducto.jsx";
 import EtiquetaStock from "../../componentes/tienda/EtiquetaStock.jsx";
 import SelectorCantidad from "../../componentes/tienda/SelectorCantidad.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
@@ -89,9 +89,9 @@ const FichaProducto = ({ producto }) => {
             </nav>
 
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
-                {/* La foto se muestra completa sobre un fondo neutro, sin recortar el producto. */}
-                <div className="overflow-hidden rounded-2xl border border-borde bg-slate-900 lg:sticky lg:top-24 lg:self-start">
-                    <ImagenProducto url={producto.imagenUrl} alt={producto.nombre} contener className="aspect-square w-full p-6 sm:p-10" />
+                {/* Pasa todas las fotos; conserva la portada como respaldo para productos antiguos. */}
+                <div className="lg:sticky lg:top-24 lg:self-start">
+                    <GaleriaProducto imagenes={producto.imagenes?.length ? producto.imagenes : [{ url: producto.imagenUrl }]} nombre={producto.nombre} />
                 </div>
 
                 <div>
