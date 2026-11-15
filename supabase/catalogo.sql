@@ -29,12 +29,26 @@ create table if not exists public.productos (
     precio numeric(12, 2) not null check (precio >= 0),
     stock integer not null default 0 check (stock >= 0),
     imagen_ruta text,
+    -- Guarda las fotos ordenadas; la primera se usa como imagen de portada.
+    imagenes_rutas text[] not null default '{}',
     activo boolean not null default true,
     creado_en timestamptz not null default now()
 );
 
+-- Amplía instalaciones anteriores sin borrar la foto simple existente.
+-- IF NOT EXISTS permite ejecutar el script tanto en una base nueva como en una ya creada.
+alter table public.productos
+    add column if not exists imagenes_rutas text[] not null default '{}';
+
+-- Migra la foto de portada antigua a la nueva lista cuando esta todavía está vacía.
+update public.productos
+set imagenes_rutas = array[imagen_ruta]
+where imagen_ruta is not null
+  and coalesce(cardinality(imagenes_rutas), 0) = 0;
+
 comment on table public.productos is 'Catálogo de productos y repuestos. El público solo ve los activos, a través de productos_activos.';
-comment on column public.productos.imagen_ruta is 'Ruta del archivo dentro del bucket "productos" de Storage.';
+comment on column public.productos.imagen_ruta is 'Ruta de portada para compatibilidad con la versión anterior; la lista completa está en imagenes_rutas.';
+comment on column public.productos.imagenes_rutas is 'Rutas de las fotos del producto dentro del bucket "productos" de Storage; la primera se usa como portada.';
 
 alter table public.productos enable row level security;
 
@@ -71,7 +85,8 @@ using (public.rol_actual() = 'admin');
 create or replace view public.productos_activos
 with (security_barrier = true)
 as
-select id, nombre, descripcion, categoria, precio, stock, imagen_ruta, creado_en
+-- Agrega la lista al final para conservar el orden de columnas ya publicado en la vista.
+select id, nombre, descripcion, categoria, precio, stock, imagen_ruta, creado_en, imagenes_rutas
 from public.productos
 where activo;
 

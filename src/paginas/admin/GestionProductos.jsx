@@ -132,12 +132,13 @@ const GestionProductos = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const guardar = async (valores, archivo) => {
+    // Envía la lista de archivos nuevos y conserva las fotos seleccionadas en el formulario.
+    const guardar = async (valores, archivos) => {
         const { producto } = formulario;
         if (producto) {
-            await actualizarProducto(producto.id, valores, archivo, producto.imagenRuta);
+            await actualizarProducto(producto.id, valores, archivos, producto.imagenesRutas ?? (producto.imagenRuta ? [producto.imagenRuta] : []));
         } else {
-            await crearProducto(valores, archivo);
+            await crearProducto(valores, archivos);
         }
 
         setFormulario(null);
