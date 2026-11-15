@@ -1,29 +1,23 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSesion } from "../../contexto/ContextoSesion.js";
+import { rutaSolicitarReparacion } from "../../utilidades/rutas.js";
 
+/* Toda la tarjeta es un enlace para solicitar ese servicio. */
 const TarjetaServicio = ({ icono: Icono, titulo, descripcion }) => {
     const { usuario } = useSesion();
-    const destino = usuario ? "/cliente/solicitudes/nueva" : "/registro";
 
     return (
-        <Link
-            to={destino}
-            data-animacion-entrada
-            className="tarjeta-elevable group block h-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-marca"
-            aria-label={`Solicitar servicio de ${titulo}`}
-        >
-            <article className="flex h-full flex-col">
-                <span className="mb-5 flex size-14 items-center justify-center rounded-xl bg-marca/10 text-marca transition group-hover:bg-marca/20" aria-hidden="true">
-                    <Icono size={28} strokeWidth={1.8} />
+        <li>
+            <Link to={rutaSolicitarReparacion(usuario)} className="tarjeta-elevable group flex h-full flex-col p-6" aria-label={`Solicitar servicio de ${titulo}`}>
+                <Icono size={26} strokeWidth={1.7} className="text-marca" aria-hidden="true" />
+                <h3 className="mt-5 text-lg font-semibold text-white">{titulo}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{descripcion}</p>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-300 group-hover:text-white">
+                    Solicitar <ArrowRight size={15} className="transition group-hover:translate-x-0.5" aria-hidden="true" />
                 </span>
-                <h3 className="mb-3 text-xl font-bold text-white">{titulo}</h3>
-                <p className="mb-6 flex-1 leading-relaxed text-slate-400">{descripcion}</p>
-                <span className="inline-flex items-center gap-2 font-bold text-marca">
-                    Solicitar servicio <ArrowUpRight size={18} aria-hidden="true" />
-                </span>
-            </article>
-        </Link>
+            </Link>
+        </li>
     );
 };
 

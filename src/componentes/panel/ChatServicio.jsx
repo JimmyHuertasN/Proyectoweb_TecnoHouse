@@ -71,7 +71,7 @@ const ChatServicio = ({ servicioId, soloLectura = false }) => {
     };
 
     return (
-        <section className="tarjeta mt-6" aria-label="Conversación del servicio">
+        <section className="tarjeta my-6" aria-label="Conversación del servicio">
             <div className="mb-4 flex items-center gap-2">
                 <MessageCircle size={20} className="text-marca" aria-hidden="true" />
                 <h2 className="text-lg font-semibold">Conversación</h2>

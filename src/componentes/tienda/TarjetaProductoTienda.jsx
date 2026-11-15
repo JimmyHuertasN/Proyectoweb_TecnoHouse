@@ -11,8 +11,8 @@ const TarjetaProductoTienda = ({ producto }) => {
     const { agregar, cantidadDe } = useTienda();
     const toast = useToast();
 
-    const enCarrito = cantidadDe(producto.id);
-    const sinUnidades = enCarrito >= producto.stock;
+    const agotado = producto.stock <= 0;
+    const sinUnidades = cantidadDe(producto.id) >= producto.stock;
     const rutaDetalle = `/tienda/${producto.id}`;
 
     const agregarAlCarrito = () => {
@@ -21,27 +21,30 @@ const TarjetaProductoTienda = ({ producto }) => {
     };
 
     return (
-        <li className="group flex h-full flex-col overflow-hidden rounded-xl border border-borde bg-tarjeta transition hover:border-marca hover:shadow-[0_10px_30px_rgba(0,170,255,0.12)]">
-            <Link to={rutaDetalle} className="block overflow-hidden" tabIndex={-1} aria-hidden="true">
-                <ImagenProducto url={producto.imagenUrl} className="aspect-square w-full transition duration-300 group-hover:scale-105" />
+        <li className="tarjeta-elevable flex flex-col overflow-hidden">
+            {/* La foto repite el enlace del nombre: se oculta al teclado y a los lectores de pantalla. */}
+            <Link to={rutaDetalle} className="block bg-slate-900" tabIndex={-1} aria-hidden="true">
+                <ImagenProducto url={producto.imagenUrl} contener className={`aspect-square w-full p-4 ${agotado ? "opacity-50" : ""}`} />
             </Link>
 
-            <div className="flex flex-1 flex-col border-t border-borde p-4">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold tracking-wide text-marca uppercase">{producto.categoria}</p>
-                    <EtiquetaStock stock={producto.stock} />
-                </div>
-
-                <h3 className="font-semibold">
-                    <Link to={rutaDetalle} className="hover:text-marca">{producto.nombre}</Link>
+            <div className="flex flex-1 flex-col p-4">
+                <p className="text-xs text-slate-500">{producto.categoria}</p>
+                <h3 className="mt-1 line-clamp-2 font-medium text-white">
+                    <Link to={rutaDetalle} className="hover:underline">{producto.nombre}</Link>
                 </h3>
-                <p className="mt-1 line-clamp-2 flex-1 text-sm text-slate-400">{producto.descripcion}</p>
 
-                <p className="mt-3 text-xl font-bold">{formatearPesos(producto.precio)}</p>
+                <p className="mt-auto pt-4 text-xl font-bold text-white">{formatearPesos(producto.precio)}</p>
+                <div className="mt-1"><EtiquetaStock stock={producto.stock} /></div>
 
-                <button type="button" onClick={agregarAlCarrito} disabled={sinUnidades} className="boton-primario mt-3 w-full">
-                    <ShoppingCart size={18} aria-hidden="true" />
-                    {producto.stock <= 0 ? "Agotado" : sinUnidades ? "Máximo en el carrito" : "Agregar al carrito"}
+                <button type="button" onClick={agregarAlCarrito} disabled={sinUnidades} className="boton-primario mt-4 w-full px-3">
+                    {agotado && "Agotado"}
+                    {!agotado && sinUnidades && "Ya en el carrito"}
+                    {!sinUnidades && (
+                        <>
+                            <ShoppingCart size={17} aria-hidden="true" />
+                            <span>Agregar<span className="hidden sm:inline"> al carrito</span></span>
+                        </>
+                    )}
                 </button>
             </div>
         </li>
