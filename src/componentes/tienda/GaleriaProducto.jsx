@@ -42,7 +42,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
         <section aria-label={`Fotos de ${nombre}`}>
             {/* La imagen principal sirve de referencia para el recorte ampliado. */}
             <div
-                className="relative aspect-square touch-pan-y overflow-hidden rounded-2xl border border-borde bg-tarjeta"
+                className="relative aspect-square touch-pan-y overflow-hidden rounded-2xl border border-borde bg-slate-900"
                 onPointerEnter={(evento) => {
                     if (evento.pointerType !== "touch") setLupaActiva(true);
                 }}
@@ -66,7 +66,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                     if (evento.pointerType !== "touch") setLupaActiva(false);
                 }}
             >
-                <ImagenProducto url={imagen.url} alt={`${nombre}, foto ${seleccionada + 1}`} className="size-full object-contain" />
+                <ImagenProducto url={imagen.url} alt={`${nombre}, foto ${seleccionada + 1}`} contener className="size-full" />
                     {/* Las flechas recorren las fotos sin depender de las miniaturas inferiores. */}
                     {imagenes.length > 1 && (
                         <>
@@ -136,7 +136,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                                 aria-pressed={seleccionada === indice}
                                 className={`overflow-hidden rounded-lg border-2 transition ${seleccionada === indice ? "border-marca" : "border-borde hover:border-slate-400"}`}
                             >
-                                <ImagenProducto url={foto.url} alt="" className="size-16 bg-tarjeta object-contain" />
+                                <ImagenProducto url={foto.url} alt="" contener className="size-16 bg-slate-900" />
                             </button>
                         </li>
                     ))}

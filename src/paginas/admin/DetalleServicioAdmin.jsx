@@ -93,7 +93,7 @@ const DetalleServicioAdmin = () => {
                 ← Volver a servicios
             </Link>
 
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
                 <div>
                     <p className="text-sm font-semibold text-marca">{servicio.codigo}</p>
                     <h1 className="mt-1 text-2xl font-bold sm:text-3xl">

@@ -5,9 +5,11 @@
 
 ## Estado al 13 de noviembre de 2026
 
-- **El build ya funciona** (Node 20.19 o superior), así que las comprobaciones en navegador de este informe ya se pueden hacer. Siguen pendientes de ejecutar.
-- **La navegación cambió:** la barra de la página de reparaciones tiene los anclajes `inicio`, `servicios`, `tecnicos` y `ubicacion`, más un enlace a la tienda. El anclaje `catalogo` ya no existe.
-- **Hay pantallas nuevas que también hay que revisar** en móvil, tablet y escritorio: la portada (`/`), la tienda (`/tienda`), el detalle de producto (`/tienda/:id`) y el carrito lateral. El carrito ya cierra con Escape y bloquea el desplazamiento del fondo mientras está abierto.
+- **El build ya funciona** (Node 20.19 o superior), y las comprobaciones en navegador de este informe ya se hicieron con el rediseño visual.
+- **La navegación cambió:** todas las páginas públicas comparten un encabezado con Inicio, Reparaciones y Tienda ([EncabezadoSitio.jsx](../src/componentes/EncabezadoSitio.jsx)). La página de reparaciones tiene además una barra con sus secciones: `servicios`, `como-funciona`, `tecnicos`, `resenas`, `preguntas-frecuentes`, `ubicacion` y `contacto`. El anclaje `catalogo` ya no existe.
+- **Revisión en navegador:** se revisaron a 360, 768 y 1440 px la portada, reparaciones, la tienda, el detalle de producto, el carrito, las pantallas de acceso y los tres paneles. Ninguna tiene desplazamiento horizontal. Se quitó `overflow-x-hidden` del cuerpo: el único desborde real (las tarjetas de técnicos en celular) se corrigió en su cuadrícula.
+- **Teclado y foco:** el menú móvil y el carrito mueven el foco al abrirse, se cierran con Escape y devuelven el foco al botón que los abrió. Los avisos emergentes aparecen debajo del encabezado para no tapar el menú ni el carrito.
+- **Sigue pendiente:** medir el contraste con una herramienta de accesibilidad y probar con un lector de pantalla.
 
 ## Cambios aplicados
 
@@ -20,7 +22,7 @@
 
 ## Comprobaciones realizadas
 
-- El editor no reporta errores en [BarraNavegacion.jsx](../src/componentes/reparaciones/BarraNavegacion.jsx) ni [principal.css](../src/estilos/principal.css).
+- El editor no reporta errores en `BarraNavegacion.jsx` (hoy reemplazada por [EncabezadoSitio.jsx](../src/componentes/EncabezadoSitio.jsx)) ni [principal.css](../src/estilos/principal.css).
 - `git diff --check` termina correctamente.
 - `npm run lint` termina correctamente y conserva únicamente las cuatro advertencias ya conocidas en otros archivos.
 - Los anclajes usados por la navegación pública tienen secciones correspondientes: `inicio`, `servicios`, `tecnicos`, `catalogo` y `ubicacion`.

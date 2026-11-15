@@ -35,7 +35,7 @@ const CampanaNotificaciones = ({ enMenuLateral = false }) => {
             <button
                 type="button"
                 onClick={() => setAbiertas((anterior) => !anterior)}
-                className="relative flex size-10 cursor-pointer items-center justify-center rounded-lg border border-borde text-slate-300 transition hover:border-marca hover:text-white"
+                className="relative flex size-11 cursor-pointer items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:border-slate-400 hover:text-white"
                 aria-label={noLeidas ? `Notificaciones, ${noLeidas} sin leer` : "Notificaciones"}
                 aria-expanded={abiertas}
                 aria-controls="menu-notificaciones"
