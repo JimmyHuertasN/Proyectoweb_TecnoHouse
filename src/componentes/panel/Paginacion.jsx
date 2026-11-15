@@ -5,7 +5,7 @@ const CLASE_BOTON =
     "inline-flex min-h-10 min-w-10 items-center justify-center gap-1 rounded-lg border px-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca";
 const CLASE_NORMAL =
     "cursor-pointer border-borde text-slate-300 hover:border-marca hover:text-marca disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-borde disabled:hover:text-slate-300";
-const CLASE_ACTUAL = "border-marca bg-marca text-white";
+const CLASE_ACTUAL = "border-marca bg-marca text-sobre-marca";
 
 /* Con muchas páginas: la primera, la última y las vecinas de la actual; el resto se resume con "…". */
 const rangoPaginas = (actual, total) => {

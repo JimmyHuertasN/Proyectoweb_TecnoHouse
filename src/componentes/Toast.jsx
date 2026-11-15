@@ -1,9 +1,9 @@
 import { Check, Info, X, XCircle } from "lucide-react";
 
 const CONFIGURACION = {
-    exito: { icono: Check, estilo: "border-emerald-500/40 bg-[#0b211c] text-emerald-100", vivo: "polite" },
-    error: { icono: XCircle, estilo: "border-red-500/40 bg-[#271416] text-red-100", vivo: "assertive" },
-    informacion: { icono: Info, estilo: "border-marca/40 bg-[#10202d] text-sky-100", vivo: "polite" },
+    exito: { icono: Check, estilo: "border-emerald-500/40 bg-aviso-exito text-emerald-100", vivo: "polite" },
+    error: { icono: XCircle, estilo: "border-red-500/40 bg-aviso-error text-red-100", vivo: "assertive" },
+    informacion: { icono: Info, estilo: "border-marca/40 bg-aviso-informacion text-sky-100", vivo: "polite" },
 };
 
 const Toast = ({ notificaciones, alCerrar }) => (

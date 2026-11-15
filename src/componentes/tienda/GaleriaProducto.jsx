@@ -74,7 +74,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                                 type="button"
                                 onClick={() => elegirFoto(seleccionada - 1)}
                                 aria-label="Ver foto anterior"
-                                className="absolute top-1/2 left-3 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/65 text-white shadow-lg transition hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="absolute top-1/2 left-3 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-blanco/30 bg-black/65 text-blanco shadow-lg transition hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                             >
                                 <ChevronLeft size={24} aria-hidden="true" />
                             </button>
@@ -82,7 +82,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                                 type="button"
                                 onClick={() => elegirFoto(seleccionada + 1)}
                                 aria-label="Ver foto siguiente"
-                                className="absolute top-1/2 right-3 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/65 text-white shadow-lg transition hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                                className="absolute top-1/2 right-3 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-blanco/30 bg-black/65 text-blanco shadow-lg transition hover:bg-black/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                             >
                                 <ChevronRight size={24} aria-hidden="true" />
                             </button>
@@ -91,7 +91,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                 {imagen.url && lupaActiva && (
                     // El círculo recorta otra copia de la foto, renderizada a escala respecto a la imagen completa.
                     <div
-                        className="pointer-events-none absolute z-10 overflow-hidden rounded-full border-2 border-white shadow-[0_2px_16px_rgba(0,0,0,0.55)]"
+                        className="pointer-events-none absolute z-10 overflow-hidden rounded-full border-2 border-blanco shadow-[0_2px_16px_rgba(0,0,0,0.55)]"
                         role="img"
                         aria-label={`Ampliación de ${nombre}`}
                         style={{
@@ -118,7 +118,7 @@ const GaleriaProducto = ({ imagenes = [], nombre }) => {
                 )}
                 {imagen.url && (
                     // Esta indicación explica cómo activar el acercamiento con mouse o pantalla táctil.
-                    <span className="absolute right-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-1.5 text-xs text-white">
+                    <span className="absolute right-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-black/70 px-3 py-1.5 text-xs text-blanco">
                         <Search size={14} aria-hidden="true" /> Pasa el cursor o toca para acercar
                     </span>
                 )}

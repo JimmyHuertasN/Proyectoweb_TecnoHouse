@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { ExternalLink, LogOut, X } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
+import BotonTema from "../BotonTema.jsx";
 import Logotipo from "../Logotipo.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
@@ -84,6 +85,7 @@ const MenuLateral = ({ menu, abierto, alCerrar }) => {
                             <p className="truncate text-xs text-slate-400">{usuario.correo}</p>
                         </div>
                     </div>
+                    <BotonTema conTexto className={`w-full cursor-pointer ${CLASE_ENLACE_PIE}`} />
                     <Link to="/" className={CLASE_ENLACE_PIE}>
                         <ExternalLink size={17} strokeWidth={1.8} aria-hidden="true" /> Ver el sitio
                     </Link>

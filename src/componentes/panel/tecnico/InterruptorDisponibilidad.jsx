@@ -32,7 +32,7 @@ const InterruptorDisponibilidad = ({ disponible, alCambiar }) => {
                     disabled={guardando}
                     className={`relative h-8 w-14 shrink-0 cursor-pointer rounded-full transition disabled:opacity-60 ${disponible ? "bg-emerald-500" : "bg-slate-600"}`}
                 >
-                    <span className={`absolute top-1 left-1 size-6 rounded-full bg-white transition-transform ${disponible ? "translate-x-6" : ""}`} />
+                    <span className={`absolute top-1 left-1 size-6 rounded-full bg-blanco transition-transform ${disponible ? "translate-x-6" : ""}`} />
                 </button>
                 <div>
                     <p className={`font-semibold ${disponible ? "text-emerald-300" : "text-red-300"}`}>

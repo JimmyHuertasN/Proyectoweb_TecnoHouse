@@ -10,7 +10,7 @@ const PASOS_EJEMPLO = [
 ];
 
 const ESTILO_PUNTO = {
-    hecho: "border-marca bg-marca text-slate-950",
+    hecho: "border-marca bg-marca text-sobre-marca",
     actual: "border-marca bg-marca/20 text-marca",
     pendiente: "border-slate-600 text-transparent",
 };

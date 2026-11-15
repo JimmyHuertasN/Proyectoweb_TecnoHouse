@@ -12,7 +12,7 @@ const EncabezadoTienda = () => {
             <button type="button" onClick={abrirCarrito} aria-label={etiqueta} className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:border-slate-400">
                 <ShoppingCart size={20} aria-hidden="true" />
                 {cantidadEnCarrito > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-marca px-1 text-xs font-bold text-slate-950">
+                    <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-marca px-1 text-xs font-bold text-sobre-marca">
                         {cantidadEnCarrito}
                     </span>
                 )}
