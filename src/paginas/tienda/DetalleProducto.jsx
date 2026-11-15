@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronRight, MessageCircle, ShoppingCart, Wrench } from "lucide-react";
-import ImagenProducto from "../../componentes/ImagenProducto.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import GaleriaProducto from "../../componentes/tienda/GaleriaProducto.jsx";
 import EtiquetaStock from "../../componentes/tienda/EtiquetaStock.jsx";
 import SelectorCantidad from "../../componentes/tienda/SelectorCantidad.jsx";
 import TarjetaProductoTienda from "../../componentes/tienda/TarjetaProductoTienda.jsx";
@@ -21,6 +21,7 @@ const ProductoNoEncontrado = () => (
     </div>
 );
 
+// Presenta la galería de fotos y mantiene el resto de acciones de compra del producto.
 const FichaProducto = ({ producto }) => {
     const { productos, agregar, cantidadDe, abrirCarrito } = useTienda();
     const toast = useToast();
@@ -49,7 +50,8 @@ const FichaProducto = ({ producto }) => {
             </nav>
 
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-                <ImagenProducto url={producto.imagenUrl} alt={producto.nombre} className="aspect-square w-full rounded-2xl border border-borde bg-tarjeta" />
+                {/* Pasa todas las fotos; conserva la portada como respaldo para productos antiguos. */}
+                <GaleriaProducto imagenes={producto.imagenes?.length ? producto.imagenes : [{ url: producto.imagenUrl }]} nombre={producto.nombre} />
 
                 <div className="flex flex-col">
                     <p className="text-sm font-semibold tracking-wide text-marca uppercase">{producto.categoria}</p>
