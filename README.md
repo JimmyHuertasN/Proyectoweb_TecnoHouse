@@ -74,7 +74,7 @@ Durante todo el proceso, cliente y técnico pueden escribirse en la conversació
 | `/tienda` | Catálogo con categorías, buscador, filtro de disponibles y orden por precio, nombre o fecha. |
 | `/tienda/:id` | Detalle del producto, productos relacionados y consulta por WhatsApp. |
 
-La tienda tiene un carrito lateral que se guarda en el navegador y envía el pedido por WhatsApp con la lista de productos y el total. No permite pedir más unidades que el stock disponible.
+La tienda tiene un carrito lateral que se guarda en el navegador y envía el pedido por WhatsApp con la lista de productos y el total. No permite pedir más unidades que el stock disponible. Cada producto admite hasta ocho fotos; en la ficha se puede cambiar entre ellas y ampliar la imagen con la lupa.
 
 ### Cuentas
 
@@ -198,10 +198,12 @@ Se hace una sola vez por proyecto.
 | `supabase/mensajes_servicio.sql` | Crea la conversación de cada servicio entre cliente y técnico, lista para Realtime. |
 | `supabase/notificaciones.sql` | Crea los avisos privados de cada usuario. Requiere los dos scripts anteriores. |
 | `supabase/crear_tecnico.sql` | Permite que el administrador cree técnicos desde la aplicación. |
-| `supabase/catalogo.sql` | Crea la tabla de productos, la vista pública `productos_activos` y el bucket de imágenes de la tienda. |
+| `supabase/catalogo.sql` | Crea/actualiza la tabla de productos, la vista pública `productos_activos` y el bucket de imágenes de la tienda. Incluye la migración de una imagen a varias rutas por producto. |
 | `supabase/datos_prueba.sql` | Opcional, solo para desarrollo. Crea un admin, tres técnicos, dos clientes y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo. |
 
 Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base.
+
+Si el proyecto de Supabase ya estaba configurado antes de habilitar varias fotos por producto, vuelve a ejecutar `supabase/catalogo.sql` para agregar la columna `imagenes_rutas` y actualizar la vista pública. El script conserva la ruta de la foto que ya tenía cada producto.
 
 `supabase/esquema_para_api.sql` no forma parte de la instalación: es una consulta de solo lectura que lista columnas, relaciones y enums, y se usó para construir los modelos de la API.
 
@@ -212,7 +214,7 @@ Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual(
 - **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico` o `admin`). Un trigger crea el perfil con rol `cliente` al registrarse; los técnicos los crea el administrador desde la aplicación y el rol `admin` se asigna desde la base de datos.
 - **Dispositivos**: tabla `dispositivos`.
 - **Servicios**: tabla `servicios`, con sus cotizaciones, fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
-- **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`.
+- **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`; las fotos se guardan en el bucket `productos` y sus rutas en `imagenes_rutas`.
 - **Contacto público**: completa `src/datos/contacto.js` con los datos verificados del negocio antes de publicar el sitio.
 
 ## Pendiente
