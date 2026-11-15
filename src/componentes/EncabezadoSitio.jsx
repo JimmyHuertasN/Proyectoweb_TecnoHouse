@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Menu, UserRound, X } from "lucide-react";
 import { useSesion } from "../contexto/ContextoSesion.js";
 import { rutaInicio } from "../utilidades/rutas.js";
+import BotonTema from "./BotonTema.jsx";
 import Logotipo from "./Logotipo.jsx";
 
 const ENLACES = [
@@ -82,6 +83,8 @@ const EncabezadoSitio = ({ children }) => {
                     <div className="hidden items-center gap-3 md:flex">
                         <AccesoCuenta />
                     </div>
+
+                    <BotonTema />
 
                     {children}
 
