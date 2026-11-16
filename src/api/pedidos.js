@@ -44,6 +44,13 @@ export const crearPedido = async ({ lineas, entrega }) => {
     };
 };
 
+/* Lista los pedidos del usuario autenticado desde el API, con paginación. */
+export const obtenerMisPedidos = ({ page = 1, pageSize = 20 } = {}) => {
+    const pagina = Math.max(1, Math.trunc(page));
+    const tamano = Math.min(100, Math.max(1, Math.trunc(pageSize)));
+    return llamarApi(`/api/pedidos/mis-pedidos?page=${pagina}&pageSize=${tamano}`);
+};
+
 /* RLS limita esta consulta al administrador y el orden deja primero el pedido más reciente. */
 export const obtenerPedidos = async () => {
     const filas = verificar(
@@ -55,10 +62,6 @@ export const obtenerPedidos = async () => {
 export const cambiarEstadoPedido = async (id, estado) => {
     verificar(await obtenerCliente().rpc("cambiar_estado_pedido", { p_pedido_id: id, p_estado: estado }));
 };
-
-/* La API aplica RLS y limita la respuesta a los pedidos del usuario autenticado. */
-export const obtenerMisPedidos = (page = 1, pageSize = 10) =>
-    llamarApi(`/api/pedidos/mis-pedidos?page=${page}&pageSize=${pageSize}`);
 
 export const obtenerDetalleMiPedido = (id) =>
     llamarApi(`/api/pedidos/${encodeURIComponent(id)}`);

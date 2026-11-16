@@ -29,11 +29,11 @@ import Registro from "./paginas/autenticacion/Registro.jsx";
 // Panel del cliente
 import DetalleSolicitud from "./paginas/cliente/DetalleSolicitud.jsx";
 import MisDispositivos from "./paginas/cliente/MisDispositivos.jsx";
+import MisPedidos from "./paginas/cliente/MisPedidos.jsx";
 import MisSolicitudes from "./paginas/cliente/MisSolicitudes.jsx";
 import NuevaSolicitud from "./paginas/cliente/NuevaSolicitud.jsx";
 import Perfil from "./paginas/cliente/Perfil.jsx";
 import ResumenPanel from "./paginas/cliente/ResumenPanel.jsx";
-import MisPedidos from "./paginas/cliente/MisPedidos.jsx";
 import DetallePedidoCliente from "./paginas/cliente/DetallePedido.jsx";
 import ResultadoPago from "./paginas/ResultadoPago.jsx";
 
