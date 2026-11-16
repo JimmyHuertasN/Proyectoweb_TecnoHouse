@@ -168,6 +168,17 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
                             'pedidoId', p.id,
                             'numero', p.numero,
                             'creadoEn', p.creado_en,
+                            'productos', coalesce((
+                                select jsonb_agg(
+                                    jsonb_build_object(
+                                        'nombre', i.producto_nombre,
+                                        'cantidad', i.cantidad,
+                                        'precioUnitario', i.precio_unitario
+                                    ) order by i.id
+                                )
+                                from public.pedido_items i
+                                where i.pedido_id = p.id
+                            ), '[]'::jsonb),
                             'total', p.total,
                             'estadoPedido', p.estado,
                             'estadoPago', (

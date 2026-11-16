@@ -78,6 +78,7 @@ public sealed record PedidoResumenResponse(
     Guid PedidoId,
     long Numero,
     DateTimeOffset CreadoEn,
+    IReadOnlyList<ProductoPedidoDetalleResponse> Productos,
     decimal Total,
     string EstadoPedido,
     string? EstadoPago);
