@@ -32,7 +32,7 @@ dotnet user-secrets set "Supabase:Url" "https://<ref>.supabase.co"
 dotnet user-secrets set "ConnectionStrings:TecnoHouse" "Host=<host>;Port=5432;Database=postgres;Username=<usuario-copiado>;Password=<contraseña>;SSL Mode=Require;Trust Server Certificate=true"
 ```
 
-Los endpoints implementados son `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos`, `/api/notificaciones` y `/api/productos`. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
+Los endpoints implementados son `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos` y `/api/productos`. `/api/notificaciones` es solo `GET`: las notificaciones las crea la base de datos, no el cliente. Cada `POST` recibe un DTO con los campos que el cliente puede enviar (`Models/SolicitudesEscritura.cs`); el dueño (`clienteId`, `autorId`) sale del claim `sub` del token, y en `POST /api/servicios` el estado inicial es `solicitado` y el técnico queda vacío. `GET /api/servicios/{id}` devuelve un servicio con su dispositivo. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
 
 ## Datos pendientes de confirmar
 
