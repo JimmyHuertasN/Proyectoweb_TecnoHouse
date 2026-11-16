@@ -16,7 +16,12 @@ export const obtenerPerfiles = async (ids) => {
     const unicos = [...new Set(ids.filter(Boolean))];
     if (unicos.length === 0) return {};
 
-    const perfiles = (await llamarApi("/api/perfiles")).filter((perfil) => unicos.includes(perfil.id));
+    const perfiles = verificar(
+        await obtenerCliente()
+            .from("perfiles")
+            .select("id, nombre, telefono")
+            .in("id", unicos)
+    );
     return Object.fromEntries(perfiles.map((perfil) => [perfil.id, { nombre: perfil.nombre, telefono: perfil.telefono ?? "" }]));
 };
 
@@ -50,9 +55,21 @@ export const registrarUsuario = async ({ nombre, correo, telefono, contrasena })
 
 /* Une la cuenta de Supabase Auth con su fila de "perfiles" en un solo objeto para la aplicación. */
 export const obtenerPerfil = async (usuarioAuth) => {
-    const perfil = (await llamarApi("/api/perfiles")).find((fila) => fila.id === usuarioAuth.id) ?? null;
+    let perfil;
+    try {
+        perfil = verificar(
+            await obtenerCliente()
+                .from("perfiles")
+                .select("id, nombre, telefono, rol, creado_en")
+                .eq("id", usuarioAuth.id)
+                .maybeSingle()
+        );
+    } catch (error) {
+        throw new Error(`No se pudo cargar tu perfil desde Supabase: ${error.message}`);
+    }
+
     if (!perfil) {
-        throw new Error("La API respondió, pero no encontramos el perfil de esta cuenta. Verifica que exista en la tabla perfiles del mismo proyecto Supabase.");
+        throw new Error("No encontramos el perfil de esta cuenta en Supabase. Verifica que exista una fila para este usuario.");
     }
 
     const metadatos = usuarioAuth.user_metadata ?? {};
@@ -62,7 +79,7 @@ export const obtenerPerfil = async (usuarioAuth) => {
         nombre: perfil.nombre ?? metadatos.nombre ?? usuarioAuth.email,
         telefono: perfil.telefono ?? metadatos.telefono ?? "",
         rol: perfil.rol,
-        creadoEn: perfil.creadoEn ?? usuarioAuth.created_at,
+        creadoEn: perfil.creado_en ?? usuarioAuth.created_at,
     };
 };
 

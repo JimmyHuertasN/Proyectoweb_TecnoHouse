@@ -23,7 +23,8 @@ const ProveedorSesion = ({ children }) => {
                     setUsuario(sesion ? await apiUsuarios.obtenerPerfil(sesion.user) : null);
                 } catch (error) {
                     console.error("No se pudo cargar el perfil autenticado:", error.message);
-                    setUsuario(null);
+                    // Conserva el perfil ante un fallo temporal de la misma cuenta, pero no mezcla sesiones distintas.
+                    setUsuario((actual) => (actual?.id === sesion?.user?.id ? actual : null));
                 } finally {
                     setCargando(false);
                 }
