@@ -87,8 +87,6 @@ const ResumenTienda = ({ recargas }) => {
                                     </li>
                                 ))}
                             </ul>
-                            {/* PENDIENTE BASE: los conteos se llenan cuando exista la tabla "pedidos". */}
-                            <p className="mt-5 text-xs text-slate-500">Pendiente: los pedidos se registrarán cuando la base tenga la tabla de pedidos.</p>
                             <div className="mt-3"><EnlaceSeccion ruta="/admin/pedidos" texto="Ver pedidos" /></div>
                         </section>
                     </div>
