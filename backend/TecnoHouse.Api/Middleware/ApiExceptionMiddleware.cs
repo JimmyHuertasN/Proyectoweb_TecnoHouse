@@ -31,5 +31,19 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
                         : "No se pudo guardar el registro.",
             });
         }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            // El cliente cerró la conexión: no es un error del servidor.
+            logger.LogInformation("La petición {Metodo} {Ruta} fue cancelada por el cliente.", context.Request.Method, context.Request.Path);
+        }
+        catch (Exception error)
+        {
+            logger.LogError(error, "Ocurrió un error inesperado al procesar {Metodo} {Ruta}.", context.Request.Method, context.Request.Path);
+            if (context.Response.HasStarted) throw;
+
+            context.Response.Clear();
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            await context.Response.WriteAsJsonAsync(new { error = "Ocurrió un error inesperado." });
+        }
     }
 }
