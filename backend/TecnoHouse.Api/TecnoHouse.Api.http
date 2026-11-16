@@ -126,3 +126,11 @@ Accept: application/json
 GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoOtroUsuarioId}}
 Authorization: Bearer {{adminAccessToken}}
 Accept: application/json
+
+### Pago Wompi: devuelve configuración para checkout.widget.js, no URL de redirección.
+### Usa un pedido propio pendiente con datos de entrega completos; cada llamada crea un intento nuevo.
+@pedidoParaPagarId = UUID_DE_UN_PEDIDO_PROPIO_PENDIENTE
+
+POST {{TecnoHouse_Api_HostAddress}}/api/pagos/wompi/iniciar/{{pedidoParaPagarId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
