@@ -15,6 +15,8 @@ public sealed class WompiOptions
     public string IntegritySecret { get; init; } = "";
     public string EventsSecret { get; init; } = "";
     public string ProductionApiBaseUrl { get; init; } = "";
+    // Null desactiva expiration-time; un entero positivo define la vigencia en minutos.
+    public int? ExpirationMinutes { get; init; }
 
     public Uri GetApiBaseUri() => string.Equals(Environment, Production, StringComparison.OrdinalIgnoreCase)
         ? new Uri(ProductionApiBaseUrl.TrimEnd('/') + "/", UriKind.Absolute)
@@ -57,6 +59,9 @@ public sealed class WompiOptionsValidator : IValidateOptions<WompiOptions>
         {
             errores.Add("Wompi:ProductionApiBaseUrl debe ser una URL HTTPS de producción de Wompi terminada en /v1.");
         }
+
+        if (options.ExpirationMinutes is <= 0)
+            errores.Add("Wompi:ExpirationMinutes debe ser un entero positivo o null para no usar expiración.");
 
         return errores.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(errores);
     }

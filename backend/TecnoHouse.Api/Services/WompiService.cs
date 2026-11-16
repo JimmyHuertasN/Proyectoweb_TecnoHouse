@@ -9,27 +9,56 @@ namespace TecnoHouse.Api.Services;
 
 public sealed class WompiService(IOptions<WompiOptions> options)
 {
+    private const string Moneda = "COP";
     private readonly WompiOptions _options = options.Value;
 
-    // Firma para el widget: referencia + monto en centavos + moneda + [expiración] + secreto.
-    public string CrearFirmaIntegridad(
-        string referencia,
-        long montoEnCentavos,
-        string moneda,
-        string? fechaExpiracion = null)
+    // Cada intento recibe una referencia nueva y trazable al pedido; GUID aleatorio evita reutilizarla.
+    public string GenerarReferenciaIntento(Guid pedidoId)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(pedidoId, Guid.Empty);
+        return $"PED-{pedidoId:D}-{Guid.NewGuid():N}";
+    }
+
+    // Usa decimal para conservar exactitud monetaria y redondea los medios centavos alejándose de cero.
+    public long ConvertirMontoACentavos(decimal totalEnPesos)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(totalEnPesos);
+        var centavos = decimal.Round(totalEnPesos * 100m, 0, MidpointRounding.AwayFromZero);
+        return checked((long)centavos);
+    }
+
+    // Esta firma contiene un secreto y solo puede calcularse en el backend; nunca en React.
+    // Wompi requiere referencia + centavos + COP + [expiration-time] + secreto, sin separadores.
+    public string CrearFirmaIntegridad(string referencia, long montoEnCentavos, string? expirationTime = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(referencia);
-        ArgumentException.ThrowIfNullOrWhiteSpace(moneda);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(montoEnCentavos);
 
         var contenido = string.Concat(
             referencia,
             montoEnCentavos.ToString(CultureInfo.InvariantCulture),
-            moneda,
-            fechaExpiracion,
+            Moneda,
+            expirationTime,
             _options.IntegritySecret);
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(contenido))).ToLowerInvariant();
+    }
+
+    // Devuelve la fecha exacta que debe acompañar la firma y enviarse sin cambios al widget.
+    public FirmaIntegridadWompi CrearFirmaIntegridadParaIntento(
+        string referencia,
+        long montoEnCentavos,
+        DateTimeOffset? ahoraUtc = null)
+    {
+        string? expirationTime = null;
+        if (_options.ExpirationMinutes is int minutos)
+        {
+            var instante = (ahoraUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
+            expirationTime = instante.AddMinutes(minutos)
+                .ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture);
+        }
+
+        return new(CrearFirmaIntegridad(referencia, montoEnCentavos, expirationTime), expirationTime);
     }
 
     // Comprueba checksum del cuerpo y, si llega, también el encabezado X-Event-Checksum.
@@ -127,3 +156,5 @@ public sealed class WompiService(IOptions<WompiOptions> options)
         }
     }
 }
+
+public sealed record FirmaIntegridadWompi(string Firma, string? ExpirationTime);
