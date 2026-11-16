@@ -41,9 +41,18 @@ const LineaCarrito = ({ producto, cantidad }) => {
 
 const CarritoLateral = () => {
     const { lineas, total, cantidadEnCarrito, carritoAbierto, cerrarCarrito, vaciar, recargarProductos } = useTienda();
-    const { usuario } = useSesion();
+    const { usuario, cargando: cargandoSesion } = useSesion();
     const botonCerrar = useRef(null);
-    const [datosCliente, setDatosCliente] = useState({ nombre: null, telefono: null, notas: "" });
+    const [datosCliente, setDatosCliente] = useState({
+        nombre: null,
+        telefono: null,
+        notas: "",
+        direccionEntrega: "",
+        ciudadEntrega: "",
+        departamentoEntrega: "",
+        paisEntrega: "CO",
+        telefonoReceptor: null,
+    });
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
     const [pedidoRegistrado, setPedidoRegistrado] = useState(null);
@@ -79,6 +88,7 @@ const CarritoLateral = () => {
 
     const nombreFormulario = datosCliente.nombre ?? usuario?.nombre ?? "";
     const telefonoFormulario = datosCliente.telefono ?? usuario?.telefono ?? "";
+    const telefonoReceptorFormulario = datosCliente.telefonoReceptor ?? usuario?.telefono ?? "";
 
     const enviarPedido = async (evento) => {
         evento.preventDefault();
@@ -86,12 +96,29 @@ const CarritoLateral = () => {
 
         const nombre = nombreFormulario.trim();
         const telefono = telefonoFormulario.trim();
+        const direccionEntrega = datosCliente.direccionEntrega.trim();
+        const ciudadEntrega = datosCliente.ciudadEntrega.trim();
+        const departamentoEntrega = datosCliente.departamentoEntrega.trim();
+        const paisEntrega = datosCliente.paisEntrega.trim().toUpperCase();
+        const telefonoReceptor = telefonoReceptorFormulario.trim();
+        if (!usuario) {
+            setError("Inicia sesión para registrar un pedido asociado a tu cuenta.");
+            return;
+        }
         if (nombre.length < 2 || nombre.length > 120) {
             setError("El nombre debe tener entre 2 y 120 caracteres.");
             return;
         }
         if (telefono.length < 7 || telefono.length > 20) {
             setError("El teléfono debe tener entre 7 y 20 caracteres.");
+            return;
+        }
+        if (!direccionEntrega || !ciudadEntrega || !departamentoEntrega || !paisEntrega) {
+            setError("Completa la dirección, ciudad, departamento y país de entrega.");
+            return;
+        }
+        if (telefonoReceptor.length < 7 || telefonoReceptor.length > 20) {
+            setError("El teléfono de quien recibe debe tener entre 7 y 20 caracteres.");
             return;
         }
         if (datosCliente.notas.length > 500) {
@@ -106,7 +133,17 @@ const CarritoLateral = () => {
         setError("");
         setGuardando(true);
         try {
-            const pedido = await crearPedido({ nombre, telefono, notas: datosCliente.notas, lineas });
+            const pedido = await crearPedido({
+                nombre,
+                telefono,
+                notas: datosCliente.notas,
+                lineas,
+                direccionEntrega,
+                ciudadEntrega,
+                departamentoEntrega,
+                paisEntrega,
+                telefonoReceptor,
+            });
             setPedidoRegistrado({ ...pedido, lineas, total: pedido.total });
             vaciar();
         } catch (errorApi) {
@@ -174,6 +211,15 @@ const CarritoLateral = () => {
                             </div>
                             <p className="mt-1 mb-4 text-xs leading-relaxed text-slate-500">Registra tu pedido y luego podrás avisarnos por WhatsApp. Confirmaremos disponibilidad y forma de entrega.</p>
 
+                            {cargandoSesion ? (
+                                <p role="status" className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">Verificando tu sesión…</p>
+                            ) : !usuario ? (
+                                <div className="space-y-3 rounded-lg border border-amber-400/20 bg-amber-400/5 p-4">
+                                    <p className="text-sm leading-relaxed text-slate-300">Inicia sesión para registrar el pedido y asociarlo a tu cuenta.</p>
+                                    <Link to="/login" className="boton-primario flex w-full justify-center py-3">Iniciar sesión</Link>
+                                    <Link to="/registro" className="boton-secundario flex w-full justify-center py-3">Crear cuenta</Link>
+                                </div>
+                            ) : (
                             <form onSubmit={enviarPedido} className="space-y-3">
                                 <Aviso texto={error} tipo="error" />
                                 <label className="block text-sm text-slate-300" htmlFor="nombre-pedido">
@@ -184,6 +230,30 @@ const CarritoLateral = () => {
                                     Teléfono
                                     <input id="telefono-pedido" name="telefono" type="tel" value={telefonoFormulario} onChange={cambiarDato} required minLength={7} maxLength={20} autoComplete="tel" className="campo mt-1 w-full" />
                                 </label>
+                                <label className="block text-sm text-slate-300" htmlFor="direccion-entrega">
+                                    Dirección de entrega
+                                    <input id="direccion-entrega" name="direccionEntrega" value={datosCliente.direccionEntrega} onChange={cambiarDato} required autoComplete="street-address" className="campo mt-1 w-full" />
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <label className="block text-sm text-slate-300" htmlFor="ciudad-entrega">
+                                        Ciudad
+                                        <input id="ciudad-entrega" name="ciudadEntrega" value={datosCliente.ciudadEntrega} onChange={cambiarDato} required autoComplete="address-level2" className="campo mt-1 w-full" />
+                                    </label>
+                                    <label className="block text-sm text-slate-300" htmlFor="departamento-entrega">
+                                        Departamento
+                                        <input id="departamento-entrega" name="departamentoEntrega" value={datosCliente.departamentoEntrega} onChange={cambiarDato} required autoComplete="address-level1" className="campo mt-1 w-full" />
+                                    </label>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <label className="block text-sm text-slate-300" htmlFor="pais-entrega">
+                                        País (código)
+                                        <input id="pais-entrega" name="paisEntrega" value={datosCliente.paisEntrega} onChange={cambiarDato} required maxLength={2} autoComplete="country" className="campo mt-1 w-full uppercase" />
+                                    </label>
+                                    <label className="block text-sm text-slate-300" htmlFor="telefono-receptor">
+                                        Teléfono de quien recibe
+                                        <input id="telefono-receptor" name="telefonoReceptor" type="tel" value={telefonoReceptorFormulario} onChange={cambiarDato} required minLength={7} maxLength={20} autoComplete="tel" className="campo mt-1 w-full" />
+                                    </label>
+                                </div>
                                 <label className="block text-sm text-slate-300" htmlFor="notas-pedido">
                                     Notas <span className="text-slate-500">(opcional)</span>
                                     <textarea id="notas-pedido" name="notas" value={datosCliente.notas} onChange={cambiarDato} maxLength={500} rows={2} className="campo mt-1 w-full resize-y" />
@@ -192,6 +262,7 @@ const CarritoLateral = () => {
                                     {guardando ? "Registrando pedido…" : "Hacer pedido"}
                                 </button>
                             </form>
+                            )}
 
                             <div className="mt-3 flex items-center justify-between gap-3">
                                 <button type="button" onClick={cerrarCarrito} className="enlace min-h-11 cursor-pointer text-sm">Seguir comprando</button>
