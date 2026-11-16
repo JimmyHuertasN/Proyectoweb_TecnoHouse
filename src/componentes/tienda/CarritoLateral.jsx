@@ -4,7 +4,7 @@ import { MessageCircle, ShoppingCart, Trash2, X } from "lucide-react";
 import { crearPedido } from "../../api/pedidos.js";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import useTienda from "../../hooks/useTienda.js";
-import { formatearPesos } from "../../utilidades/formato.js";
+import { codigoPedido, formatearPesos } from "../../utilidades/formato.js";
 import { enlacePedido, whatsappConfigurado } from "../../utilidades/whatsapp.js";
 import Aviso from "../Aviso.jsx";
 import ImagenProducto from "../ImagenProducto.jsx";
@@ -143,10 +143,10 @@ const CarritoLateral = () => {
                 {pedidoRegistrado ? (
                     <div role="status" aria-live="polite" className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 text-center">
                         <ShoppingCart className="size-12 text-emerald-400" strokeWidth={1.5} aria-hidden="true" />
-                        <h3 className="mt-4 text-lg font-semibold text-white">Pedido #{pedidoRegistrado.numero} registrado</h3>
+                        <h3 className="mt-4 text-lg font-semibold text-white">Pedido {codigoPedido(pedidoRegistrado.numero)} registrado</h3>
                         <p className="mt-2 text-slate-300">Total: {formatearPesos(pedidoRegistrado.total)}</p>
                         {whatsappConfigurado ? (
-                            <a href={enlacePedido(pedidoRegistrado.lineas, pedidoRegistrado.total, pedidoRegistrado.numero)} target="_blank" rel="noopener noreferrer" className="boton-primario mt-6 w-full py-3 text-base">
+                            <a href={enlacePedido(pedidoRegistrado, pedidoRegistrado.lineas)} target="_blank" rel="noopener noreferrer" aria-label={`Avisar por WhatsApp el pedido ${codigoPedido(pedidoRegistrado.numero)}`} className="boton-primario mt-6 w-full py-3 text-base">
                                 <MessageCircle size={18} aria-hidden="true" /> Avisar por WhatsApp
                             </a>
                         ) : (
