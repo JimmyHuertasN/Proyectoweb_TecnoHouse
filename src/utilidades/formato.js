@@ -22,6 +22,11 @@ const formatoPesos = new Intl.NumberFormat("es-CO", { style: "currency", currenc
 
 export const formatearPesos = (valor) => formatoPesos.format(valor);
 
+// WhatsApp debe recibir espacios normales para evitar caracteres monetarios invisibles.
+export const formatearPesosWhatsApp = (valor) => `$${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(valor)}`;
+
+export const codigoPedido = (numero) => `PED-${String(numero).padStart(6, "0")}`;
+
 export const primerNombre = (nombreCompleto = "") => nombreCompleto.trim().split(/\s+/)[0];
 
 export const iniciales = (nombreCompleto = "") => {
