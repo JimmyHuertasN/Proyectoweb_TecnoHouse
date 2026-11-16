@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MessageCircle, ShoppingCart, Trash2, X } from "lucide-react";
 import { crearPedido } from "../../api/pedidos.js";
+import { DEPARTAMENTOS_COLOMBIA } from "../../datos/departamentosColombia.js";
+import { obtenerMunicipiosDepartamento } from "../../datos/municipiosPorDepartamento.js";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import useTienda from "../../hooks/useTienda.js";
 import { formatearPesos } from "../../utilidades/formato.js";
-import { enlacePedido, whatsappConfigurado } from "../../utilidades/whatsapp.js";
+import { enlaceWhatsApp, whatsappConfigurado } from "../../utilidades/whatsapp.js";
 import Aviso from "../Aviso.jsx";
 import ImagenProducto from "../ImagenProducto.jsx";
 import SelectorCantidad from "./SelectorCantidad.jsx";
+import SelectorCiudad from "./SelectorCiudad.jsx";
+import SelectorDepartamento from "./SelectorDepartamento.jsx";
+
+const PAIS_ENTREGA = "CO";
 
 const LineaCarrito = ({ producto, cantidad }) => {
     const { cambiarCantidad, quitar, cerrarCarrito } = useTienda();
@@ -39,20 +45,40 @@ const LineaCarrito = ({ producto, cantidad }) => {
     );
 };
 
+const validarEntrega = (entrega) => {
+    const errores = {};
+    const direccion = entrega.direccion.trim();
+    const ciudad = entrega.ciudad.trim();
+    const departamento = entrega.departamento.trim();
+    const telefono = entrega.telefonoReceptor.trim();
+
+    if (!direccion) errores.direccion = "Escribe la dirección de entrega.";
+    else if (direccion.length > 250) errores.direccion = "La dirección no puede superar 250 caracteres.";
+
+    if (!ciudad) errores.ciudad = "Selecciona la ciudad de entrega.";
+    else if (ciudad.length > 120) errores.ciudad = "La ciudad no puede superar 120 caracteres.";
+    else if (!obtenerMunicipiosDepartamento(departamento).includes(ciudad)) {
+        errores.ciudad = "Selecciona una ciudad que pertenezca al departamento elegido.";
+    }
+
+    if (!departamento) errores.departamento = "Selecciona un departamento.";
+    else if (!DEPARTAMENTOS_COLOMBIA.includes(departamento)) errores.departamento = "Selecciona un departamento de la lista.";
+
+    if (!telefono) errores.telefonoReceptor = "Escribe el teléfono de quien recibe.";
+    else if (telefono.length < 7 || telefono.length > 20 || !/^\+?[\d\s()-]+$/.test(telefono)) {
+        errores.telefonoReceptor = "Ingresa un teléfono válido (entre 7 y 20 caracteres).";
+    }
+
+    return errores;
+};
+
 const CarritoLateral = () => {
     const { lineas, total, cantidadEnCarrito, carritoAbierto, cerrarCarrito, vaciar, recargarProductos } = useTienda();
     const { usuario, cargando: cargandoSesion } = useSesion();
+    const navegar = useNavigate();
     const botonCerrar = useRef(null);
-    const [datosCliente, setDatosCliente] = useState({
-        nombre: null,
-        telefono: null,
-        notas: "",
-        direccionEntrega: "",
-        ciudadEntrega: "",
-        departamentoEntrega: "",
-        paisEntrega: "CO",
-        telefonoReceptor: null,
-    });
+    const [entrega, setEntrega] = useState({ direccion: "", ciudad: "", departamento: "", telefonoReceptor: "" });
+    const [erroresCampos, setErroresCampos] = useState({});
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
     const [pedidoRegistrado, setPedidoRegistrado] = useState(null);
@@ -60,11 +86,11 @@ const CarritoLateral = () => {
     const cerrarPanel = useCallback(() => {
         setPedidoRegistrado(null);
         setError("");
+        setErroresCampos({});
         cerrarCarrito();
     }, [cerrarCarrito]);
 
-    // Al abrir: foco en el botón de cerrar, cierre con Escape y sin scroll en el fondo.
-    // Al cerrar, el foco vuelve al elemento que lo tenía (el botón del carrito).
+    // Al abrir: foco en cerrar, Escape cierra y el fondo no se desplaza.
     useEffect(() => {
         if (!carritoAbierto) return undefined;
 
@@ -81,78 +107,70 @@ const CarritoLateral = () => {
         };
     }, [carritoAbierto, cerrarPanel]);
 
-    const cambiarDato = (evento) => {
-        const { name, value } = evento.target;
-        setDatosCliente((actuales) => ({ ...actuales, [name]: value }));
+    const iniciarSesionParaComprar = () => {
+        navegar("/login", { state: { desde: "/tienda" } });
     };
 
-    const nombreFormulario = datosCliente.nombre ?? usuario?.nombre ?? "";
-    const telefonoFormulario = datosCliente.telefono ?? usuario?.telefono ?? "";
-    const telefonoReceptorFormulario = datosCliente.telefonoReceptor ?? usuario?.telefono ?? "";
+    const actualizarDatoEntrega = (name, value) => {
+        setEntrega((actual) => ({ ...actual, [name]: value }));
+        setErroresCampos((actual) => ({ ...actual, [name]: "" }));
+        setError("");
+    };
+
+    const cambiarDatoEntrega = (evento) => actualizarDatoEntrega(evento.target.name, evento.target.value);
+
+    const cambiarDepartamento = (departamento) => {
+        setEntrega((actual) => ({ ...actual, departamento, ciudad: "" }));
+        setErroresCampos((actual) => ({ ...actual, departamento: "", ciudad: "" }));
+        setError("");
+    };
 
     const enviarPedido = async (evento) => {
         evento.preventDefault();
         if (guardando) return;
 
-        const nombre = nombreFormulario.trim();
-        const telefono = telefonoFormulario.trim();
-        const direccionEntrega = datosCliente.direccionEntrega.trim();
-        const ciudadEntrega = datosCliente.ciudadEntrega.trim();
-        const departamentoEntrega = datosCliente.departamentoEntrega.trim();
-        const paisEntrega = datosCliente.paisEntrega.trim().toUpperCase();
-        const telefonoReceptor = telefonoReceptorFormulario.trim();
         if (!usuario) {
-            setError("Inicia sesión para registrar un pedido asociado a tu cuenta.");
+            iniciarSesionParaComprar();
             return;
         }
-        if (nombre.length < 2 || nombre.length > 120) {
-            setError("El nombre debe tener entre 2 y 120 caracteres.");
-            return;
-        }
-        if (telefono.length < 7 || telefono.length > 20) {
-            setError("El teléfono debe tener entre 7 y 20 caracteres.");
-            return;
-        }
-        if (!direccionEntrega || !ciudadEntrega || !departamentoEntrega || !paisEntrega) {
-            setError("Completa la dirección, ciudad, departamento y país de entrega.");
-            return;
-        }
-        if (telefonoReceptor.length < 7 || telefonoReceptor.length > 20) {
-            setError("El teléfono de quien recibe debe tener entre 7 y 20 caracteres.");
-            return;
-        }
-        if (datosCliente.notas.length > 500) {
-            setError("Las notas pueden tener máximo 500 caracteres.");
+        if (!usuario.nombre?.trim()) {
+            setError("Completa tu nombre en el perfil antes de crear el pedido.");
             return;
         }
         if (lineas.length === 0) {
-            setError("Agrega al menos un producto antes de hacer el pedido.");
+            setError("Agrega al menos un producto antes de confirmar el pedido.");
             return;
         }
+
+        const validacion = validarEntrega(entrega);
+        setErroresCampos(validacion);
+        if (Object.keys(validacion).length > 0) {
+            setError("Revisa los datos de entrega marcados antes de continuar.");
+            return;
+        }
+
+        const datosEntrega = {
+            direccion: entrega.direccion.trim(),
+            ciudad: entrega.ciudad.trim(),
+            departamento: entrega.departamento.trim(),
+            pais: PAIS_ENTREGA,
+            telefonoReceptor: entrega.telefonoReceptor.trim(),
+        };
 
         setError("");
         setGuardando(true);
         try {
-            const pedido = await crearPedido({
-                nombre,
-                telefono,
-                notas: datosCliente.notas,
-                lineas,
-                direccionEntrega,
-                ciudadEntrega,
-                departamentoEntrega,
-                paisEntrega,
-                telefonoReceptor,
-            });
-            setPedidoRegistrado({ ...pedido, lineas, total: pedido.total });
+            const pedido = await crearPedido({ lineas, entrega: datosEntrega });
+            // Se presenta el total calculado por el API, nunca el estimado del carrito.
+            setPedidoRegistrado(pedido);
             vaciar();
         } catch (errorApi) {
-            setError(errorApi.message || "No se pudo registrar el pedido.");
+            setError(errorApi.message || "No se pudo registrar el pedido. Intenta nuevamente.");
             if (/stock|disponible/i.test(errorApi.message ?? "")) {
                 try {
                     await recargarProductos();
                 } catch {
-                    // Se conserva el error del pedido y el siguiente intento volverá a consultar el catálogo.
+                    // Se conserva el error; el siguiente intento volverá a consultar el catálogo.
                 }
             }
         } finally {
@@ -161,6 +179,9 @@ const CarritoLateral = () => {
     };
 
     if (!carritoAbierto) return null;
+
+    const nombrePagador = usuario?.nombre?.trim() || "Nombre no disponible";
+    const correoPagador = usuario?.correo || "Correo no disponible";
 
     return (
         <div className="fixed inset-0 z-[60]">
@@ -181,13 +202,13 @@ const CarritoLateral = () => {
                     <div role="status" aria-live="polite" className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 text-center">
                         <ShoppingCart className="size-12 text-emerald-400" strokeWidth={1.5} aria-hidden="true" />
                         <h3 className="mt-4 text-lg font-semibold text-white">Pedido #{pedidoRegistrado.numero} registrado</h3>
-                        <p className="mt-2 text-slate-300">Total: {formatearPesos(pedidoRegistrado.total)}</p>
+                        <p className="mt-2 text-slate-300">Total confirmado por TecnoHouse: {formatearPesos(pedidoRegistrado.total)}</p>
                         {whatsappConfigurado ? (
-                            <a href={enlacePedido(pedidoRegistrado.lineas, pedidoRegistrado.total, pedidoRegistrado.numero)} target="_blank" rel="noopener noreferrer" className="boton-primario mt-6 w-full py-3 text-base">
-                                <MessageCircle size={18} aria-hidden="true" /> Avisar por WhatsApp
+                            <a href={enlaceWhatsApp(`Hola, necesito ayuda con mi pedido #${pedidoRegistrado.numero} de TecnoHouse.`)} target="_blank" rel="noopener noreferrer" className="boton-primario mt-6 w-full py-3 text-base">
+                                <MessageCircle size={18} aria-hidden="true" /> Consultar por WhatsApp
                             </a>
                         ) : (
-                            <p className="mt-6 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">El negocio te contactará para confirmar disponibilidad y forma de entrega.</p>
+                            <p className="mt-6 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">Tu pedido ya quedó registrado en TecnoHouse.</p>
                         )}
                         <button type="button" onClick={cerrarPanel} className="enlace mt-4 min-h-11 cursor-pointer text-sm">Seguir comprando</button>
                     </div>
@@ -204,64 +225,69 @@ const CarritoLateral = () => {
                             {lineas.map((linea) => <LineaCarrito key={linea.producto.id} {...linea} />)}
                         </ul>
 
-                        <div className="max-h-[65vh] overflow-y-auto border-t border-white/10 bg-fondo px-5 py-5">
+                        <div className="max-h-[70vh] overflow-y-auto border-t border-white/10 bg-fondo px-5 py-5">
                             <div className="flex items-baseline justify-between gap-3">
-                                <p className="text-sm text-slate-300">Total del pedido</p>
+                                <p className="text-sm text-slate-300">Total estimado</p>
                                 <p className="text-2xl font-bold text-white tabular-nums">{formatearPesos(total)}</p>
                             </div>
-                            <p className="mt-1 mb-4 text-xs leading-relaxed text-slate-500">Registra tu pedido y luego podrás avisarnos por WhatsApp. Confirmaremos disponibilidad y forma de entrega.</p>
+                            <p className="mt-1 mb-4 text-xs leading-relaxed text-slate-500">El total definitivo lo calcula TecnoHouse al confirmar el pedido.</p>
 
                             {cargandoSesion ? (
                                 <p role="status" className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">Verificando tu sesión…</p>
                             ) : !usuario ? (
                                 <div className="space-y-3 rounded-lg border border-amber-400/20 bg-amber-400/5 p-4">
-                                    <p className="text-sm leading-relaxed text-slate-300">Inicia sesión para registrar el pedido y asociarlo a tu cuenta.</p>
-                                    <Link to="/login" className="boton-primario flex w-full justify-center py-3">Iniciar sesión</Link>
+                                    <p className="text-sm leading-relaxed text-slate-300">Inicia sesión para continuar. Tu carrito se conservará al volver.</p>
+                                    <button type="button" onClick={iniciarSesionParaComprar} className="boton-primario flex w-full justify-center py-3">Iniciar sesión y continuar</button>
                                     <Link to="/registro" className="boton-secundario flex w-full justify-center py-3">Crear cuenta</Link>
                                 </div>
                             ) : (
-                            <form onSubmit={enviarPedido} className="space-y-3">
-                                <Aviso texto={error} tipo="error" />
-                                <label className="block text-sm text-slate-300" htmlFor="nombre-pedido">
-                                    Nombre
-                                    <input id="nombre-pedido" name="nombre" value={nombreFormulario} onChange={cambiarDato} required minLength={2} maxLength={120} autoComplete="name" className="campo mt-1 w-full" />
-                                </label>
-                                <label className="block text-sm text-slate-300" htmlFor="telefono-pedido">
-                                    Teléfono
-                                    <input id="telefono-pedido" name="telefono" type="tel" value={telefonoFormulario} onChange={cambiarDato} required minLength={7} maxLength={20} autoComplete="tel" className="campo mt-1 w-full" />
-                                </label>
-                                <label className="block text-sm text-slate-300" htmlFor="direccion-entrega">
-                                    Dirección de entrega
-                                    <input id="direccion-entrega" name="direccionEntrega" value={datosCliente.direccionEntrega} onChange={cambiarDato} required autoComplete="street-address" className="campo mt-1 w-full" />
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <label className="block text-sm text-slate-300" htmlFor="ciudad-entrega">
-                                        Ciudad
-                                        <input id="ciudad-entrega" name="ciudadEntrega" value={datosCliente.ciudadEntrega} onChange={cambiarDato} required autoComplete="address-level2" className="campo mt-1 w-full" />
+                                <form onSubmit={enviarPedido} noValidate className="space-y-3">
+                                    <Aviso texto={error} tipo="error" />
+
+                                    <div className="rounded-lg border border-white/10 bg-superficie p-3 text-sm">
+                                        <p className="font-medium text-white">Datos del comprador</p>
+                                        <p className="mt-1 text-slate-300">{nombrePagador}</p>
+                                        <p className="text-slate-400">{correoPagador}</p>
+                                        {!usuario.nombre?.trim() && (
+                                            <Link to="/cliente/perfil" className="mt-2 inline-block text-marca hover:underline">Completar nombre en mi perfil</Link>
+                                        )}
+                                    </div>
+
+                                    <label className="block text-sm text-slate-300" htmlFor="direccion-entrega">
+                                        Dirección de entrega
+                                        <input id="direccion-entrega" name="direccion" value={entrega.direccion} onChange={cambiarDatoEntrega} maxLength={250} autoComplete="street-address" aria-invalid={Boolean(erroresCampos.direccion)} aria-describedby={erroresCampos.direccion ? "error-direccion" : undefined} className="campo mt-1 w-full" />
+                                        {erroresCampos.direccion && <span id="error-direccion" className="mt-1 block text-xs text-red-300">{erroresCampos.direccion}</span>}
                                     </label>
-                                    <label className="block text-sm text-slate-300" htmlFor="departamento-entrega">
-                                        Departamento
-                                        <input id="departamento-entrega" name="departamentoEntrega" value={datosCliente.departamentoEntrega} onChange={cambiarDato} required autoComplete="address-level1" className="campo mt-1 w-full" />
-                                    </label>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <label className="block text-sm text-slate-300" htmlFor="pais-entrega">
-                                        País (código)
-                                        <input id="pais-entrega" name="paisEntrega" value={datosCliente.paisEntrega} onChange={cambiarDato} required maxLength={2} autoComplete="country" className="campo mt-1 w-full uppercase" />
-                                    </label>
-                                    <label className="block text-sm text-slate-300" htmlFor="telefono-receptor">
-                                        Teléfono de quien recibe
-                                        <input id="telefono-receptor" name="telefonoReceptor" type="tel" value={telefonoReceptorFormulario} onChange={cambiarDato} required minLength={7} maxLength={20} autoComplete="tel" className="campo mt-1 w-full" />
-                                    </label>
-                                </div>
-                                <label className="block text-sm text-slate-300" htmlFor="notas-pedido">
-                                    Notas <span className="text-slate-500">(opcional)</span>
-                                    <textarea id="notas-pedido" name="notas" value={datosCliente.notas} onChange={cambiarDato} maxLength={500} rows={2} className="campo mt-1 w-full resize-y" />
-                                </label>
-                                <button type="submit" disabled={guardando} className="boton-primario w-full py-3 text-base disabled:cursor-wait disabled:opacity-60">
-                                    {guardando ? "Registrando pedido…" : "Hacer pedido"}
-                                </button>
-                            </form>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <label className="block text-sm text-slate-300" htmlFor="departamento-entrega">
+                                            Departamento
+                                            <SelectorDepartamento value={entrega.departamento} onChange={cambiarDepartamento} invalid={Boolean(erroresCampos.departamento)} describedBy={erroresCampos.departamento ? "error-departamento" : undefined} />
+                                            {erroresCampos.departamento && <span id="error-departamento" className="mt-1 block text-xs text-red-300">{erroresCampos.departamento}</span>}
+                                        </label>
+                                        <label className="block text-sm text-slate-300" htmlFor="ciudad-entrega">
+                                            Ciudad
+                                            <SelectorCiudad key={entrega.departamento} departamento={entrega.departamento} value={entrega.ciudad} onChange={(ciudad) => actualizarDatoEntrega("ciudad", ciudad)} invalid={Boolean(erroresCampos.ciudad)} describedBy={erroresCampos.ciudad ? "error-ciudad" : undefined} />
+                                            {erroresCampos.ciudad && <span id="error-ciudad" className="mt-1 block text-xs text-red-300">{erroresCampos.ciudad}</span>}
+                                        </label>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="block text-sm text-slate-300">
+                                            País de entrega
+                                            <p className="campo mt-1 flex w-full items-center" aria-label="País fijo: Colombia, código CO">Colombia (CO)</p>
+                                        </div>
+                                        <label className="block text-sm text-slate-300" htmlFor="telefono-receptor">
+                                            Teléfono de quien recibe
+                                            <input id="telefono-receptor" name="telefonoReceptor" type="tel" value={entrega.telefonoReceptor} onChange={cambiarDatoEntrega} minLength={7} maxLength={20} autoComplete="tel" aria-invalid={Boolean(erroresCampos.telefonoReceptor)} aria-describedby={erroresCampos.telefonoReceptor ? "error-telefono-receptor" : undefined} className="campo mt-1 w-full" />
+                                            {erroresCampos.telefonoReceptor && <span id="error-telefono-receptor" className="mt-1 block text-xs text-red-300">{erroresCampos.telefonoReceptor}</span>}
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" disabled={guardando || cargandoSesion || !usuario.nombre?.trim()} className="boton-primario w-full py-3 text-base disabled:cursor-wait disabled:opacity-60">
+                                        {guardando ? "Registrando pedido…" : "Confirmar pedido"}
+                                    </button>
+                                </form>
                             )}
 
                             <div className="mt-3 flex items-center justify-between gap-3">
