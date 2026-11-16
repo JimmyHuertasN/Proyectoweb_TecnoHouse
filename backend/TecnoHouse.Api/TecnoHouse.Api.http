@@ -101,3 +101,28 @@ Content-Type: application/json
     "telefonoReceptor": "3001234567"
   }
 }
+
+### Sustituye estos IDs por pedidos reales de dos usuarios distintos.
+@pedidoPropioId = UUID_DE_UN_PEDIDO_PROPIO
+@pedidoOtroUsuarioId = UUID_DE_UN_PEDIDO_DE_OTRO_USUARIO
+@adminAccessToken = PEGA_AQUI_UN_TOKEN_DE_ADMIN
+
+### GET autenticado: lista paginada; solo pedidos propios (admin ve todos).
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/mis-pedidos?page=1&pageSize=20
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET autenticado: detalle propio debe devolver 200 y solo campos públicos del pedido.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoPropioId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET cruzado: un cliente debe recibir 404, igual que para un ID inexistente.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoOtroUsuarioId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET como admin: el mismo pedido de otro usuario debe devolver 200.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoOtroUsuarioId}}
+Authorization: Bearer {{adminAccessToken}}
+Accept: application/json
