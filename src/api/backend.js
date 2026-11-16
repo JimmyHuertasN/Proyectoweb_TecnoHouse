@@ -1,11 +1,11 @@
 /* Cliente HTTP del API ASP.NET. Supabase Auth sigue entregando el JWT de sesión. */
 import { obtenerCliente } from "./supabase.js";
 
-const apiUrl = (import.meta.env.VITE_TECNOHOUSE_API_URL ?? "").replace(/\/$/, "");
+const apiUrl = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
 export const llamarApi = async (ruta, { metodo = "GET", datos, publico = false } = {}) => {
     if (!apiUrl) {
-        throw new Error("Configura VITE_TECNOHOUSE_API_URL con la dirección del API TecnoHouse (ver README). ");
+        throw new Error("Configura VITE_API_URL con la dirección del API TecnoHouse (ver README). ");
     }
 
     const encabezados = { Accept: "application/json" };
@@ -26,7 +26,7 @@ export const llamarApi = async (ruta, { metodo = "GET", datos, publico = false }
             ...(datos === undefined ? {} : { body: JSON.stringify(datos) }),
         });
     } catch (error) {
-        throw new Error(`No se pudo conectar con el API TecnoHouse en ${apiUrl}. Verifica que esté ejecutándose, que VITE_TECNOHOUSE_API_URL tenga esa dirección y que CORS permita el origen de Vite. Detalle: ${error.message}`);
+        throw new Error(`No se pudo conectar con el API TecnoHouse en ${apiUrl}. Verifica que esté ejecutándose, que VITE_API_URL tenga esa dirección y que CORS permita el origen de Vite. Detalle: ${error.message}`);
     }
 
     const texto = await respuesta.text();

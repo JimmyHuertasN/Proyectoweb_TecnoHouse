@@ -8,6 +8,7 @@ import { useSesion } from "../../contexto/ContextoSesion.js";
 import useTienda from "../../hooks/useTienda.js";
 import { formatearPesos } from "../../utilidades/formato.js";
 import { enlaceWhatsApp, whatsappConfigurado } from "../../utilidades/whatsapp.js";
+import BotonPagarWompi from "./BotonPagarWompi.jsx";
 import Aviso from "../Aviso.jsx";
 import ImagenProducto from "../ImagenProducto.jsx";
 import SelectorCantidad from "./SelectorCantidad.jsx";
@@ -203,8 +204,14 @@ const CarritoLateral = () => {
                         <ShoppingCart className="size-12 text-emerald-400" strokeWidth={1.5} aria-hidden="true" />
                         <h3 className="mt-4 text-lg font-semibold text-white">Pedido #{pedidoRegistrado.numero} registrado</h3>
                         <p className="mt-2 text-slate-300">Total confirmado por TecnoHouse: {formatearPesos(pedidoRegistrado.total)}</p>
+                        <div className="mt-6 w-full">
+                            <BotonPagarWompi idPedido={pedidoRegistrado.id} alCerrarWidget={cerrarPanel} />
+                        </div>
+                        <Link to={`/cliente/pedidos/${encodeURIComponent(pedidoRegistrado.id)}`} onClick={cerrarPanel} className="enlace mt-4 min-h-11 text-sm">
+                            Ver detalle del pedido
+                        </Link>
                         {whatsappConfigurado ? (
-                            <a href={enlaceWhatsApp(`Hola, necesito ayuda con mi pedido #${pedidoRegistrado.numero} de TecnoHouse.`)} target="_blank" rel="noopener noreferrer" className="boton-primario mt-6 w-full py-3 text-base">
+                            <a href={enlaceWhatsApp(`Hola, necesito ayuda con mi pedido #${pedidoRegistrado.numero} de TecnoHouse.`)} target="_blank" rel="noopener noreferrer" className="boton-secundario mt-3 w-full py-3 text-base">
                                 <MessageCircle size={18} aria-hidden="true" /> Consultar por WhatsApp
                             </a>
                         ) : (
@@ -230,7 +237,7 @@ const CarritoLateral = () => {
                                 <p className="text-sm text-slate-300">Total estimado</p>
                                 <p className="text-2xl font-bold text-white tabular-nums">{formatearPesos(total)}</p>
                             </div>
-                            <p className="mt-1 mb-4 text-xs leading-relaxed text-slate-500">El total definitivo lo calcula TecnoHouse al confirmar el pedido.</p>
+                            <p className="mt-1 mb-4 text-xs leading-relaxed text-slate-500">El total definitivo lo calcula TecnoHouse al confirmar el pedido. Después podrás pagarlo en el checkout seguro de Wompi.</p>
 
                             {cargandoSesion ? (
                                 <p role="status" className="rounded-lg border border-white/10 p-4 text-sm text-slate-300">Verificando tu sesión…</p>

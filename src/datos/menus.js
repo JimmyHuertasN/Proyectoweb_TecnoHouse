@@ -6,6 +6,7 @@ export const MENU_CLIENTE = {
     inicio: "/cliente",
     enlaces: [
         { ruta: "/cliente", texto: "Resumen", icono: House, exacta: true },
+        { ruta: "/cliente/pedidos", texto: "Mis pedidos", icono: ShoppingCart },
         { ruta: "/cliente/dispositivos", texto: "Mis dispositivos", icono: Laptop },
         { ruta: "/cliente/solicitudes", texto: "Solicitudes", icono: Wrench },
         { ruta: "/cliente/perfil", texto: "Mi perfil", icono: UserRound },
