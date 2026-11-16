@@ -28,6 +28,7 @@ builder.Services.AddHttpClient<WompiApiClient>((serviceProvider, client) =>
 {
     var wompiOptions = serviceProvider.GetRequiredService<IOptions<WompiOptions>>().Value;
     client.BaseAddress = wompiOptions.GetApiBaseUri();
+    client.Timeout = TimeSpan.FromSeconds(10);
 });
 
 builder.Services.AddDbContext<TecnoHouseDbContext>(options => options
