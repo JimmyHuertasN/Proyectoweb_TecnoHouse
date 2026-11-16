@@ -15,6 +15,7 @@ public sealed class WompiOptions
     public string IntegritySecret { get; init; } = "";
     public string EventsSecret { get; init; } = "";
     public string ProductionApiBaseUrl { get; init; } = "";
+    public string ResultPageBaseUrl { get; init; } = "";
     // Null desactiva expiration-time; un entero positivo define la vigencia en minutos.
     public int? ExpirationMinutes { get; init; }
 
@@ -58,6 +59,20 @@ public sealed class WompiOptionsValidator : IValidateOptions<WompiOptions>
                 || !uri.AbsolutePath.TrimEnd('/').Equals("/v1", StringComparison.Ordinal)))
         {
             errores.Add("Wompi:ProductionApiBaseUrl debe ser una URL HTTPS de producción de Wompi terminada en /v1.");
+        }
+
+        if (!Uri.TryCreate(options.ResultPageBaseUrl, UriKind.Absolute, out var resultUri)
+            || resultUri.Scheme is not ("http" or "https")
+            || !string.IsNullOrEmpty(resultUri.Query)
+            || !string.IsNullOrEmpty(resultUri.Fragment)
+            || !string.IsNullOrEmpty(resultUri.UserInfo))
+        {
+            errores.Add("Wompi:ResultPageBaseUrl debe ser una URL absoluta sin query ni fragmento.");
+        }
+        else if (string.Equals(options.Environment, WompiOptions.Production, StringComparison.OrdinalIgnoreCase)
+            && resultUri.Scheme != Uri.UriSchemeHttps)
+        {
+            errores.Add("Wompi:ResultPageBaseUrl debe usar HTTPS en producción.");
         }
 
         if (options.ExpirationMinutes is <= 0)
