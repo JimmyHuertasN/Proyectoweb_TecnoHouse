@@ -51,3 +51,40 @@ public sealed record CrearPedidoResponse(
     decimal Total,
     string EstadoPedido,
     string? EstadoPago);
+
+public sealed record DatosEntregaPedidoResponse(
+    string? Direccion,
+    string? Ciudad,
+    string? Departamento,
+    string? Pais,
+    string? TelefonoReceptor);
+
+public sealed record ProductoPedidoDetalleResponse(
+    string Nombre,
+    int Cantidad,
+    decimal PrecioUnitario);
+
+public sealed record PedidoDetalleResponse(
+    Guid PedidoId,
+    long Numero,
+    DateTimeOffset CreadoEn,
+    DatosEntregaPedidoResponse Entrega,
+    IReadOnlyList<ProductoPedidoDetalleResponse> Productos,
+    decimal Total,
+    string EstadoPedido,
+    string? EstadoPago);
+
+public sealed record PedidoResumenResponse(
+    Guid PedidoId,
+    long Numero,
+    DateTimeOffset CreadoEn,
+    decimal Total,
+    string EstadoPedido,
+    string? EstadoPago);
+
+public sealed record PaginaPedidosResponse(
+    IReadOnlyList<PedidoResumenResponse> Items,
+    int Page,
+    int PageSize,
+    long Total,
+    int TotalPages);

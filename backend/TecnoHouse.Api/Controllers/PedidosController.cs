@@ -18,6 +18,8 @@ namespace TecnoHouse.Api.Controllers;
 public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
 {
     private const int MaximoPorProducto = 1000;
+    private const int MaximoPorPagina = 100;
+    private static readonly JsonSerializerOptions OpcionesJson = new() { PropertyNameCaseInsensitive = true };
 
     [HttpPost]
     [ProducesResponseType<CrearPedidoResponse>(StatusCodes.Status201Created)]
@@ -127,6 +129,147 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
         return StatusCode(StatusCodes.Status201Created, respuesta);
     }
 
+    [HttpGet("mis-pedidos")]
+    [ProducesResponseType<PaginaPedidosResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PaginaPedidosResponse>> MisPedidos(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if (page < 1)
+            return BadRequest(new { error = "page debe ser mayor o igual a 1." });
+        if (pageSize is < 1 or > MaximoPorPagina)
+            return BadRequest(new { error = $"pageSize debe estar entre 1 y {MaximoPorPagina}." });
+
+        if (!TryObtenerUsuarioId(out var usuarioId))
+            return Unauthorized(new { error = "El token no contiene un usuario válido." });
+
+        const string sql = """
+            with rol as materialized (
+                select public.rol_actual()::text as nombre
+            ), pedidos_visibles as materialized (
+                select p.id, p.numero, p.creado_en, p.total, p.estado
+                from public.pedidos p
+                cross join rol r
+                where r.nombre = 'admin' or p.usuario_id = @usuario_id
+            ), pagina as (
+                select *
+                from pedidos_visibles
+                order by creado_en desc, id desc
+                offset @offset
+                limit @page_size
+            )
+            select jsonb_build_object(
+                'items', coalesce((
+                    select jsonb_agg(
+                        jsonb_build_object(
+                            'pedidoId', p.id,
+                            'numero', p.numero,
+                            'creadoEn', p.creado_en,
+                            'total', p.total,
+                            'estadoPedido', p.estado,
+                            'estadoPago', (
+                                select pa.estado::text
+                                from public.pagos pa
+                                where pa.pedido_id = p.id
+                                order by pa.creado_en desc, pa.id desc
+                                limit 1
+                            )
+                        )
+                        order by p.creado_en desc, p.id desc
+                    )
+                    from pagina p
+                ), '[]'::jsonb),
+                'total', (select count(*) from pedidos_visibles)
+            )::text;
+            """;
+
+        var offset = (long)(page - 1) * pageSize;
+        var json = await EjecutarConsultaJson(
+            sql,
+            cancellationToken,
+            new NpgsqlParameter("usuario_id", NpgsqlDbType.Uuid) { Value = usuarioId },
+            new NpgsqlParameter("offset", NpgsqlDbType.Bigint) { Value = offset },
+            new NpgsqlParameter("page_size", NpgsqlDbType.Integer) { Value = pageSize });
+
+        using var documento = JsonDocument.Parse(json ?? "{}");
+        var raiz = documento.RootElement;
+        var items = JsonSerializer.Deserialize<List<PedidoResumenResponse>>(
+            raiz.GetProperty("items").GetRawText(), OpcionesJson) ?? [];
+        var total = raiz.GetProperty("total").GetInt64();
+        var totalPages = total == 0 ? 0 : (int)((total + pageSize - 1) / pageSize);
+
+        return Ok(new PaginaPedidosResponse(items, page, pageSize, total, totalPages));
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType<PedidoDetalleResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PedidoDetalleResponse>> ObtenerDetalle(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        if (!TryObtenerUsuarioId(out var usuarioId))
+            return Unauthorized(new { error = "El token no contiene un usuario válido." });
+
+        const string sql = """
+            select jsonb_build_object(
+                'pedidoId', p.id,
+                'numero', p.numero,
+                'creadoEn', p.creado_en,
+                'entrega', jsonb_build_object(
+                    'direccion', p.direccion_entrega,
+                    'ciudad', p.ciudad_entrega,
+                    'departamento', p.departamento_entrega,
+                    'pais', p.pais_entrega,
+                    'telefonoReceptor', p.telefono_receptor
+                ),
+                'productos', coalesce((
+                    select jsonb_agg(
+                        jsonb_build_object(
+                            'nombre', i.producto_nombre,
+                            'cantidad', i.cantidad,
+                            'precioUnitario', i.precio_unitario
+                        ) order by i.id
+                    )
+                    from public.pedido_items i
+                    where i.pedido_id = p.id
+                ), '[]'::jsonb),
+                'total', p.total,
+                'estadoPedido', p.estado,
+                'estadoPago', (
+                    select pa.estado::text
+                    from public.pagos pa
+                    where pa.pedido_id = p.id
+                    order by pa.creado_en desc, pa.id desc
+                    limit 1
+                )
+            )::text
+            from public.pedidos p
+            cross join (select public.rol_actual()::text as nombre) rol
+            where p.id = @pedido_id
+              and (rol.nombre = 'admin' or p.usuario_id = @usuario_id)
+            limit 1;
+            """;
+
+        var json = await EjecutarConsultaJson(
+            sql,
+            cancellationToken,
+            new NpgsqlParameter("pedido_id", NpgsqlDbType.Uuid) { Value = id },
+            new NpgsqlParameter("usuario_id", NpgsqlDbType.Uuid) { Value = usuarioId });
+
+        if (json is null)
+            return NotFound(new { error = "No se encontró el pedido." });
+
+        var respuesta = JsonSerializer.Deserialize<PedidoDetalleResponse>(json, OpcionesJson);
+        return respuesta is null
+            ? NotFound(new { error = "No se encontró el pedido." })
+            : Ok(respuesta);
+    }
+
     private async Task<string> EjecutarCrearPedido(
         string nombre,
         string telefono,
@@ -180,6 +323,39 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
             if (abrirConexion)
                 await db.Database.CloseConnectionAsync();
         }
+    }
+
+    private async Task<string?> EjecutarConsultaJson(
+        string sql,
+        CancellationToken cancellationToken,
+        params NpgsqlParameter[] parametros)
+    {
+        var conexion = db.Database.GetDbConnection();
+        var abrirConexion = conexion.State != ConnectionState.Open;
+        if (abrirConexion)
+            await db.Database.OpenConnectionAsync(cancellationToken);
+
+        try
+        {
+            await using var comando = conexion.CreateCommand();
+            comando.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
+            comando.CommandText = sql;
+            comando.Parameters.AddRange(parametros);
+
+            var resultado = await comando.ExecuteScalarAsync(cancellationToken);
+            return resultado is string json ? json : null;
+        }
+        finally
+        {
+            if (abrirConexion)
+                await db.Database.CloseConnectionAsync();
+        }
+    }
+
+    private bool TryObtenerUsuarioId(out Guid usuarioId)
+    {
+        var subject = User.FindFirstValue("sub") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(subject, out usuarioId);
     }
 
     private static bool TelefonoValido(string? telefono) =>
