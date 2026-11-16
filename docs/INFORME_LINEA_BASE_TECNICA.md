@@ -16,7 +16,7 @@
 | Datos de contacto por validar | **Sigue.** Pendiente de confirmar con el negocio. |
 
 Cambios posteriores que afectan este diagnóstico:
-- Se agregó una API ASP.NET Core en `backend/`, que requiere el SDK de .NET 10 y la variable `VITE_TECNOHOUSE_API_URL`.
+- Se agregó una API ASP.NET Core en `backend/`, que requiere el SDK de .NET 10 y la variable `VITE_API_URL`.
 - Se agregaron las rutas `/reparaciones`, `/tienda`, `/tienda/:id` y `/admin/pedidos`.
 - Las carpetas se reorganizaron (ver la sección 16 de la [guía de cambios](./GUIA_CAMBIOS_PROYECTO.md)). Las rutas de archivos de este informe corresponden a la ubicación del 31 de octubre.
 
