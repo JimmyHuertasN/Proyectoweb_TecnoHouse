@@ -25,7 +25,17 @@ const aPedido = (fila) => ({
 });
 
 /* El servidor valida los productos y calcula los precios desde el catálogo vigente. */
-export const crearPedido = async ({ nombre, telefono, notas = "", lineas }) => {
+export const crearPedido = async ({
+    nombre,
+    telefono,
+    notas = "",
+    lineas,
+    direccionEntrega,
+    ciudadEntrega,
+    departamentoEntrega,
+    paisEntrega = "CO",
+    telefonoReceptor,
+}) => {
     const items = lineas.map(({ producto, cantidad }) => ({ producto_id: producto.id, cantidad }));
     const respuesta = verificar(
         await obtenerCliente().rpc("crear_pedido", {
@@ -33,6 +43,11 @@ export const crearPedido = async ({ nombre, telefono, notas = "", lineas }) => {
             p_telefono: telefono,
             p_notas: notas,
             p_items: items,
+            p_direccion_entrega: direccionEntrega,
+            p_ciudad_entrega: ciudadEntrega,
+            p_departamento_entrega: departamentoEntrega,
+            p_pais_entrega: paisEntrega,
+            p_telefono_receptor: telefonoReceptor,
         })
     );
 
