@@ -11,6 +11,34 @@ public sealed class ApiExceptionMiddleware(RequestDelegate next, ILogger<ApiExce
         {
             await next(context);
         }
+        catch (PostgresException error)
+        {
+            var status = error.SqlState switch
+            {
+                "42501" => StatusCodes.Status403Forbidden,
+                "22P02" or "23503" or "23505" or "23514" => StatusCodes.Status400BadRequest,
+                "P0001" when error.MessageText.StartsWith("No hay stock suficiente", StringComparison.OrdinalIgnoreCase)
+                    => StatusCodes.Status409Conflict,
+                "P0001" when error.MessageText.StartsWith("Uno de los productos ya no está disponible", StringComparison.OrdinalIgnoreCase)
+                    => StatusCodes.Status404NotFound,
+                "P0001" => StatusCodes.Status400BadRequest,
+                _ => StatusCodes.Status500InternalServerError,
+            };
+
+            logger.LogWarning(error, "PostgreSQL rechazó la operación {SqlState}.", error.SqlState);
+            context.Response.StatusCode = status;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = status switch
+                {
+                    StatusCodes.Status403Forbidden => "La política de seguridad no permite esta operación.",
+                    StatusCodes.Status409Conflict => error.MessageText,
+                    StatusCodes.Status404NotFound => "Uno de los productos no existe o dejó de estar activo.",
+                    StatusCodes.Status400BadRequest => error.MessageText,
+                    _ => "No se pudo guardar el registro.",
+                },
+            });
+        }
         catch (DbUpdateException error) when (error.InnerException is PostgresException postgres)
         {
             var status = postgres.SqlState switch

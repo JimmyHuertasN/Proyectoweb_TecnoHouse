@@ -8,6 +8,7 @@ Solución ASP.NET Core para abrir en Visual Studio: `TecnoHouse.Api.sln`.
 - Modelos para perfiles, técnicos, dispositivos, servicios, diagnósticos, cotizaciones, ítems, calificaciones, mensajes, fotos, notificaciones y productos.
 - Mapeo de las relaciones y enums que ya aparecen en la base de datos.
 - Controladores con GET y POST para esas tablas, además de GET de solo lectura para las vistas públicas.
+- `POST /api/pedidos`, que obtiene la identidad del JWT, valida productos activos y cantidades, y delega precio, stock y total a `public.crear_pedido`.
 - Validación del JWT de Supabase y paso de la identidad a PostgreSQL para que sigan aplicando las políticas RLS existentes.
 - Scalar en desarrollo para explorar la API.
 
@@ -32,7 +33,9 @@ dotnet user-secrets set "Supabase:Url" "https://<ref>.supabase.co"
 dotnet user-secrets set "ConnectionStrings:TecnoHouse" "Host=<host>;Port=5432;Database=postgres;Username=<usuario-copiado>;Password=<contraseña>;SSL Mode=Require;Trust Server Certificate=true"
 ```
 
-Los endpoints implementados son `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos`, `/api/notificaciones` y `/api/productos`. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
+Los endpoints implementados son `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos`, `/api/notificaciones` y `/api/productos`. El perfil actual también usa `PUT /api/perfiles/{id}`. `POST /api/pedidos` es un endpoint específico que solo recibe productos y datos de entrega, y delega el cálculo del total a `crear_pedido`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
+
+En `TecnoHouse.Api.http` hay solicitudes para comprobar que el precio enviado no altera el total del catálogo y que una llamada sin token devuelve `401`. Esas solicitudes crean pedidos reales; ejecútalas en desarrollo o staging.
 
 ## Datos pendientes de confirmar
 
