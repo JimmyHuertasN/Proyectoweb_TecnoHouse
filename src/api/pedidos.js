@@ -56,6 +56,13 @@ export const cambiarEstadoPedido = async (id, estado) => {
     verificar(await obtenerCliente().rpc("cambiar_estado_pedido", { p_pedido_id: id, p_estado: estado }));
 };
 
+/* La API aplica RLS y limita la respuesta a los pedidos del usuario autenticado. */
+export const obtenerMisPedidos = (page = 1, pageSize = 10) =>
+    llamarApi(`/api/pedidos/mis-pedidos?page=${page}&pageSize=${pageSize}`);
+
+export const obtenerDetalleMiPedido = (id) =>
+    llamarApi(`/api/pedidos/${encodeURIComponent(id)}`);
+
 /* El rango usa días locales inclusivos, igual que los reportes del panel. */
 export const obtenerIngresosTienda = async (desde = "", hasta = "") => {
     const filas = verificar(
