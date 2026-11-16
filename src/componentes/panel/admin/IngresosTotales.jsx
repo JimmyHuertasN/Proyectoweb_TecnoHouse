@@ -35,8 +35,7 @@ const IngresosTotales = ({ reparaciones, tienda }) => {
 
                 <div className="space-y-4">
                     <FilaIngreso Icono={Wrench} texto="Reparaciones" valor={reparaciones} total={total} colorBarra="bg-marca" nota="Cotizaciones aprobadas de servicios terminados" />
-                    {/* PENDIENTE BASE: la tienda suma cuando existan los pedidos entregados. */}
-                    <FilaIngreso Icono={ShoppingBag} texto="Tienda" valor={tienda} total={total} colorBarra="bg-emerald-400" nota="Pendiente: se suma cuando la base registre los pedidos" />
+                    <FilaIngreso Icono={ShoppingBag} texto="Tienda" valor={tienda} total={total} colorBarra="bg-emerald-400" nota="Pedidos entregados" />
                 </div>
             </div>
         </section>

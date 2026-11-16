@@ -199,6 +199,7 @@ Se hace una sola vez por proyecto.
 | `supabase/notificaciones.sql` | Crea los avisos privados de cada usuario. Requiere los dos scripts anteriores. |
 | `supabase/crear_tecnico.sql` | Permite que el administrador cree técnicos desde la aplicación. |
 | `supabase/catalogo.sql` | Crea/actualiza la tabla de productos, la vista pública `productos_activos` y el bucket de imágenes de la tienda. Incluye la migración de una imagen a varias rutas por producto. |
+| `supabase/pedidos.sql` | Crea las tablas de pedidos y sus productos, con funciones para registrar pedidos y cambiar su estado; al confirmar descuenta el stock y al cancelar un pedido confirmado lo devuelve. |
 | `supabase/datos_prueba.sql` | Opcional, solo para desarrollo. Crea un admin, tres técnicos, dos clientes y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo. |
 
 Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base.
@@ -215,15 +216,12 @@ Si el proyecto de Supabase ya estaba configurado antes de habilitar varias fotos
 - **Dispositivos**: tabla `dispositivos`.
 - **Servicios**: tabla `servicios`, con sus cotizaciones, fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
 - **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`; las fotos se guardan en el bucket `productos` y sus rutas en `imagenes_rutas`.
+- **Pedidos**: tablas `pedidos` y `pedido_items`. `crear_pedido` registra el pedido usando los precios vigentes de los productos; `cambiar_estado_pedido` permite al administrador avanzar o cancelar pedidos y gestiona el stock al confirmar o cancelar.
 - **Contacto público**: completa `src/datos/contacto.js` con los datos verificados del negocio antes de publicar el sitio.
 
 ## Pendiente
 
-Las siguientes partes de la tienda ya están en la interfaz, pero esperan cambios en Supabase. En el código están marcadas con el comentario `PENDIENTE BASE`:
-
-- Tablas `pedidos` y `pedido_items` para registrar los pedidos del carrito, listarlos en `/admin/pedidos` y cambiar su estado. Mientras no existan, los pedidos y los ingresos de la tienda se muestran en cero.
-- Descontar el stock cuando se confirma un pedido.
-- Columna `destacado` en `productos` para que el administrador elija los productos que aparecen primero en la tienda y en la portada.
+La columna `destacado` en `productos` todavía está pendiente para que el administrador elija los productos que aparecen primero en la tienda y en la portada.
 
 También falta contenido real del negocio:
 

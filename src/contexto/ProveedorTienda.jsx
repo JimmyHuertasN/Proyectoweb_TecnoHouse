@@ -26,21 +26,48 @@ const ProveedorTienda = ({ children }) => {
     const [carrito, setCarrito] = useState(leerCarritoGuardado);
     const [carritoAbierto, setCarritoAbierto] = useState(false);
 
+    const recargarProductos = useCallback(async () => {
+        const lista = await obtenerProductos();
+        setProductos(lista);
+        setError("");
+        // Al actualizar el catálogo, quita productos que ya no se venden y limita cada cantidad al stock vigente.
+        setCarrito((actual) => actual.flatMap((item) => {
+            const producto = lista.find((fila) => fila.id === item.id);
+            const cantidad = Math.min(item.cantidad, producto?.stock ?? 0);
+            return producto && cantidad > 0 ? [{ ...item, cantidad }] : [];
+        }));
+        return lista;
+    }, []);
+
     useEffect(() => {
         let vigente = true;
 
         obtenerProductos()
-            .then((lista) => vigente && setProductos(lista))
+            .then((lista) => {
+                if (!vigente) return;
+                setProductos(lista);
+                setError("");
+                // Al cargar el catálogo inicial también se corrigen cantidades guardadas que superan el stock actual.
+                setCarrito((actual) => actual.flatMap((item) => {
+                    const producto = lista.find((fila) => fila.id === item.id);
+                    const cantidad = Math.min(item.cantidad, producto?.stock ?? 0);
+                    return producto && cantidad > 0 ? [{ ...item, cantidad }] : [];
+                }));
+            })
             .catch(() => vigente && setError("No pudimos cargar la tienda en este momento."))
             .finally(() => vigente && setCargando(false));
 
         return () => {
             vigente = false;
         };
-    }, []);
+    }, [recargarProductos]);
 
     useEffect(() => {
-        localStorage.setItem(CLAVE_CARRITO, JSON.stringify(carrito));
+        try {
+            localStorage.setItem(CLAVE_CARRITO, JSON.stringify(carrito));
+        } catch {
+            // El carrito sigue funcionando en memoria aunque el navegador bloquee o llene el almacenamiento.
+        }
     }, [carrito]);
 
     const buscarProducto = (id) => productos.find((producto) => producto.id === id);
@@ -73,11 +100,15 @@ const ProveedorTienda = ({ children }) => {
     const vaciar = () => setCarrito([]);
 
     // Funciones fijas: el carrito lateral las usa dentro de un useEffect.
-    const abrirCarrito = useCallback(() => setCarritoAbierto(true), []);
+    const abrirCarrito = useCallback(() => {
+        setCarritoAbierto(true);
+        recargarProductos().catch(() => setError("No pudimos actualizar el stock de la tienda."));
+    }, [recargarProductos]);
     const cerrarCarrito = useCallback(() => setCarritoAbierto(false), []);
 
     const tienda = {
         productos,
+        recargarProductos,
         cargando,
         error,
         buscarProducto,

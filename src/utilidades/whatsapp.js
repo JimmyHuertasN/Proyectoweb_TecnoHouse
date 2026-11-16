@@ -10,11 +10,11 @@ export const enlaceWhatsApp = (mensaje) => `https://wa.me/${telefonoWhatsApp}?te
 
 export const enlaceConsultaProducto = (nombreProducto) => enlaceWhatsApp(`Hola, consulto por ${nombreProducto}`);
 
-/* Arma el pedido del carrito como una lista: "- 2 x Batería ... = $ 120.000". */
-export const enlacePedido = (lineas, total) => {
+/* Incluye el número registrado para que el negocio ubique el pedido al recibir el mensaje. */
+export const enlacePedido = (lineas, total, numeroPedido) => {
     const detalle = lineas
         .map(({ producto, cantidad }) => `- ${cantidad} x ${producto.nombre} = ${formatearPesos(producto.precio * cantidad)}`)
         .join("\n");
 
-    return enlaceWhatsApp(`Hola, quiero hacer este pedido en TecnoHouse:\n${detalle}\nTotal: ${formatearPesos(total)}`);
+    return enlaceWhatsApp(`Hola, registré el pedido #${numeroPedido} en TecnoHouse:\n${detalle}\nTotal: ${formatearPesos(total)}`);
 };
