@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle, ShoppingBag } from "lucide-react";
+import { MessageCircle, Package, ShoppingBag } from "lucide-react";
 import Aviso from "../../componentes/Aviso.jsx";
 import BotonPagarWompi from "../../componentes/tienda/BotonPagarWompi.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
@@ -51,6 +51,31 @@ const FilaPedido = ({ pedido }) => {
                 </div>
                 <p className="text-lg font-bold tabular-nums text-white">{formatearPesos(pedido.total)}</p>
             </div>
+
+            <section className="mt-4 rounded-lg border border-white/5 bg-fondo p-3" aria-label={`Productos del pedido ${pedido.numero}`}>
+                <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-400">
+                    <Package size={15} aria-hidden="true" /> Productos
+                </h3>
+                {Array.isArray(pedido.productos) && pedido.productos.length > 0 ? (
+                    <ul className="space-y-2">
+                        {pedido.productos.slice(0, 3).map((producto, indice) => (
+                            <li key={`${producto.nombre}-${indice}`} className="flex items-center justify-between gap-3 text-sm">
+                                <span className="min-w-0 truncate text-slate-200">{producto.nombre}</span>
+                                <span className="shrink-0 text-slate-400">
+                                    {producto.cantidad} × {formatearPesos(producto.precioUnitario)}
+                                </span>
+                            </li>
+                        ))}
+                        {pedido.productos.length > 3 && (
+                            <li className="text-xs text-slate-400">y {pedido.productos.length - 3} productos más</li>
+                        )}
+                    </ul>
+                ) : Array.isArray(pedido.productos) ? (
+                    <p className="text-sm text-slate-400">No hay productos asociados a este pedido.</p>
+                ) : (
+                    <p className="text-sm text-amber-300">La API aún no envía el resumen de productos. Reinicia la API y vuelve a cargar esta página.</p>
+                )}
+            </section>
 
             <dl className="mt-4 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-white/5 bg-fondo p-3">
