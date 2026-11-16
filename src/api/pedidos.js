@@ -3,6 +3,7 @@
     Pedidos de la tienda, guardados y consultados mediante Supabase.
 */
 import { estaEnRango } from "../utilidades/filtros.js";
+import { llamarApi } from "./backend.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 const aPedido = (fila) => ({
@@ -24,34 +25,23 @@ const aPedido = (fila) => ({
     })),
 });
 
-/* El servidor valida los productos y calcula los precios desde el catálogo vigente. */
-export const crearPedido = async ({
-    nombre,
-    telefono,
-    notas = "",
-    lineas,
-    direccionEntrega,
-    ciudadEntrega,
-    departamentoEntrega,
-    paisEntrega = "CO",
-    telefonoReceptor,
-}) => {
-    const items = lineas.map(({ producto, cantidad }) => ({ producto_id: producto.id, cantidad }));
-    const respuesta = verificar(
-        await obtenerCliente().rpc("crear_pedido", {
-            p_nombre: nombre,
-            p_telefono: telefono,
-            p_notas: notas,
-            p_items: items,
-            p_direccion_entrega: direccionEntrega,
-            p_ciudad_entrega: ciudadEntrega,
-            p_departamento_entrega: departamentoEntrega,
-            p_pais_entrega: paisEntrega,
-            p_telefono_receptor: telefonoReceptor,
-        })
-    );
+/* Envía solo ids, cantidades y entrega; el API calcula y devuelve el total real. */
+export const crearPedido = async ({ lineas, entrega }) => {
+    const respuesta = await llamarApi("/api/pedidos", {
+        metodo: "POST",
+        datos: {
+            productos: lineas.map(({ producto, cantidad }) => ({ id: producto.id, cantidad })),
+            entrega,
+        },
+    });
 
-    return { id: respuesta.id, numero: respuesta.numero, total: Number(respuesta.total) };
+    return {
+        id: respuesta.pedidoId,
+        numero: respuesta.numero,
+        total: Number(respuesta.total),
+        estadoPedido: respuesta.estadoPedido,
+        estadoPago: respuesta.estadoPago,
+    };
 };
 
 /* RLS limita esta consulta al administrador y el orden deja primero el pedido más reciente. */

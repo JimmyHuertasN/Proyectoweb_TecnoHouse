@@ -41,13 +41,18 @@ const IniciarSesion = () => {
         // La verificación de la cuenta y la contraseña la hace Supabase (src/api/usuarios.js).
         try {
             const usuario = await iniciarSesion(correo.trim().toLowerCase(), contrasena);
-            setMensaje({ texto: `¡Hola ${usuario.nombre}! Entrando a tu panel...`, tipo: "exito" });
+            const pedida = ubicacion.state?.desde;
+            const inicio = rutaInicio(usuario.rol);
+            const volverATienda = usuario.rol === "cliente"
+                && typeof pedida === "string"
+                && (pedida === "/tienda" || pedida.startsWith("/tienda/"));
+            const volverASeccion = typeof pedida === "string" && inicio !== "/" && pedida.startsWith(inicio);
+            setMensaje({ texto: `¡Hola ${usuario.nombre}! ${volverATienda ? "Volviendo a la tienda..." : "Entrando a tu panel..."}`, tipo: "exito" });
 
             // Se va a la página principal de su rol; si RutaProtegida lo trajo desde una página de
-            // esa misma sección (ej. /cliente/perfil), se le devuelve allí.
-            const inicio = rutaInicio(usuario.rol);
-            const pedida = ubicacion.state?.desde;
-            const destino = pedida?.startsWith(inicio) && inicio !== "/" ? pedida : inicio;
+            // esa misma sección (ej. /cliente/perfil), se le devuelve allí. El checkout conserva
+            // la tienda como destino para recuperar el carrito persistido en el navegador.
+            const destino = volverATienda ? pedida : volverASeccion ? pedida : inicio;
             temporizadorRef.current = setTimeout(() => navegar(destino, { replace: true }), 1200);
         } catch (errorApi) {
             setMensaje({ texto: errorApi.message, tipo: "error" });
