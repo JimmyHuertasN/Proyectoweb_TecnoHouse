@@ -114,7 +114,7 @@ Rol `gestor_tienda` ("Gestor de tienda"): administra la tienda sin ver reparacio
 - **Resumen**: productos activos e inactivos, agotados, pocas unidades, valor del inventario, pedidos pendientes y confirmados, pedidos recientes e ingresos de pedidos entregados en el periodo.
 - **Productos**: crear, editar, activar o desactivar productos con hasta ocho fotos.
 - **Inventario**: existencias con filtros, ajuste rápido o cantidad exacta y stock por categoría.
-- **Pedidos**: búsqueda, filtros por estado y fecha, detalle, cambio de estado y contacto por WhatsApp.
+- **Pedidos**: búsqueda, filtros por estado y fecha, detalle, cambio de estado y contacto por WhatsApp. Muestra el estado del pago en línea aparte del estado del pedido y marca los pagos aprobados que necesitan revisión.
 - **Reportes**: ingresos, pedidos por estado, productos más vendidos y por reponer, con descarga en CSV.
 - **Mi perfil**: nombre y teléfono.
 
@@ -197,7 +197,8 @@ Requisitos: Node.js 20.19 o superior, un proyecto de Supabase y, para la API, el
 3. Inicia la API y el frontend, inicia sesión como cliente y crea un pedido con los datos de entrega completos.
 4. En el resumen del pedido, pulsa **Pagar con Wompi**. Debe abrirse el checkout embebido sobre TecnoHouse y mostrar los datos de envío. La respuesta del backend puede inspeccionarse en la pestaña Network; solo contiene la llave pública y la firma calculada por el backend.
 5. Cierra el widget sin pagar. La app debe navegar a `/pago/resultado/{idPedido}` y mostrar el último estado guardado por la API. Vuelve al detalle del pedido y pulsa de nuevo **Pagar con Wompi**: el backend crea otro intento con una referencia nueva.
-6. Puedes completar un pago de sandbox desde el widget. La confirmación del estado en la app depende de que esté desplegado el webhook de Wompi que actualiza `pagos`; la redirección o el callback del navegador no confirman el pago.
+6. Puedes completar un pago de sandbox desde el widget. La redirección o el callback del navegador no confirman el pago: lo hace el webhook (`POST /api/pagos/wompi/webhook`) o, si Wompi no puede llegar a la API (por ejemplo, en `localhost`), la consulta de respaldo que la API hace cada 5 minutos a los pagos que llevan más de 10 minutos pendientes.
+7. Un pago aprobado confirma el pedido y descuenta el stock una sola vez, aunque el aviso llegue repetido o el personal de tienda ya lo haya confirmado a mano. Cancelar un pedido pagado devuelve las unidades, pero no reembolsa el dinero: eso se gestiona aparte (ver [docs/GESTOR_TIENDA.md](./docs/GESTOR_TIENDA.md)).
 
 Cada integrante configura sus propios secretos de la API; la contraseña de la base de datos nunca se guarda en el repositorio. Vite no vigila la carpeta `backend/`, así que Visual Studio puede estar abierto mientras corre `npm run dev`.
 
@@ -228,6 +229,9 @@ Se hace una sola vez por proyecto.
 | `supabase/pedidos.sql` | Crea las tablas de pedidos y sus productos y la función `crear_pedido`, que copia nombres y precios del catálogo. Se reconstruyó desde la base en uso porque no estaba en el repositorio. |
 | `supabase/rol_gestor_tienda.sql` | Agrega el rol `gestor_tienda`. Va solo, en su propio *Run*: el valor nuevo debe quedar guardado antes de usarse. |
 | `supabase/permisos_tienda.sql` | Permisos de la tienda para el administrador y el gestor (productos, imágenes, pedidos), cambios de stock sin pisar los de otros, `cambiar_estado_pedido` y las funciones para administrar gestores. |
+| `supabase/pagos.sql` | Crea las tablas `pagos` y `wompi_eventos` y sus permisos: solo lectura con RLS (el gestor ve los pagos de pedidos, nunca los de cotizaciones). Se reconstruyó desde la base en uso porque no estaba en el repositorio. |
+| `supabase/pagos_wompi.sql` | Registra intentos de pago (`registrar_pago_wompi_pedido`) y el trigger que confirma el pedido y descuenta el stock al aprobarse el pago. |
+| `supabase/pedidos_lectura_rls.sql` | Permite a cada comprador leer sus pedidos, sus productos y sus pagos. |
 | `supabase/datos_prueba.sql` | Opcional, solo para desarrollo. Crea un admin, tres técnicos, dos clientes, un gestor de tienda y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo. |
 | `supabase/gestor_prueba.sql` | Opcional, solo para desarrollo. Crea solo la cuenta de prueba del gestor en una base que ya tiene datos. |
 
@@ -246,6 +250,7 @@ Si el proyecto de Supabase ya estaba configurado antes de habilitar varias fotos
 - **Servicios**: tabla `servicios`, con sus cotizaciones, fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
 - **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`; las fotos se guardan en el bucket `productos` y sus rutas en `imagenes_rutas`.
 - **Pedidos**: tablas `pedidos` y `pedido_items`. `crear_pedido` registra el pedido usando los precios vigentes de los productos; `cambiar_estado_pedido` permite al administrador y al gestor avanzar o cancelar pedidos y gestiona el stock al confirmar o cancelar.
+- **Pagos**: tablas `pagos` (un registro por intento de pago en Wompi) y `wompi_eventos` (avisos recibidos por el webhook). Solo la API cambia el estado de un pago.
 - **Contacto público**: completa `src/datos/contacto.js` con los datos verificados del negocio antes de publicar el sitio.
 
 ## Pendiente

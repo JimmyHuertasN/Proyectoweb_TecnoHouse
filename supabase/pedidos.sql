@@ -15,6 +15,8 @@
 --     hacerlos están en permisos_tienda.sql (función cambiar_estado_pedido).
 --
 -- Orden: catalogo.sql → pedidos.sql → rol_gestor_tienda.sql → permisos_tienda.sql
+--        → pagos.sql → pagos_wompi.sql → pedidos_lectura_rls.sql
+-- Cada comprador lee sus propios pedidos con las políticas de pedidos_lectura_rls.sql.
 -- Se puede ejecutar varias veces: no borra pedidos existentes.
 -- =====================================================================
 

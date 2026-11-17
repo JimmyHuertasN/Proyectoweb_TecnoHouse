@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { ChevronDown, MessageCircle, ShoppingCart } from "lucide-react";
+import { ChevronDown, MessageCircle, ShoppingCart, TriangleAlert } from "lucide-react";
 import { cambiarEstadoPedido, obtenerPedidos } from "../../api/pedidos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
@@ -13,6 +13,7 @@ import useConfirmar from "../../hooks/useConfirmar.js";
 import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import useToast from "../../hooks/useToast.js";
 import { ESTADOS_PEDIDO } from "../../datos/estadosPedido.js";
+import { incidenciaPago, visualPago } from "../../datos/estadosPago.js";
 import { codigoPedido, formatearFechaHora, formatearPesos } from "../../utilidades/formato.js";
 import { enlaceRespuestaPedido } from "../../utilidades/whatsapp.js";
 import { estaEnRango, normalizarTexto } from "../../utilidades/filtros.js";
@@ -30,6 +31,46 @@ const cumpleFiltrosPedido = (pedido, filtros) => {
         (filtros.estado === "todas" || pedido.estado === filtros.estado) &&
         estaEnRango(pedido.creadoEn, filtros.desde, filtros.hasta)
     );
+};
+
+const EtiquetaPago = ({ estado }) => {
+    const { etiqueta, clases } = visualPago(estado);
+    return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${clases}`}>{etiqueta}</span>;
+};
+
+/* Estado del pago en línea, separado del estado del pedido. */
+const DetallePago = ({ pedido }) => {
+    const { pago } = pedido;
+    const incidencia = incidenciaPago(pedido.estado, pago?.estado);
+
+    return (
+        <div>
+            <h3 className="font-semibold text-white">Pago en línea</h3>
+            {pago ? (
+                <div className="mt-1 space-y-1 text-slate-400">
+                    <p><EtiquetaPago estado={pago.estado} />{pago.metodo && <span className="ml-2">{pago.metodo}</span>}</p>
+                    <p className="text-xs break-all">Referencia: {pago.referencia}</p>
+                    {pago.intentos > 1 && <p className="text-xs">{pago.intentos} intentos de pago</p>}
+                    {pago.mensaje && <p className="text-xs">{pago.mensaje}</p>}
+                </div>
+            ) : (
+                <p className="mt-1 text-slate-400">El cliente no ha iniciado un pago en línea.</p>
+            )}
+            {incidencia && (
+                <p className="mt-2 flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                    <TriangleAlert size={15} className="mt-0.5 shrink-0" aria-hidden="true" /> {incidencia}
+                </p>
+            )}
+        </div>
+    );
+};
+
+/* Lo que pasa con el pago en línea al cambiar el estado: cancelar nunca devuelve el dinero. */
+const notaPagoAlCambiar = (estadoPago, siguienteEstado) => {
+    if (siguienteEstado === "cancelado" && estadoPago === "APPROVED") return " El pago aprobado no se devuelve automáticamente: el reembolso se gestiona aparte con el cliente.";
+    if (siguienteEstado === "cancelado" && estadoPago === "PENDING") return " El cliente tiene un pago en curso; si se aprueba después, quedará marcado para revisión.";
+    if (siguienteEstado === "confirmado" && estadoPago !== "APPROVED") return " Este pedido no tiene un pago en línea aprobado.";
+    return "";
 };
 
 const DetallePedido = ({ pedido }) => {
@@ -72,6 +113,7 @@ const DetallePedido = ({ pedido }) => {
                     <p className="mt-1 text-slate-300">{pedido.clienteNombre}</p>
                     <p className="text-slate-400 tabular-nums">{pedido.clienteTelefono}</p>
                 </div>
+                <DetallePago pedido={pedido} />
                 {direccionEntrega && (
                     <div>
                         <h3 className="font-semibold text-white">Entrega</h3>
@@ -135,9 +177,10 @@ const PedidosTienda = () => {
         const estadoNuevo = ESTADOS_PEDIDO.find((estado) => estado.valor === siguienteEstado)?.etiquetaSingular ?? siguienteEstado;
         const notaStock = siguienteEstado === "confirmado" ? " Se descontará el stock disponible." : "";
         const notaDevolucion = siguienteEstado === "cancelado" && pedido.estado === "confirmado" ? " Las unidades vuelven al inventario." : "";
+        const notaPago = notaPagoAlCambiar(pedido.pago?.estado, siguienteEstado);
         const aceptado = await confirmar({
             titulo: `${ETIQUETAS_ACCION[siguienteEstado]} pedido`,
-            mensaje: `¿Cambiar el pedido ${codigoPedido(pedido.numero)} a ${estadoNuevo.toLowerCase()}?${notaStock}${notaDevolucion}`,
+            mensaje: `¿Cambiar el pedido ${codigoPedido(pedido.numero)} a ${estadoNuevo.toLowerCase()}?${notaStock}${notaDevolucion}${notaPago}`,
         });
         if (!aceptado) return;
 
@@ -157,10 +200,11 @@ const PedidosTienda = () => {
     };
 
     const contarPorEstado = (estado) => pedidos.filter((pedido) => pedido.estado === estado).length;
+    const conIncidencia = pedidos.filter((pedido) => incidenciaPago(pedido.estado, pedido.pago?.estado)).length;
 
     return (
         <>
-            <EncabezadoPagina titulo="Pedidos" descripcion="Pedidos que los clientes registran desde el carrito de la tienda. Confirmar descuenta el stock y cancelar un pedido confirmado lo devuelve.">
+            <EncabezadoPagina titulo="Pedidos" descripcion="Pedidos que los clientes registran desde el carrito de la tienda. Confirmar descuenta el stock (un pago aprobado en línea también lo confirma, una sola vez) y cancelar un pedido confirmado lo devuelve. Cancelar no reembolsa pagos.">
                 <button type="button" onClick={recargarPedidos} disabled={cargando} className="boton-secundario disabled:cursor-wait disabled:opacity-60">
                     ↻ Actualizar
                 </button>
@@ -173,6 +217,12 @@ const PedidosTienda = () => {
             </div>
 
             <Aviso texto={error} tipo="error" />
+            {conIncidencia > 0 && (
+                <Aviso
+                    tipo="info"
+                    texto={`${conIncidencia === 1 ? "Hay 1 pedido" : `Hay ${conIncidencia} pedidos`} con pago aprobado que necesita revisión (pendiente por falta de inventario o cancelado con dinero por devolver). Ábrelo para ver el detalle.`}
+                />
+            )}
             {cargando && <Skeleton tipo="fila" cantidad={4} etiqueta="Cargando pedidos" />}
 
             {!cargando && !error && pedidos.length === 0 && (
@@ -192,7 +242,7 @@ const PedidosTienda = () => {
 
                     <ResultadosPaginados id="pedidos" paginado={paginado}>
                         <div role="region" aria-label="Lista de pedidos" tabIndex={0} className="overflow-x-auto rounded-xl border border-borde focus-visible:outline-2 focus-visible:outline-marca">
-                            <table className="w-full min-w-[62rem] text-left text-sm">
+                            <table className="w-full min-w-[70rem] text-left text-sm">
                                 <caption className="sr-only">Pedidos registrados en la tienda</caption>
                                 <thead className="bg-tarjeta text-xs tracking-wide text-slate-400 uppercase">
                                     <tr>
@@ -201,6 +251,7 @@ const PedidosTienda = () => {
                                         <th scope="col" className="px-4 py-3">Teléfono</th>
                                         <th scope="col" className="px-4 py-3">Total</th>
                                         <th scope="col" className="px-4 py-3">Estado</th>
+                                        <th scope="col" className="px-4 py-3">Pago</th>
                                         <th scope="col" className="px-4 py-3">Fecha</th>
                                         <th scope="col" className="px-4 py-3">Acciones</th>
                                     </tr>
@@ -221,6 +272,14 @@ const PedidosTienda = () => {
                                                     <td className="px-4 py-3 tabular-nums">{pedido.clienteTelefono}</td>
                                                     <td className="px-4 py-3 font-semibold tabular-nums">{formatearPesos(pedido.total)}</td>
                                                     <td className="px-4 py-3"><EtiquetaEstadoPedido estado={pedido.estado} /></td>
+                                                    <td className="px-4 py-3">
+                                                        <span className="inline-flex items-center gap-1.5">
+                                                            <EtiquetaPago estado={pedido.pago?.estado} />
+                                                            {incidenciaPago(pedido.estado, pedido.pago?.estado) && (
+                                                                <TriangleAlert size={16} className="text-amber-300" role="img" aria-label="Necesita revisión" />
+                                                            )}
+                                                        </span>
+                                                    </td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-slate-400">{formatearFechaHora(pedido.creadoEn)}</td>
                                                     <td className="px-4 py-3">
                                                         <div className="flex flex-wrap gap-2">
@@ -234,7 +293,7 @@ const PedidosTienda = () => {
                                                     </td>
                                                 </tr>
                                                 <tr hidden={!expandido}>
-                                                    <td colSpan={7} className="bg-tarjeta/50 px-4 py-5">
+                                                    <td colSpan={8} className="bg-tarjeta/50 px-4 py-5">
                                                         <DetallePedido pedido={pedido} />
                                                     </td>
                                                 </tr>

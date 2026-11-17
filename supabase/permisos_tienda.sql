@@ -252,6 +252,8 @@ begin
     end if;
 
     -- Reintento del mismo cambio (doble clic, red lenta): ya está hecho, no se repite.
+    -- También cubre el pedido que ya confirmó un pago aprobado de Wompi (trigger
+    -- pagos_confirma_pedido en pagos_wompi.sql): el stock no se descuenta otra vez.
     if v_estado = p_estado then
         return;
     end if;
