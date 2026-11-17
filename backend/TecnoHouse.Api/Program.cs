@@ -5,6 +5,7 @@ using Scalar.AspNetCore;
 using TecnoHouse.Api.Data;
 using TecnoHouse.Api.Middleware;
 using TecnoHouse.Api.Models;
+using TecnoHouse.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services
         options.RequireHttpsMetadata = true;
     });
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient<SupabaseAuthAdmin>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
