@@ -51,7 +51,7 @@ import PedidosTienda from "./paginas/admin/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 
 // Se descarga solo cuando el administrador abre la gestión de la tienda.
-const GestionProductos = lazy(() => import("./paginas/admin/GestionProductos.jsx"));
+const GestionProductos = lazy(() => import("./paginas/gestionTienda/GestionProductos.jsx"));
 
 const RedireccionPanel = () => {
     const { pathname, search } = useLocation();
