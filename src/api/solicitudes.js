@@ -76,9 +76,8 @@ export const listarSolicitudes = async (usuarioId) => {
 };
 
 export const obtenerSolicitud = async (usuarioId, id) => {
-    const filas = await llamarApi("/api/servicios");
-    const fila = filas.find((registro) => String(registro.id) === String(id) && registro.clienteId === usuarioId);
-    if (!fila) throw new Error("No encontramos esa solicitud.");
+    const fila = await llamarApi(`/api/servicios/${encodeURIComponent(id)}`);
+    if (fila.clienteId !== usuarioId) throw new Error("No encontramos esa solicitud.");
     return aSolicitud({
         ...fila,
         cliente_id: fila.clienteId,
@@ -115,7 +114,6 @@ export const crearSolicitud = async (usuarioId, { dispositivoId, descripcion, gr
     const fila = await llamarApi("/api/servicios", {
         metodo: "POST",
         datos: {
-            clienteId: usuarioId,
             dispositivoId: Number(dispositivoId),
             problema: descripcionLimpia,
             gravedad,

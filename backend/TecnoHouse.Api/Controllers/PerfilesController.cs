@@ -33,9 +33,9 @@ public sealed class PerfilesController : RecursoController<Perfil>
     }
 
     [HttpPost]
-    public override async Task<ActionResult<Perfil>> Crear([FromBody] Perfil entidad, CancellationToken cancellationToken)
+    public async Task<ActionResult<Perfil>> Crear([FromBody] CrearPerfilRequest request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(entidad.Nombre))
+        if (string.IsNullOrWhiteSpace(request.Nombre))
             return BadRequest(new { error = "El nombre es obligatorio." });
 
         var usuarioId = User.FindFirst("sub")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -47,16 +47,16 @@ public sealed class PerfilesController : RecursoController<Perfil>
             perfil = new Perfil
             {
                 Id = idSesion,
-                Nombre = entidad.Nombre.Trim(),
-                Telefono = string.IsNullOrWhiteSpace(entidad.Telefono) ? null : entidad.Telefono.Trim(),
+                Nombre = request.Nombre.Trim(),
+                Telefono = string.IsNullOrWhiteSpace(request.Telefono) ? null : request.Telefono.Trim(),
                 Rol = RolUsuario.cliente,
             };
             _db.Perfiles.Add(perfil);
         }
         else
         {
-            perfil.Nombre = entidad.Nombre.Trim();
-            perfil.Telefono = string.IsNullOrWhiteSpace(entidad.Telefono) ? null : entidad.Telefono.Trim();
+            perfil.Nombre = request.Nombre.Trim();
+            perfil.Telefono = string.IsNullOrWhiteSpace(request.Telefono) ? null : request.Telefono.Trim();
         }
 
         await _db.SaveChangesAsync(cancellationToken);
