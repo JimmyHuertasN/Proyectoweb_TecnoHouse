@@ -1,4 +1,18 @@
-import { BriefcaseBusiness, ChartNoAxesCombined, House, Inbox, Laptop, LayoutDashboard, ShoppingCart, Store, UserRound, UsersRound, Wrench } from "lucide-react";
+import {
+    BriefcaseBusiness,
+    ChartNoAxesCombined,
+    ClipboardList,
+    House,
+    Inbox,
+    Laptop,
+    LayoutDashboard,
+    PackageSearch,
+    ShoppingCart,
+    Store,
+    UserRound,
+    UsersRound,
+    Wrench,
+} from "lucide-react";
 
 /* Menú lateral de cada rol. "accion" es el botón destacado debajo de los enlaces (opcional). */
 
@@ -30,7 +44,21 @@ export const MENU_ADMIN = {
         { ruta: "/admin/tecnicos", texto: "Técnicos", icono: BriefcaseBusiness },
         { ruta: "/admin/clientes", texto: "Clientes", icono: UsersRound },
         { ruta: "/admin/catalogo", texto: "Tienda", icono: Store },
+        { ruta: "/admin/inventario", texto: "Inventario", icono: PackageSearch },
         { ruta: "/admin/pedidos", texto: "Pedidos", icono: ShoppingCart },
+        { ruta: "/admin/reportes-tienda", texto: "Reportes de tienda", icono: ClipboardList },
         { ruta: "/admin/estadisticas", texto: "Estadísticas", icono: ChartNoAxesCombined },
+    ],
+};
+
+export const MENU_GESTOR_TIENDA = {
+    inicio: "/gestor-tienda",
+    enlaces: [
+        { ruta: "/gestor-tienda", texto: "Resumen", icono: LayoutDashboard, exacta: true },
+        { ruta: "/gestor-tienda/catalogo", texto: "Productos", icono: Store },
+        { ruta: "/gestor-tienda/inventario", texto: "Inventario", icono: PackageSearch },
+        { ruta: "/gestor-tienda/pedidos", texto: "Pedidos", icono: ShoppingCart },
+        { ruta: "/gestor-tienda/reportes", texto: "Reportes", icono: ClipboardList },
+        { ruta: "/gestor-tienda/perfil", texto: "Mi perfil", icono: UserRound },
     ],
 };

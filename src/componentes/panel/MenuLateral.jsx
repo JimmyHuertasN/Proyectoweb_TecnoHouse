@@ -7,7 +7,7 @@ import Logotipo from "../Logotipo.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { iniciales } from "../../utilidades/formato.js";
 
-const NOMBRE_ROL = { cliente: "Cliente", tecnico: "Técnico", admin: "Administrador" };
+const NOMBRE_ROL = { cliente: "Cliente", tecnico: "Técnico", admin: "Administrador", gestor_tienda: "Gestor de tienda" };
 
 // La página activa se reconoce por el fondo claro y la barra azul de la izquierda.
 const clasesEnlace = ({ isActive }) =>
