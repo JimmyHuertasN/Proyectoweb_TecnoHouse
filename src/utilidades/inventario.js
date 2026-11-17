@@ -3,14 +3,21 @@
 // Con esta cantidad o menos, un producto se marca como "por reponer".
 export const POCAS_UNIDADES = 3;
 
+/* "agotado" (0), "pocas" (1 a POCAS_UNIDADES) o "disponible". */
+export const estadoStock = (stock) => {
+    if (stock === 0) return "agotado";
+    return stock <= POCAS_UNIDADES ? "pocas" : "disponible";
+};
+
 export const resumenInventario = (productos) => {
     const activos = productos.filter((producto) => producto.activo);
 
     return {
         total: productos.length,
         activos: activos.length,
-        agotados: activos.filter((producto) => producto.stock === 0).length,
-        pocoStock: activos.filter((producto) => producto.stock > 0 && producto.stock <= POCAS_UNIDADES).length,
+        inactivos: productos.length - activos.length,
+        agotados: activos.filter((producto) => estadoStock(producto.stock) === "agotado").length,
+        pocoStock: activos.filter((producto) => estadoStock(producto.stock) === "pocas").length,
         valor: activos.reduce((suma, producto) => suma + producto.precio * producto.stock, 0),
     };
 };
