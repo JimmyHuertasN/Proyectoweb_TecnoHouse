@@ -1,7 +1,7 @@
 /* Enlaces de WhatsApp con un mensaje ya escrito: consulta de un producto o pedido del carrito. */
 import { CONTACTO } from "../datos/contacto.js";
 import { codigoPedido, formatearPesosWhatsApp } from "./formato.js";
-import { mensajeRespuestaPedido } from "../datos/mensajesPedido.js";
+import { mensajeRespuestaPedido, mensajeSeguimientoPedido } from "../datos/mensajesPedido.js";
 
 const telefonoWhatsApp = CONTACTO.whatsapp.replace(/\D/g, "");
 
@@ -18,9 +18,14 @@ export const enlacePedido = (pedido, lineas) => {
     return enlaceWhatsApp(mensaje);
 };
 
+/*
+    Enlace para escribirle al comprador. Un pendiente recibe la bienvenida con los datos que faltan;
+    en los demás estados se envía un mensaje de seguimiento. null si el teléfono no sirve para WhatsApp.
+*/
 export const enlaceRespuestaPedido = (pedido) => {
     const digitos = String(pedido.clienteTelefono ?? "").replace(/\D/g, "");
     const numero = digitos.length === 10 && digitos.startsWith("3") ? `57${digitos}` : digitos;
     if (numero.length < 8 || numero.length > 15) return null;
-    return `https://wa.me/${numero}?text=${encodeURIComponent(mensajeRespuestaPedido(pedido))}`;
+    const mensaje = pedido.estado === "pendiente" ? mensajeRespuestaPedido(pedido) : mensajeSeguimientoPedido(pedido);
+    return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
 };

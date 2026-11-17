@@ -1,8 +1,10 @@
 /*
     pedidos.js
-    Pedidos de la tienda, guardados y consultados mediante Supabase.
+    Pedidos de la tienda, guardados y consultados mediante Supabase (supabase/pedidos.sql).
+    Leerlos todos y cambiar su estado es solo para el personal de tienda
+    (administrador y gestor), según supabase/permisos_tienda.sql.
 */
-import { estaEnRango } from "../utilidades/filtros.js";
+import { pedidosEntregadosEnRango, sumarTotales } from "../utilidades/reportesTienda.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 const aPedido = (fila) => ({
@@ -11,6 +13,13 @@ const aPedido = (fila) => ({
     clienteNombre: fila.cliente_nombre,
     clienteTelefono: fila.cliente_telefono,
     notas: fila.notas ?? "",
+    // Datos de entrega: los pedidos antiguos no los tienen.
+    entrega: {
+        direccion: fila.direccion_entrega ?? "",
+        ciudad: fila.ciudad_entrega ?? "",
+        departamento: fila.departamento_entrega ?? "",
+        telefonoReceptor: fila.telefono_receptor ?? "",
+    },
     estado: fila.estado,
     total: Number(fila.total),
     creadoEn: fila.creado_en,
@@ -39,7 +48,7 @@ export const crearPedido = async ({ nombre, telefono, notas = "", lineas }) => {
     return { id: respuesta.id, numero: respuesta.numero, total: Number(respuesta.total) };
 };
 
-/* RLS limita esta consulta al administrador y el orden deja primero el pedido más reciente. */
+/* RLS limita esta consulta al personal de tienda y el orden deja primero el pedido más reciente. */
 export const obtenerPedidos = async () => {
     const filas = verificar(
         await obtenerCliente().from("pedidos").select("*, pedido_items(*)").order("creado_en", { ascending: false })
@@ -47,16 +56,16 @@ export const obtenerPedidos = async () => {
     return filas.map(aPedido);
 };
 
+/* La base valida la transición y mueve el stock: confirmar descuenta y cancelar un confirmado lo devuelve. */
 export const cambiarEstadoPedido = async (id, estado) => {
     verificar(await obtenerCliente().rpc("cambiar_estado_pedido", { p_pedido_id: id, p_estado: estado }));
 };
 
-/* El rango usa días locales inclusivos, igual que los reportes del panel. */
+/* Ingresos de pedidos entregados en el rango, con la misma regla de fechas que los reportes de tienda. */
 export const obtenerIngresosTienda = async (desde = "", hasta = "") => {
     const filas = verificar(
-        await obtenerCliente().from("pedidos").select("total, actualizado_en").eq("estado", "entregado")
+        await obtenerCliente().from("pedidos").select("estado, total, actualizado_en").eq("estado", "entregado")
     );
-    return filas
-        .filter((pedido) => estaEnRango(pedido.actualizado_en, desde, hasta))
-        .reduce((suma, pedido) => suma + Number(pedido.total), 0);
+    const pedidos = filas.map((fila) => ({ estado: fila.estado, total: Number(fila.total), actualizadoEn: fila.actualizado_en }));
+    return sumarTotales(pedidosEntregadosEnRango(pedidos, desde, hasta));
 };

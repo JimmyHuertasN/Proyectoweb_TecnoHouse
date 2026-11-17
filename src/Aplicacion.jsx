@@ -47,7 +47,7 @@ import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
 import Estadisticas from "./paginas/admin/Estadisticas.jsx";
 import GestionClientes from "./paginas/admin/GestionClientes.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
-import PedidosTienda from "./paginas/admin/PedidosTienda.jsx";
+import PedidosTienda from "./paginas/gestionTienda/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 
 // Se descarga solo cuando el administrador abre la gestión de la tienda.
