@@ -15,11 +15,10 @@ public abstract class RecursoController<TEntity>(TecnoHouseDbContext db) : Contr
     public virtual async Task<ActionResult<IReadOnlyList<TEntity>>> Listar(CancellationToken cancellationToken) =>
         Ok(await Filas.AsNoTracking().ToListAsync(cancellationToken));
 
-    [HttpPost]
-    public virtual async Task<ActionResult<TEntity>> Crear([FromBody] TEntity entidad, CancellationToken cancellationToken)
+    protected async Task<TEntity> AgregarAsync(TEntity entidad, CancellationToken cancellationToken)
     {
         Filas.Add(entidad);
         await db.SaveChangesAsync(cancellationToken);
-        return StatusCode(StatusCodes.Status201Created, entidad);
+        return entidad;
     }
 }

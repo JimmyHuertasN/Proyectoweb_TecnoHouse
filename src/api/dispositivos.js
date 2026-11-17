@@ -56,7 +56,6 @@ export const crearDispositivo = async (usuarioId, datosFormulario) => {
     const fila = await llamarApi("/api/dispositivos", {
         metodo: "POST",
         datos: {
-            clienteId: usuarioId,
             tipo: datos.tipo,
             marca: datos.marca,
             modelo: datos.modelo,
