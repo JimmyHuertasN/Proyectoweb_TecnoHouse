@@ -46,6 +46,7 @@ import DetalleCliente from "./paginas/admin/DetalleCliente.jsx";
 import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
 import Estadisticas from "./paginas/admin/Estadisticas.jsx";
 import GestionClientes from "./paginas/admin/GestionClientes.jsx";
+import GestionGestores from "./paginas/admin/GestionGestores.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 
@@ -146,6 +147,7 @@ const Aplicacion = () => {
                         <Route path="tecnicos" element={<GestionTecnicos />} />
                         <Route path="clientes" element={<GestionClientes />} />
                         <Route path="clientes/:id" element={<DetalleCliente />} />
+                        <Route path="gestores" element={<GestionGestores />} />
                         <Route path="catalogo" element={paginaProductos} />
                         <Route path="inventario" element={<Inventario />} />
                         <Route path="pedidos" element={<PedidosTienda />} />
