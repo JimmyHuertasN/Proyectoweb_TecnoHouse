@@ -173,7 +173,7 @@ El proyecto utiliza React 19, Vite, React Router, Tailwind CSS 4 y el cliente de
 
 El archivo `README.md` describe la configuración básica de Supabase y enumera varios scripts SQL. Para que todas las funciones estén disponibles, además de las variables de entorno, deben estar aplicados los scripts correspondientes a roles, reseñas, gravedad/categoría, fotos, creación de técnicos, mensajería, notificaciones y catálogo, según los módulos que se vayan a utilizar.
 
-La API se compila y ejecuta con el SDK de .NET 10 (`dotnet run` en `backend/TecnoHouse.Api` o el perfil `TecnoHouse.Api` de Visual Studio). El frontend la encuentra con la variable `VITE_TECNOHOUSE_API_URL`. Para que Visual Studio y Vite puedan trabajar a la vez, `vite.config.js` excluye la carpeta `backend/` de la vigilancia de archivos.
+La API se compila y ejecuta con el SDK de .NET 10 (`dotnet run` en `backend/TecnoHouse.Api` o el perfil `TecnoHouse.Api` de Visual Studio). El frontend la encuentra con la variable `VITE_API_URL`. Para que Visual Studio y Vite puedan trabajar a la vez, `vite.config.js` excluye la carpeta `backend/` de la vigilancia de archivos.
 
 ## 14. Archivos principales por área
 

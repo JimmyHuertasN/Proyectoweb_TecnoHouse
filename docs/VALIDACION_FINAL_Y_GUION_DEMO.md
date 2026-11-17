@@ -36,7 +36,7 @@ El script documenta la contraseña temporal de desarrollo. No reutilizarla en pr
 
 ### Preparación
 
-1. Configurar `.env` con una URL y clave pública de Supabase de desarrollo y `VITE_TECNOHOUSE_API_URL=http://localhost:5100`.
+1. Configurar `.env` con una URL y clave pública de Supabase de desarrollo y `VITE_API_URL=http://localhost:5100`.
 2. Ejecutar las migraciones indicadas en [README.md](../README.md), incluidas funciones RPC, políticas RLS, notificaciones y fotos.
 3. Ejecutar [datos_prueba.sql](../supabase/datos_prueba.sql).
 4. Confirmar que existen al menos un producto activo con stock, un dispositivo libre de María y un técnico disponible.

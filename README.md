@@ -184,11 +184,20 @@ Requisitos: Node.js 20.19 o superior, un proyecto de Supabase y, para la API, el
    ```
    VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
    VITE_SUPABASE_ANON_KEY=tu-clave-publica
-   VITE_TECNOHOUSE_API_URL=http://localhost:5100
+   VITE_API_URL=http://localhost:5100
    ```
    Usa solo la clave **pública** (`anon` o `sb_publishable_...`). La clave secreta (`service_role` o `sb_secret_...`) nunca va en el navegador ni en el repositorio.
 3. Configura e inicia la API según [backend/README.md](./backend/README.md): abre `backend/TecnoHouse.Api.sln` y ejecuta el perfil `TecnoHouse.Api`, o usa `dotnet run` dentro de `backend/TecnoHouse.Api`. Scalar queda en `http://localhost:5100/scalar/v1`.
 4. En otra terminal, ejecuta `npm run dev` y abre la dirección que muestra la terminal. Si cambias el `.env`, reinicia el servidor.
+
+### Pago embebido de Wompi (sandbox)
+
+1. En el `.env` del frontend configura `VITE_API_URL=http://localhost:5100`; conserva las variables de Supabase que ya usa el inicio de sesión. No agregues variables `VITE_` para llaves o secretos de Wompi.
+2. Configura las cuatro opciones de Wompi en User Secrets de `backend/TecnoHouse.Api` (`Wompi:PublicKey`, `Wompi:PrivateKey`, `Wompi:IntegritySecret` y `Wompi:EventsSecret`) con credenciales de sandbox. Mantén los secretos de Supabase existentes.
+3. Inicia la API y el frontend, inicia sesión como cliente y crea un pedido con los datos de entrega completos.
+4. En el resumen del pedido, pulsa **Pagar con Wompi**. Debe abrirse el checkout embebido sobre TecnoHouse y mostrar los datos de envío. La respuesta del backend puede inspeccionarse en la pestaña Network; solo contiene la llave pública y la firma calculada por el backend.
+5. Cierra el widget sin pagar. La app debe navegar a `/pago/resultado/{idPedido}` y mostrar el último estado guardado por la API. Vuelve al detalle del pedido y pulsa de nuevo **Pagar con Wompi**: el backend crea otro intento con una referencia nueva.
+6. Puedes completar un pago de sandbox desde el widget. La confirmación del estado en la app depende de que esté desplegado el webhook de Wompi que actualiza `pagos`; la redirección o el callback del navegador no confirman el pago.
 
 Cada integrante configura sus propios secretos de la API; la contraseña de la base de datos nunca se guarda en el repositorio. Vite no vigila la carpeta `backend/`, así que Visual Studio puede estar abierto mientras corre `npm run dev`.
 
