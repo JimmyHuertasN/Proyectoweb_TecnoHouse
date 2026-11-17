@@ -24,6 +24,8 @@ builder.Services.AddOptions<WompiOptions>()
     .Bind(builder.Configuration.GetSection(WompiOptions.SectionName))
     .ValidateOnStart();
 builder.Services.AddScoped<WompiService>();
+builder.Services.AddScoped<WompiEventoProcesador>();
+builder.Services.AddHostedService<PagosPendientesWompiService>();
 builder.Services.AddHttpClient<WompiApiClient>((serviceProvider, client) =>
 {
     var wompiOptions = serviceProvider.GetRequiredService<IOptions<WompiOptions>>().Value;
