@@ -6,8 +6,8 @@ import { DEPARTAMENTOS_COLOMBIA } from "../../datos/departamentosColombia.js";
 import { obtenerMunicipiosDepartamento } from "../../datos/municipiosPorDepartamento.js";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import useTienda from "../../hooks/useTienda.js";
-import { formatearPesos } from "../../utilidades/formato.js";
-import { enlaceWhatsApp, whatsappConfigurado } from "../../utilidades/whatsapp.js";
+import { codigoPedido, formatearPesos } from "../../utilidades/formato.js";
+import { enlacePedido, whatsappConfigurado } from "../../utilidades/whatsapp.js";
 import BotonPagarWompi from "./BotonPagarWompi.jsx";
 import Aviso from "../Aviso.jsx";
 import ImagenProducto from "../ImagenProducto.jsx";
@@ -202,7 +202,7 @@ const CarritoLateral = () => {
                 {pedidoRegistrado ? (
                     <div role="status" aria-live="polite" className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 text-center">
                         <ShoppingCart className="size-12 text-emerald-400" strokeWidth={1.5} aria-hidden="true" />
-                        <h3 className="mt-4 text-lg font-semibold text-white">Pedido #{pedidoRegistrado.numero} registrado</h3>
+                        <h3 className="mt-4 text-lg font-semibold text-white">Pedido {codigoPedido(pedidoRegistrado.numero)} registrado</h3>
                         <p className="mt-2 text-slate-300">Total confirmado por TecnoHouse: {formatearPesos(pedidoRegistrado.total)}</p>
                         <div className="mt-6 w-full">
                             <BotonPagarWompi idPedido={pedidoRegistrado.id} alCerrarWidget={cerrarPanel} />
@@ -211,8 +211,8 @@ const CarritoLateral = () => {
                             Ver detalle del pedido
                         </Link>
                         {whatsappConfigurado ? (
-                            <a href={enlaceWhatsApp(`Hola, necesito ayuda con mi pedido #${pedidoRegistrado.numero} de TecnoHouse.`)} target="_blank" rel="noopener noreferrer" className="boton-secundario mt-3 w-full py-3 text-base">
-                                <MessageCircle size={18} aria-hidden="true" /> Consultar por WhatsApp
+                            <a href={enlacePedido(pedidoRegistrado, pedidoRegistrado.lineas)} target="_blank" rel="noopener noreferrer" aria-label={`Avisar por WhatsApp el pedido ${codigoPedido(pedidoRegistrado.numero)}`} className="boton-secundario mt-3 w-full py-3 text-base">
+                                <MessageCircle size={18} aria-hidden="true" /> Avisar por WhatsApp
                             </a>
                         ) : (
                             <p className="mt-6 rounded-lg border border-slate-700 p-3 text-sm text-slate-300">Tu pedido ya quedó registrado en TecnoHouse.</p>

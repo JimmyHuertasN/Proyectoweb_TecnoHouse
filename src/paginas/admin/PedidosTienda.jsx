@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { ArrowUpRight, ChevronDown, ShoppingCart } from "lucide-react";
+import { ChevronDown, MessageCircle, ShoppingCart } from "lucide-react";
 import { cambiarEstadoPedido, obtenerPedidos } from "../../api/pedidos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
@@ -12,7 +12,8 @@ import useConfirmar from "../../hooks/useConfirmar.js";
 import { useFiltroPaginado } from "../../hooks/useFiltroPaginado.js";
 import useToast from "../../hooks/useToast.js";
 import { ESTADOS_PEDIDO } from "../../datos/estadosPedido.js";
-import { formatearFechaHora, formatearPesos } from "../../utilidades/formato.js";
+import { codigoPedido, formatearFechaHora, formatearPesos } from "../../utilidades/formato.js";
+import { enlaceRespuestaPedido } from "../../utilidades/whatsapp.js";
 import { normalizarTexto } from "../../utilidades/filtros.js";
 
 const FILTROS_VACIOS = { texto: "", estado: "todas" };
@@ -25,13 +26,6 @@ const cumpleFiltrosPedido = (pedido, filtros) => {
     return coincideTexto && (filtros.estado === "todas" || pedido.estado === filtros.estado);
 };
 
-const obtenerTelefonoWhatsApp = (telefono) => {
-    const digitos = String(telefono ?? "").replace(/\D/g, "");
-    // Los números colombianos de diez dígitos necesitan el prefijo del país para wa.me.
-    const numero = digitos.length === 10 ? `57${digitos}` : digitos;
-    return numero.length >= 8 && numero.length <= 15 ? numero : "";
-};
-
 const PedidoEstado = ({ estado }) => {
     const datos = ESTADOS_PEDIDO.find((opcion) => opcion.valor === estado);
     return (
@@ -42,8 +36,7 @@ const PedidoEstado = ({ estado }) => {
 };
 
 const DetallePedido = ({ pedido }) => {
-    const telefono = obtenerTelefonoWhatsApp(pedido.clienteTelefono);
-    const mensaje = encodeURIComponent(`Hola, te escribimos de TecnoHouse sobre el pedido #${pedido.numero}.`);
+    const enlaceRespuesta = enlaceRespuestaPedido(pedido);
 
     return (
         <div id={`detalle-pedido-${pedido.id}`} className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
@@ -79,13 +72,15 @@ const DetallePedido = ({ pedido }) => {
                     <h3 className="font-semibold text-white">Notas</h3>
                     <p className="mt-1 whitespace-pre-wrap text-slate-400">{pedido.notas || "Sin notas."}</p>
                 </div>
-                {telefono ? (
-                    <a href={`https://wa.me/${telefono}?text=${mensaje}`} target="_blank" rel="noopener noreferrer" className="boton-secundario w-full">
-                        <ArrowUpRight size={16} aria-hidden="true" /> Escribir por WhatsApp
+                {pedido.estado === "pendiente" && (enlaceRespuesta ? (
+                    <a href={enlaceRespuesta} target="_blank" rel="noopener noreferrer" aria-label={`Responder al pedido ${codigoPedido(pedido.numero)} por WhatsApp`} className="boton-secundario w-full">
+                        <MessageCircle size={16} aria-hidden="true" /> Responder por WhatsApp
                     </a>
                 ) : (
-                    <p className="text-slate-500">No hay un teléfono válido para abrir WhatsApp.</p>
-                )}
+                    <button type="button" disabled aria-label={`No se puede responder al pedido ${codigoPedido(pedido.numero)}: el teléfono del cliente no es válido`} title="El teléfono del cliente no es válido" className="boton-secundario w-full cursor-not-allowed opacity-50">
+                        <MessageCircle size={16} aria-hidden="true" /> Responder por WhatsApp
+                    </button>
+                ))}
             </div>
         </div>
     );
@@ -130,7 +125,7 @@ const PedidosTienda = () => {
         const notaDevolucion = siguienteEstado === "cancelado" && pedido.estado === "confirmado" ? " Se devolverá el stock apartado." : "";
         const aceptado = await confirmar({
             titulo: `${ETIQUETAS_ACCION[siguienteEstado]} pedido`,
-            mensaje: `¿Cambiar el pedido #${pedido.numero} a ${estadoNuevo.toLowerCase()}?${notaStock}${notaDevolucion}`,
+            mensaje: `¿Cambiar el pedido ${codigoPedido(pedido.numero)} a ${estadoNuevo.toLowerCase()}?${notaStock}${notaDevolucion}`,
         });
         if (!aceptado) return;
 
@@ -138,7 +133,7 @@ const PedidosTienda = () => {
         setOcupadoId(pedido.id);
         try {
             await cambiarEstadoPedido(pedido.id, siguienteEstado);
-            toast.exito(`El pedido #${pedido.numero} quedó ${estadoNuevo.toLowerCase()}.`);
+            toast.exito(`El pedido ${codigoPedido(pedido.numero)} quedó ${estadoNuevo.toLowerCase()}.`);
             await recargarPedidos();
         } catch (errorApi) {
             // La API conserva el mensaje de Supabase, incluido el motivo de falta de stock.
@@ -201,7 +196,7 @@ const PedidosTienda = () => {
                                                 <tr className="bg-fondo/60">
                                                     <td className="px-4 py-3">
                                                         <button type="button" aria-expanded={expandido} aria-controls={`detalle-pedido-${pedido.id}`} onClick={() => setPedidoAbierto(expandido ? "" : pedido.id)} className="inline-flex min-h-10 items-center gap-2 font-semibold text-marca hover:underline">
-                                                            #{pedido.numero}<ChevronDown size={16} className={expandido ? "rotate-180 transition-transform" : "transition-transform"} aria-hidden="true" />
+                                                            {codigoPedido(pedido.numero)}<ChevronDown size={16} className={expandido ? "rotate-180 transition-transform" : "transition-transform"} aria-hidden="true" />
                                                         </button>
                                                     </td>
                                                     <td className="px-4 py-3 font-medium text-white">{pedido.clienteNombre}</td>
