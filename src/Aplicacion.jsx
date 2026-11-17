@@ -6,7 +6,7 @@ import RutaProtegida from "./componentes/RutaProtegida.jsx";
 import ProveedorSesion from "./contexto/ProveedorSesion.jsx";
 import ProveedorConfirmacion from "./contexto/ProveedorConfirmacion.jsx";
 import ProveedorToast from "./contexto/ProveedorToast.jsx";
-import { MENU_ADMIN, MENU_CLIENTE, MENU_TECNICO } from "./datos/menus.js";
+import { MENU_ADMIN, MENU_CLIENTE, MENU_GESTOR_TIENDA, MENU_TECNICO } from "./datos/menus.js";
 
 // Sitio público
 import NoEncontrada from "./paginas/NoEncontrada.jsx";
@@ -47,11 +47,25 @@ import DetalleServicioAdmin from "./paginas/admin/DetalleServicioAdmin.jsx";
 import Estadisticas from "./paginas/admin/Estadisticas.jsx";
 import GestionClientes from "./paginas/admin/GestionClientes.jsx";
 import GestionTecnicos from "./paginas/admin/GestionTecnicos.jsx";
-import PedidosTienda from "./paginas/gestionTienda/PedidosTienda.jsx";
 import TodosLosServicios from "./paginas/admin/TodosLosServicios.jsx";
 
-// Se descarga solo cuando el administrador abre la gestión de la tienda.
+// Gestión de la tienda: la comparten el administrador y el gestor de tienda.
+import Inventario from "./paginas/gestionTienda/Inventario.jsx";
+import PedidosTienda from "./paginas/gestionTienda/PedidosTienda.jsx";
+import ReportesTienda from "./paginas/gestionTienda/ReportesTienda.jsx";
+
+// Panel del gestor de tienda
+import PerfilGestor from "./paginas/gestor/PerfilGestor.jsx";
+import ResumenGestor from "./paginas/gestor/ResumenGestor.jsx";
+
+// Se descarga solo cuando alguien abre la gestión de productos.
 const GestionProductos = lazy(() => import("./paginas/gestionTienda/GestionProductos.jsx"));
+
+const paginaProductos = (
+    <Suspense fallback={<Skeleton tipo="fila" cantidad={4} etiqueta="Cargando catálogo" />}>
+        <GestionProductos />
+    </Suspense>
+);
 
 const RedireccionPanel = () => {
     const { pathname, search } = useLocation();
@@ -132,16 +146,28 @@ const Aplicacion = () => {
                         <Route path="tecnicos" element={<GestionTecnicos />} />
                         <Route path="clientes" element={<GestionClientes />} />
                         <Route path="clientes/:id" element={<DetalleCliente />} />
-                        <Route
-                            path="catalogo"
-                            element={
-                                <Suspense fallback={<Skeleton tipo="fila" cantidad={4} etiqueta="Cargando catálogo" />}>
-                                    <GestionProductos />
-                                </Suspense>
-                            }
-                        />
+                        <Route path="catalogo" element={paginaProductos} />
+                        <Route path="inventario" element={<Inventario />} />
                         <Route path="pedidos" element={<PedidosTienda />} />
+                        <Route path="reportes-tienda" element={<ReportesTienda />} />
                         <Route path="estadisticas" element={<Estadisticas />} />
+                    </Route>
+
+                    {/* Panel del gestor de tienda: solo la tienda, sin reparaciones ni usuarios. */}
+                    <Route
+                        path="/gestor-tienda"
+                        element={
+                            <RutaProtegida rolesPermitidos={["gestor_tienda"]}>
+                                <DisenoPanel menu={MENU_GESTOR_TIENDA} />
+                            </RutaProtegida>
+                        }
+                    >
+                        <Route index element={<ResumenGestor />} />
+                        <Route path="catalogo" element={paginaProductos} />
+                        <Route path="inventario" element={<Inventario />} />
+                        <Route path="pedidos" element={<PedidosTienda />} />
+                        <Route path="reportes" element={<ReportesTienda />} />
+                        <Route path="perfil" element={<PerfilGestor />} />
                     </Route>
 
                     <Route path="*" element={<NoEncontrada />} />
