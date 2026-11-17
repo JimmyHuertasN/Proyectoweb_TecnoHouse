@@ -18,6 +18,10 @@ public sealed class WompiOptions
     public string ResultPageBaseUrl { get; init; } = "";
     // Null desactiva expiration-time; un entero positivo define la vigencia en minutos.
     public int? ExpirationMinutes { get; init; }
+    // Cada cuántos minutos la tarea de respaldo revisa los pagos pendientes.
+    public int ReconciliationIntervalMinutes { get; init; } = 5;
+    // Un pago solo se consulta a Wompi cuando lleva al menos estos minutos pendiente.
+    public int PendingMinAgeMinutes { get; init; } = 10;
 
     public Uri GetApiBaseUri() => string.Equals(Environment, Production, StringComparison.OrdinalIgnoreCase)
         ? new Uri(ProductionApiBaseUrl.TrimEnd('/') + "/", UriKind.Absolute)
@@ -77,6 +81,9 @@ public sealed class WompiOptionsValidator : IValidateOptions<WompiOptions>
 
         if (options.ExpirationMinutes is <= 0)
             errores.Add("Wompi:ExpirationMinutes debe ser un entero positivo o null para no usar expiración.");
+
+        if (options.ReconciliationIntervalMinutes <= 0 || options.PendingMinAgeMinutes <= 0)
+            errores.Add("Wompi:ReconciliationIntervalMinutes y Wompi:PendingMinAgeMinutes deben ser enteros positivos.");
 
         return errores.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(errores);
     }
