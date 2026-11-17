@@ -147,13 +147,14 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
             return Unauthorized(new { error = "El token no contiene un usuario válido." });
 
         const string sql = """
-            with rol as materialized (
-                select public.rol_actual()::text as nombre
+            with personal as materialized (
+                -- Administrador o gestor de tienda (supabase/permisos_tienda.sql).
+                select public.es_personal_tienda() as tienda
             ), pedidos_visibles as materialized (
                 select p.id, p.numero, p.creado_en, p.total, p.estado
                 from public.pedidos p
-                cross join rol r
-                where r.nombre = 'admin' or p.usuario_id = @usuario_id
+                cross join personal r
+                where r.tienda or p.usuario_id = @usuario_id
             ), pagina as (
                 select *
                 from pedidos_visibles
@@ -260,9 +261,8 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
                 )
             )::text
             from public.pedidos p
-            cross join (select public.rol_actual()::text as nombre) rol
             where p.id = @pedido_id
-              and (rol.nombre = 'admin' or p.usuario_id = @usuario_id)
+              and (public.es_personal_tienda() or p.usuario_id = @usuario_id)
             limit 1;
             """;
 

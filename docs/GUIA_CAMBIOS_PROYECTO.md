@@ -277,6 +277,16 @@ Nuevo rol `gestor_tienda` ("Gestor de tienda") con su panel en `/gestor-tienda`:
 
 **API:** `POST /api/gestores` crea la cuenta con la API administrativa de Supabase Auth; la clave secreta queda solo en el servidor.
 
+## 19. Gestor de tienda junto con la pasarela Wompi
+
+Se unió `main` (pedidos con datos de entrega, checkout de Wompi, webhook, consulta de respaldo y **Mis pedidos**) con la rama del gestor de tienda. Ambas partes se conservan.
+
+- **Pedidos del personal:** la lista de pedidos de tienda trae también los pagos. El panel muestra el estado del pedido y el del pago por separado y marca los pagos aprobados que necesitan revisión. Las etiquetas de pago están en `src/datos/estadosPago.js`, que también usan **Mis pedidos** y su detalle.
+- **API:** `GET /api/pedidos/{id}` y `GET /api/pedidos/mis-pedidos` aceptan al personal de tienda (administrador o gestor) con `es_personal_tienda()`, la misma función de las políticas RLS. Iniciar un pago y consultar su estado siguen siendo solo del comprador.
+- **Base de datos:** `supabase/pagos.sql` versiona las tablas `pagos` y `wompi_eventos`, que solo existían en la base, deja al gestor leer los pagos de pedidos y quita la escritura directa. `pagos_wompi.sql` ahora también crea el trigger `pagos_confirma_pedido`.
+- **Stock:** el trigger de pagos y `cambiar_estado_pedido` solo descuentan al pasar de `pendiente` a `confirmado`, así que nunca se descuenta dos veces. Detalle en [GESTOR_TIENDA.md](./GESTOR_TIENDA.md#pagos-en-línea-wompi).
+- **Configuración:** el frontend lee la dirección del API de `VITE_API_URL` (antes `VITE_TECNOHOUSE_API_URL`).
+
 ## Nota de implementación
 
 Esta guía describe el código y los cambios observables en el historial revisado; no confirma que el proyecto esté desplegado ni que cada script SQL ya se haya ejecutado en la instancia de Supabase. Para habilitar los módulos conectados a datos, hay que aplicar las migraciones pertinentes y configurar Auth, almacenamiento y políticas en el proyecto de Supabase utilizado.

@@ -15,6 +15,7 @@ El gestor administra la tienda (productos, inventario, pedidos y reportes) sin v
 | Ver pedidos y cambiar su estado | Leer la lista de perfiles (solo ve el suyo y los técnicos, como cualquier usuario con sesión) |
 | Escribir al comprador por WhatsApp | Cambiar su rol o el de otra cuenta |
 | Ver reportes de la tienda y descargarlos en CSV | Subir archivos a otros buckets |
+| Ver el estado del pago en línea de cada pedido | Aprobar, modificar o reembolsar pagos; ver los eventos de Wompi o los pagos de reparaciones |
 | Editar su nombre y teléfono | |
 
 El registro público sigue creando solo clientes. Solo el administrador crea gestores.
@@ -48,6 +49,23 @@ El administrador ve las mismas páginas de tienda en `/admin/catalogo`, `/admin/
 - **Ajustes de inventario:** el stock no se puede escribir directamente. Los botones − y + usan `ajustar_stock_producto`, que suma o resta sobre el valor real. Escribir una cantidad exacta usa `fijar_stock_producto`, que solo guarda si el stock sigue siendo el que se veía; si alguien lo cambió, avisa cuántas unidades hay ahora.
 - **Historial:** cada línea del pedido guarda el nombre y el precio con los que se vendió.
 
+### Pagos en línea (Wompi)
+
+El pedido y el pago tienen estados distintos. En **Pedidos** se ven en columnas separadas (*Estado* y *Pago*), y el detalle muestra el método, la referencia y la nota del pago. Solo el API cambia un pago: el webhook (`POST /api/pagos/wompi/webhook`) o la consulta de respaldo a Wompi, que corre cada 5 minutos.
+
+| Situación | Qué pasa |
+|---|---|
+| Se aprueba el pago de un pedido `pendiente` | El trigger `pagos_confirma_pedido` lo pasa a `confirmado` y descuenta el stock |
+| Llega el mismo aviso otra vez, o la consulta de respaldo lo repite | Nada: el pago solo pasa de `PENDING` a un estado final una vez y cada aviso se registra por su checksum |
+| El personal confirmó el pedido a mano y después se aprueba el pago | El pago queda aprobado y el stock no se descuenta otra vez |
+| Se aprueba el pago y no alcanza el inventario | El pedido sigue `pendiente`, el pago queda aprobado con una nota y el panel lo marca para revisión. Al reponer stock, el personal lo confirma |
+| Se aprueba el pago de un pedido ya `cancelado` o `entregado` | No cambia el stock ni el pedido; el pago queda con una nota de revisión manual |
+| Se cancela un pedido pagado | Si estaba confirmado, las unidades vuelven una vez. El pago sigue aprobado: **no es un reembolso** y el dinero se devuelve por fuera de la aplicación |
+
+El trigger y `cambiar_estado_pedido` bloquean la misma fila del pedido y solo descuentan al pasar de `pendiente` a `confirmado`; por eso, llegue primero el pago o la confirmación manual, el stock baja una sola vez.
+
+Un pedido puede tener varios intentos de pago (por ejemplo, uno rechazado y otro aprobado). El panel muestra el aprobado si existe; si no, el más reciente.
+
 ## Fechas de los reportes
 
 | Reporte | Qué fecha usa |
@@ -59,6 +77,8 @@ El administrador ve las mismas páginas de tienda en `/admin/catalogo`, `/admin/
 
 Los pendientes y confirmados nunca cuentan como ingreso. El valor del inventario (precio × stock) se muestra aparte y no es un ingreso.
 
+Los reportes cuentan pedidos, no pagos: un pedido con varios intentos de pago cuenta una sola vez, y un pedido cancelado con pago aprobado no suma como ingreso.
+
 ## Scripts y orden de ejecución
 
 En **Supabase → SQL Editor**, cada archivo en su propio *Run*:
@@ -67,10 +87,17 @@ En **Supabase → SQL Editor**, cada archivo en su propio *Run*:
 |---|---|---|
 | 1 | `supabase/rol_gestor_tienda.sql` | Agrega `gestor_tienda` al enum `rol_usuario`. Debe quedar guardado antes del paso 2. |
 | 2 | `supabase/permisos_tienda.sql` | Permisos de productos, imágenes y pedidos para administrador y gestor, funciones de stock, `cambiar_estado_pedido` y administración de gestores. |
-| 3 | `supabase/gestor_prueba.sql` | Solo en desarrollo: crea la cuenta de prueba del gestor. |
-| 4 | `supabase/pruebas_gestor_tienda.sql` | Solo en desarrollo: verificaciones (ver abajo). |
+| 3 | `supabase/pagos.sql` | Tablas `pagos` y `wompi_eventos` con permisos de solo lectura; el gestor ve los pagos de pedidos. |
+| 4 | `supabase/pagos_wompi.sql` | Función para registrar intentos de pago y trigger que confirma el pedido al aprobarse el pago. |
+| 5 | `supabase/pedidos_lectura_rls.sql` | Cada comprador lee sus pedidos, productos y pagos. |
+| 6 | `supabase/gestor_prueba.sql` | Solo en desarrollo: crea la cuenta de prueba del gestor. |
+| 7 | `supabase/pruebas_gestor_tienda.sql` | Solo en desarrollo: verificaciones (ver abajo). |
 
 En una base nueva, antes van `catalogo.sql` y `pedidos.sql`, y `datos_prueba.sql` ya incluye al gestor.
+
+**En la base del proyecto** ya están aplicados todos los pasos (el 2026-11-17 se ejecutaron `pagos.sql` y otra vez `pagos_wompi.sql`). Ninguno borra pagos, pedidos ni cuentas.
+
+**`pagos.sql` reconstruido:** las tablas `pagos` y `wompi_eventos`, el enum `estado_pago` y los triggers existían en la base, pero no en el repositorio. Se reconstruyeron el 2026-11-17 con consultas de solo lectura. Además quita a `anon` y `authenticated` los permisos de escritura directa sobre esas tablas (antes los bloqueaba solo RLS); el API y las funciones siguen escribiendo como antes.
 
 Todos se pueden repetir. Volver a ejecutar `catalogo.sql` o `pedidos.sql` no le quita el acceso al gestor: los permisos de la tienda solo están en `permisos_tienda.sql`.
 
@@ -145,9 +172,38 @@ Todo lo creado en estas pruebas se borró; la base terminó con los mismos 12 pr
 
 Las transiciones de pedidos se probaron en SQL y no en la interfaz, para no cambiar el estado de los pedidos que el equipo ya tenía.
 
+### Integración con la pasarela Wompi (2026-11-17)
+
+Se unió `main` (pasarela Wompi) con esta rama. Resultados:
+
+| Verificación | Resultado |
+|---|---|
+| `npm run lint` | Sin errores; las mismas 3 advertencias de antes. |
+| `npm run build` | Correcto. |
+| `dotnet build backend/TecnoHouse.Api.sln` | Correcto, sin advertencias. |
+| `dotnet test backend/TecnoHouse.Api.sln` | **15 de 15 pruebas bien** (firmas, referencias, webhook y respaldo de Wompi). |
+| Recorrido en el navegador (Chrome, API y Wompi Sandbox) | **49 comprobaciones bien**, en tres tandas sobre el mismo pedido (la primera se cortó por un error del propio script de prueba al leer el monto; se corrigió y se retomó desde ese punto). Detalle abajo. |
+| `pagos.sql` y `pagos_wompi.sql` en la base del proyecto | Aplicados. Comprobado después: política `pagos_tienda_select`, solo lectura para `authenticated` en `pagos` y `wompi_eventos`, y los triggers `pagos_actualizado` y `pagos_confirma_pedido`. |
+| `supabase/pruebas_gestor_tienda.sql` con los casos de pagos | **57 de 57 pruebas bien.** No dejó datos (ni producto ni pagos de prueba). |
+| El gestor en el navegador después de los scripts | Ve el pago de los pedidos (11 de 17 tienen pago), el aprobado entre varios intentos (pedido #20, 3 intentos) y el aviso de revisión del pedido #21. |
+
+El recorrido comprobó:
+
+- **Navegación:** cliente, administrador, gestor y técnico entran a su panel y abren todas las secciones de su menú sin errores; cada uno queda bloqueado fuera de los paneles ajenos. El cliente tiene **Mis pedidos**; el administrador conserva **Gestores de tienda**, **Pedidos** e **Inventario**.
+- **Compra:** el cliente crea un pedido con datos de entrega (sin descontar stock), lo ve en **Mis pedidos** y en su detalle, y **Pagar con Wompi** abre el checkout de Sandbox y registra el intento `PENDING`.
+- **Permisos del API:** el gestor consulta el detalle del pedido; un técnico no puede ver el pedido ni su pago.
+- **Webhook:** un aviso con checksum falso se rechaza (401); el aviso firmado `APPROVED` se acepta. Con el pedido ya confirmado a mano, el pago queda aprobado y el stock no baja otra vez; el mismo aviso repetido, un aviso nuevo de la misma transacción y otra confirmación manual tampoco lo cambian.
+- **Cancelación de un pedido pagado:** el diálogo avisa que el pago no se devuelve automáticamente; la unidad vuelve al inventario una vez, el pago sigue aprobado, el panel marca el pedido para revisión y un aviso posterior no toca el stock.
+- **Consulta de respaldo:** el API consultó Wompi Sandbox 35 veces sin errores y aplicó tres pagos hechos antes en el widget, cuyo webhook no podía llegar a `localhost`. Por ejemplo, el pedido #20 tenía un intento con error y otro aprobado: quedó confirmado una sola vez.
+- **Reportes y pantallas:** cada pedido aparece una sola vez aunque tenga varios pagos; los reportes cargan; las páginas de pedidos de tienda y del cliente no se desbordan a 360, 768 y 1440 px.
+
+Quedó en la base el pedido de prueba **#21** (María López), cancelado y con un pago aprobado de prueba (transacción `prueba-integracion-…`), para mostrar el aviso de revisión. Su stock quedó como estaba.
+
 ### Limitaciones conocidas
 
-- **Carrito de `main` y la base remota:** en la base del proyecto, la versión de `crear_pedido` sin datos de entrega está deshabilitada (responde "Esta firma ya no está habilitada"), pero `src/api/pedidos.js` de `main` todavía la usa. El flujo nuevo con datos de entrega y pagos está en la rama `pasarela-pagos`. Este trabajo no cambia la creación de pedidos.
+- **Otra base de datos:** en una instalación sin `pagos.sql`, el gestor ve los pedidos con el pago "Sin iniciar", porque solo el administrador y el comprador pueden leer pagos.
+- **Reembolsos:** cancelar un pedido pagado no devuelve el dinero; la aplicación lo marca para revisión, pero el reembolso se hace por fuera. No hay módulo de reembolsos ni reservas de stock.
+- **Webhook en desarrollo:** Wompi no puede llamar a `localhost`; en local los pagos se actualizan con la consulta de respaldo (cada 5 minutos, para pagos con más de 10 minutos pendientes).
 - **Stock y código anterior:** después de `permisos_tienda.sql`, el stock solo cambia con las funciones nuevas. Una copia del proyecto sin estos cambios no podrá usar sus botones de stock hasta actualizarse.
 - **Crear gestores desde la app** necesita `Supabase:ServiceRoleKey` en los secretos del API. Sin ella funciona **Dar acceso** con una cuenta de cliente existente.
 - Las tablas de pedidos y productos del panel se desplazan horizontalmente dentro de su recuadro en celulares, igual que las demás tablas del panel.

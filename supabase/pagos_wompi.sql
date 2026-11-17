@@ -1,5 +1,6 @@
 -- Registra el proveedor del intento de pago. En la tabla existente, pedido_id
 -- puede ser NULL porque pagos también admite intentos asociados a cotizaciones.
+-- Orden: pedidos.sql → pagos.sql → este archivo → pedidos_lectura_rls.sql
 begin;
 
 alter table public.pagos
@@ -130,6 +131,14 @@ begin
     return new;
 end;
 $function$;
+
+-- Ejecuta la función anterior cuando se crea un pago o cambia su estado. Antes este
+-- trigger solo existía en la base; se versiona aquí para poder reproducirla.
+-- Convive con cambiar_estado_pedido (permisos_tienda.sql): las dos bloquean el pedido y
+-- solo descuentan stock al pasar de "pendiente" a "confirmado", así que nunca dos veces.
+create or replace trigger pagos_confirma_pedido
+after insert or update of estado on public.pagos
+for each row execute function public.pagos_confirmar_pedido();
 
 -- Permite iniciar pagos sin conceder INSERT general sobre pagos. La función debe
 -- ejecutarse como el propietario (postgres), valida auth.uid(), dueño, estado y total.

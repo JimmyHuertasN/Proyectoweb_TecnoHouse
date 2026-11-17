@@ -1,7 +1,8 @@
 -- =====================================================================
 -- pruebas_gestor_tienda.sql
--- Verifica permisos del gestor de tienda, transiciones de pedidos y stock.
+-- Verifica permisos del gestor de tienda, transiciones de pedidos, pagos y stock.
 -- SOLO PARA DESARROLLO, con las cuentas de datos_prueba.sql y gestor_prueba.sql.
+-- Necesita también pagos.sql, pagos_wompi.sql y pedidos_lectura_rls.sql.
 --
 -- Simula cada rol dentro de la base: cambia a "authenticated" y pone el id
 -- del usuario en el JWT, igual que hacen Supabase y el API. Crea un producto y
@@ -52,6 +53,27 @@ begin
 end;
 $$;
 
+-- Pedido de prueba del usuario actual con un producto y una cantidad.
+create function pg_temp.nuevo_pedido(p_producto uuid, p_cantidad integer) returns uuid language plpgsql as $$
+begin
+    return (public.crear_pedido('María López', '3104444444', '', jsonb_build_array(jsonb_build_object('producto_id', p_producto, 'cantidad', p_cantidad)),
+        'Calle 1 # 2-3', 'Valledupar', 'Cesar', 'CO', '3001234567') ->> 'id')::uuid;
+end;
+$$;
+
+-- Intento de pago Wompi del pedido, como lo registra el API (monto = total en centavos).
+create function pg_temp.iniciar_pago(p_pedido uuid) returns uuid language plpgsql as $$
+begin
+    return public.registrar_pago_wompi_pedido(p_pedido, 'PRUEBA-' || replace(gen_random_uuid()::text, '-', ''),
+        (select round(total * 100)::bigint from public.pedidos where id = p_pedido));
+end;
+$$;
+
+-- Lo que hace el API al recibir el webhook o la consulta de respaldo: PENDING → APPROVED una sola vez.
+create function pg_temp.aprobar(p_pago uuid) returns void language sql as $$
+    update public.pagos set estado = 'APPROVED', finalizado_en = now() where id = p_pago and estado = 'PENDING';
+$$;
+
 do $$
 declare
     admin   constant uuid := 'a0000000-0000-4000-8000-000000000001';
@@ -60,6 +82,10 @@ declare
     gestor  uuid;
     producto constant uuid := 'e0000000-0000-4000-8000-0000000000aa';
     pedido_a uuid; pedido_b uuid; pedido_c uuid; pedido_d uuid;
+    pedido_e uuid; pedido_f uuid; pedido_g uuid; pedido_h uuid; pedido_i uuid;
+    pago_e uuid; pago_f uuid; pago_g uuid; pago_h uuid; pago_i uuid;
+    estado_pago text;
+    mensaje text;
     quien text;
     stock integer;
     estado text;
@@ -165,8 +191,87 @@ begin
     perform pg_temp.anotar('Admin devuelve el rol de gestor', public.conceder_rol_gestor('gestor.tienda@tecnohouse.test') = gestor);
     perform pg_temp.como(null);
 
-    -- Limpieza: primero los pedidos (el producto no se puede borrar mientras aparezca en ellos).
-    delete from public.pedidos where id in (pedido_a, pedido_b, pedido_c, pedido_d);
+    -- 9. Pagos de Wompi. El editor SQL hace de API: cambia el estado del pago y el
+    --    trigger pagos_confirma_pedido confirma el pedido y descuenta el stock.
+    update public.productos set stock = 10 where id = producto;
+    perform pg_temp.como(cliente);
+    pedido_e := pg_temp.nuevo_pedido(producto, 2); pago_e := pg_temp.iniciar_pago(pedido_e);
+    pedido_f := pg_temp.nuevo_pedido(producto, 3); pago_f := pg_temp.iniciar_pago(pedido_f);
+    pedido_g := pg_temp.nuevo_pedido(producto, 4); pago_g := pg_temp.iniciar_pago(pedido_g);
+    pedido_h := pg_temp.nuevo_pedido(producto, 4); pago_h := pg_temp.iniciar_pago(pedido_h);
+    pedido_i := pg_temp.nuevo_pedido(producto, 1); pago_i := pg_temp.iniciar_pago(pedido_i);
+    perform pg_temp.debe_fallar('Cliente no puede aprobar su propio pago', format('update public.pagos set estado = ''APPROVED'' where id = %L', pago_e));
+
+    perform pg_temp.como(gestor);
+    perform pg_temp.anotar('Gestor ve el pago de un pedido', pg_temp.contar(format('select 1 from public.pagos where id = %L', pago_e)) = 1);
+    perform pg_temp.anotar('Gestor no ve pagos de cotizaciones', pg_temp.contar('select 1 from public.pagos where cotizacion_id is not null') = 0);
+    perform pg_temp.anotar('Gestor no ve los eventos de Wompi', pg_temp.contar('select 1 from public.wompi_eventos') = 0);
+    perform pg_temp.debe_fallar('Gestor no puede aprobar ni modificar pagos', format('update public.pagos set estado = ''APPROVED'' where id = %L', pago_e));
+    perform pg_temp.debe_fallar('Gestor no puede crear pagos', format('insert into public.pagos (referencia, pedido_id, monto_centavos) values (''PRUEBA-GESTOR'', %L, 100)', pedido_e));
+    perform pg_temp.debe_fallar('Gestor no puede iniciar el pago de un pedido ajeno', format('select pg_temp.iniciar_pago(%L)', pedido_e));
+    perform pg_temp.como(null);
+
+    -- Pago aprobado: confirma y descuenta una vez, aunque el aviso llegue repetido.
+    perform pg_temp.aprobar(pago_e);
+    select p.estado into estado from public.pedidos p where id = pedido_e;
+    select p.stock into stock from public.productos p where id = producto;
+    perform pg_temp.anotar('Pago aprobado confirma el pedido y descuenta stock (10 - 2)', estado = 'confirmado' and stock = 8, format('%s, stock = %s', estado, stock));
+    perform pg_temp.aprobar(pago_e);
+    update public.pagos set estado = 'APPROVED' where id = pago_e;
+    select p.stock into stock from public.productos p where id = producto;
+    perform pg_temp.anotar('Repetir el webhook o la consulta no descuenta otra vez', stock = 8, format('stock = %s', stock));
+    perform pg_temp.como(gestor);
+    perform public.cambiar_estado_pedido(pedido_e, 'confirmado');
+    perform public.cambiar_estado_pedido(pedido_e, 'entregado');
+    perform pg_temp.como(null);
+    select p.estado into estado from public.pedidos p where id = pedido_e;
+    select p.stock into stock from public.productos p where id = producto;
+    perform pg_temp.anotar('Confirmar a mano un pedido ya pagado y entregarlo no descuenta otra vez', estado = 'entregado' and stock = 8, format('%s, stock = %s', estado, stock));
+
+    -- Confirmación manual primero y el pago aprobado después.
+    perform pg_temp.como(gestor);
+    perform public.cambiar_estado_pedido(pedido_f, 'confirmado');
+    perform pg_temp.como(null);
+    perform pg_temp.aprobar(pago_f);
+    select p.estado into estado from public.pedidos p where id = pedido_f;
+    select p.stock into stock from public.productos p where id = producto;
+    perform pg_temp.anotar('Confirmar a mano y recibir después el pago descuenta una sola vez (8 - 3)', estado = 'confirmado' and stock = 5, format('%s, stock = %s', estado, stock));
+    perform pg_temp.como(cliente);
+    perform pg_temp.debe_fallar('No se puede iniciar otro pago de un pedido ya pagado', format('select pg_temp.iniciar_pago(%L)', pedido_f));
+    perform pg_temp.como(null);
+
+    -- Cancelar un pedido pagado devuelve unidades, pero el pago sigue aprobado (no es un reembolso).
+    perform pg_temp.aprobar(pago_g);
+    perform pg_temp.como(gestor);
+    perform public.cambiar_estado_pedido(pedido_g, 'cancelado');
+    perform public.cambiar_estado_pedido(pedido_g, 'cancelado');
+    perform pg_temp.como(null);
+    select p.stock into stock from public.productos p where id = producto;
+    select pa.estado::text into estado_pago from public.pagos pa where id = pago_g;
+    perform pg_temp.anotar('Cancelar un pedido pagado devuelve las unidades una vez y el pago no cambia', stock = 5 and estado_pago = 'APPROVED', format('stock = %s, pago %s', stock, estado_pago));
+
+    -- Pago aprobado sin inventario: el pedido espera revisión y el pago se conserva.
+    update public.productos set stock = 2 where id = producto;
+    perform pg_temp.aprobar(pago_h);
+    select p.estado into estado from public.pedidos p where id = pedido_h;
+    select p.stock into stock from public.productos p where id = producto;
+    select pa.estado::text, pa.mensaje_estado into estado_pago, mensaje from public.pagos pa where id = pago_h;
+    perform pg_temp.anotar('Pago aprobado sin stock: el pedido sigue pendiente y el stock igual', estado = 'pendiente' and stock = 2, format('%s, stock = %s', estado, stock));
+    perform pg_temp.anotar('Ese pago queda aprobado y con la incidencia anotada', estado_pago = 'APPROVED' and mensaje like '%falta inventario%', coalesce(mensaje, 'sin mensaje'));
+
+    -- Pago aprobado de un pedido que ya se había cancelado.
+    perform pg_temp.como(gestor);
+    perform public.cambiar_estado_pedido(pedido_i, 'cancelado');
+    perform pg_temp.como(null);
+    perform pg_temp.aprobar(pago_i);
+    select p.estado into estado from public.pedidos p where id = pedido_i;
+    select p.stock into stock from public.productos p where id = producto;
+    select pa.mensaje_estado into mensaje from public.pagos pa where id = pago_i;
+    perform pg_temp.anotar('Pago aprobado de un pedido cancelado no descuenta y queda para revisión', estado = 'cancelado' and stock = 2 and mensaje like '%revisión manual%', coalesce(mensaje, 'sin mensaje'));
+
+    -- Limpieza: primero los pagos y los pedidos (el producto no se puede borrar mientras aparezca en ellos).
+    delete from public.pagos where pedido_id in (pedido_e, pedido_f, pedido_g, pedido_h, pedido_i);
+    delete from public.pedidos where id in (pedido_a, pedido_b, pedido_c, pedido_d, pedido_e, pedido_f, pedido_g, pedido_h, pedido_i);
     delete from public.productos where id = producto;
 end;
 $$;
