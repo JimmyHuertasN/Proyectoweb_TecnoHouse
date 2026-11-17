@@ -8,6 +8,8 @@ Solución ASP.NET Core para abrir en Visual Studio: `TecnoHouse.Api.sln`.
 - Modelos para perfiles, técnicos, dispositivos, servicios, diagnósticos, cotizaciones, ítems, calificaciones, mensajes, fotos, notificaciones y productos.
 - Mapeo de las relaciones y enums que ya aparecen en la base de datos.
 - Controladores con GET y POST para esas tablas, además de GET de solo lectura para las vistas públicas.
+- `POST /api/pedidos`, que obtiene la identidad del JWT, valida productos activos y cantidades, y delega precio, stock y total a `public.crear_pedido`.
+- `GET /api/pedidos/{id}` y `GET /api/pedidos/mis-pedidos`, que respetan propietario/admin, filtran datos de pago y permiten paginar la lista.
 - Validación del JWT de Supabase y paso de la identidad a PostgreSQL para que sigan aplicando las políticas RLS existentes.
 - Scalar en desarrollo para explorar la API.
 
@@ -33,6 +35,11 @@ dotnet user-secrets set "ConnectionStrings:TecnoHouse" "Host=<host>;Port=5432;Da
 ```
 
 Los endpoints implementados son `POST /api/gestores` (ver abajo) y `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos` y `/api/productos`. `/api/notificaciones` es solo `GET`: las notificaciones las crea la base de datos, no el cliente. Cada `POST` recibe un DTO con los campos que el cliente puede enviar (`Models/SolicitudesEscritura.cs`); el dueño (`clienteId`, `autorId`) sale del claim `sub` del token, y en `POST /api/servicios` el estado inicial es `solicitado` y el técnico queda vacío. `GET /api/servicios/{id}` devuelve un servicio con su dispositivo. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
+ Los endpoints de pedidos son específicos: POST delega el cálculo del total a `crear_pedido`; GET filtra por usuario autenticado o administrador.
+
+En `TecnoHouse.Api.http` hay solicitudes para comprobar que el precio enviado no altera el total del catálogo y que una llamada sin token devuelve `401`. Esas solicitudes crean pedidos reales; ejecútalas en desarrollo o staging.
+
+El archivo `supabase/pedidos_lectura_rls.sql` añade lectura RLS para pedidos, ítems y pagos propios. Las consultas cruzadas de otro cliente se ocultan como `404`.
 
 ## Crear gestores de tienda
 

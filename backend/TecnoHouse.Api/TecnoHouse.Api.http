@@ -58,3 +58,79 @@ Content-Type: application/json
 GET {{TecnoHouse_Api_HostAddress}}/api/dispositivos
 Authorization: Bearer {{supabaseAccessToken}}
 Accept: application/json
+
+### POST autenticado: el precio enviado se ignora; el servidor usa el precio actual en Supabase.
+POST {{TecnoHouse_Api_HostAddress}}/api/pedidos
+Authorization: Bearer {{supabaseAccessToken}}
+Content-Type: application/json
+
+{
+  "productos": [
+    {
+      "id": "24c488d2-b23d-44a1-a377-9231580b7b25",
+      "cantidad": 1,
+      "precio": 1,
+      "estado": "confirmado"
+    }
+  ],
+  "entrega": {
+    "direccion": "Calle 10 # 20-30",
+    "ciudad": "Valledupar",
+    "departamento": "Cesar",
+    "pais": "CO",
+    "telefonoReceptor": "3001234567"
+  },
+  "total": 1,
+  "estado": "confirmado"
+}
+
+### Repite la solicitud anterior cambiando "precio" y "total" a 999999999.
+### Ambas respuestas deben mostrar el total vigente del catálogo (hoy 600000 COP
+### por una unidad), estadoPedido "pendiente" y estadoPago null.
+
+### POST sin token: debe devolver 401 y no crear pedido.
+POST {{TecnoHouse_Api_HostAddress}}/api/pedidos
+Content-Type: application/json
+
+{
+  "productos": [{ "id": "24c488d2-b23d-44a1-a377-9231580b7b25", "cantidad": 1 }],
+  "entrega": {
+    "direccion": "Calle 10 # 20-30",
+    "ciudad": "Valledupar",
+    "departamento": "Cesar",
+    "telefonoReceptor": "3001234567"
+  }
+}
+
+### Sustituye estos IDs por pedidos reales de dos usuarios distintos.
+@pedidoPropioId = UUID_DE_UN_PEDIDO_PROPIO
+@pedidoOtroUsuarioId = UUID_DE_UN_PEDIDO_DE_OTRO_USUARIO
+@adminAccessToken = PEGA_AQUI_UN_TOKEN_DE_ADMIN
+
+### GET autenticado: lista paginada; solo pedidos propios (admin ve todos).
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/mis-pedidos?page=1&pageSize=20
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET autenticado: detalle propio debe devolver 200 y solo campos públicos del pedido.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoPropioId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET cruzado: un cliente debe recibir 404, igual que para un ID inexistente.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoOtroUsuarioId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json
+
+### GET como admin: el mismo pedido de otro usuario debe devolver 200.
+GET {{TecnoHouse_Api_HostAddress}}/api/pedidos/{{pedidoOtroUsuarioId}}
+Authorization: Bearer {{adminAccessToken}}
+Accept: application/json
+
+### Pago Wompi: devuelve configuración para checkout.widget.js, no URL de redirección.
+### Usa un pedido propio pendiente con datos de entrega completos; cada llamada crea un intento nuevo.
+@pedidoParaPagarId = UUID_DE_UN_PEDIDO_PROPIO_PENDIENTE
+
+POST {{TecnoHouse_Api_HostAddress}}/api/pagos/wompi/iniciar/{{pedidoParaPagarId}}
+Authorization: Bearer {{supabaseAccessToken}}
+Accept: application/json

@@ -5,6 +5,7 @@
     (administrador y gestor), según supabase/permisos_tienda.sql.
 */
 import { pedidosEntregadosEnRango, sumarTotales } from "../utilidades/reportesTienda.js";
+import { llamarApi } from "./backend.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
 const aPedido = (fila) => ({
@@ -33,19 +34,30 @@ const aPedido = (fila) => ({
     })),
 });
 
-/* El servidor valida los productos y calcula los precios desde el catálogo vigente. */
-export const crearPedido = async ({ nombre, telefono, notas = "", lineas }) => {
-    const items = lineas.map(({ producto, cantidad }) => ({ producto_id: producto.id, cantidad }));
-    const respuesta = verificar(
-        await obtenerCliente().rpc("crear_pedido", {
-            p_nombre: nombre,
-            p_telefono: telefono,
-            p_notas: notas,
-            p_items: items,
-        })
-    );
+/* Envía solo ids, cantidades y entrega; el API calcula y devuelve el total real. */
+export const crearPedido = async ({ lineas, entrega }) => {
+    const respuesta = await llamarApi("/api/pedidos", {
+        metodo: "POST",
+        datos: {
+            productos: lineas.map(({ producto, cantidad }) => ({ id: producto.id, cantidad })),
+            entrega,
+        },
+    });
 
-    return { id: respuesta.id, numero: respuesta.numero, total: Number(respuesta.total) };
+    return {
+        id: respuesta.pedidoId,
+        numero: respuesta.numero,
+        total: Number(respuesta.total),
+        estadoPedido: respuesta.estadoPedido,
+        estadoPago: respuesta.estadoPago,
+    };
+};
+
+/* Lista los pedidos del usuario autenticado desde el API, con paginación. */
+export const obtenerMisPedidos = ({ page = 1, pageSize = 20 } = {}) => {
+    const pagina = Math.max(1, Math.trunc(page));
+    const tamano = Math.min(100, Math.max(1, Math.trunc(pageSize)));
+    return llamarApi(`/api/pedidos/mis-pedidos?page=${pagina}&pageSize=${tamano}`);
 };
 
 /* RLS limita esta consulta al personal de tienda y el orden deja primero el pedido más reciente. */
@@ -60,6 +72,10 @@ export const obtenerPedidos = async () => {
 export const cambiarEstadoPedido = async (id, estado) => {
     verificar(await obtenerCliente().rpc("cambiar_estado_pedido", { p_pedido_id: id, p_estado: estado }));
 };
+
+/* Detalle de un pedido del usuario autenticado, con su pago, desde el API. */
+export const obtenerDetalleMiPedido = (id) =>
+    llamarApi(`/api/pedidos/${encodeURIComponent(id)}`);
 
 /* Ingresos de pedidos entregados en el rango, con la misma regla de fechas que los reportes de tienda. */
 export const obtenerIngresosTienda = async (desde = "", hasta = "") => {

@@ -29,10 +29,13 @@ import Registro from "./paginas/autenticacion/Registro.jsx";
 // Panel del cliente
 import DetalleSolicitud from "./paginas/cliente/DetalleSolicitud.jsx";
 import MisDispositivos from "./paginas/cliente/MisDispositivos.jsx";
+import MisPedidos from "./paginas/cliente/MisPedidos.jsx";
 import MisSolicitudes from "./paginas/cliente/MisSolicitudes.jsx";
 import NuevaSolicitud from "./paginas/cliente/NuevaSolicitud.jsx";
 import Perfil from "./paginas/cliente/Perfil.jsx";
 import ResumenPanel from "./paginas/cliente/ResumenPanel.jsx";
+import DetallePedidoCliente from "./paginas/cliente/DetallePedido.jsx";
+import ResultadoPago from "./paginas/ResultadoPago.jsx";
 
 // Panel del técnico
 import DetalleServicio from "./paginas/tecnico/DetalleServicio.jsx";
@@ -106,11 +109,24 @@ const Aplicacion = () => {
                         }
                     >
                         <Route index element={<ResumenPanel />} />
+                        <Route path="pedidos" element={<MisPedidos />} />
+                        <Route path="pedidos/:id" element={<DetallePedidoCliente />} />
                         <Route path="dispositivos" element={<MisDispositivos />} />
                         <Route path="solicitudes" element={<MisSolicitudes />} />
                         <Route path="solicitudes/nueva" element={<NuevaSolicitud />} />
                         <Route path="solicitudes/:id" element={<DetalleSolicitud />} />
                         <Route path="perfil" element={<Perfil />} />
+                    </Route>
+
+                    <Route
+                        path="/pago/resultado/:idPedido"
+                        element={
+                            <RutaProtegida rolesPermitidos={["cliente"]}>
+                                <DisenoPanel menu={MENU_CLIENTE} />
+                            </RutaProtegida>
+                        }
+                    >
+                        <Route index element={<ResultadoPago />} />
                     </Route>
 
                     {/* Conserva los enlaces viejos: /panel/perfil lleva a /cliente/perfil, etc. */}

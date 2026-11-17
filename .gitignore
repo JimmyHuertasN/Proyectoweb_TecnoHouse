@@ -14,6 +14,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+**/appsettings.*.json
+!**/appsettings.example.json
+**/secrets*.json
 **/bin/
 **/obj/
 **/.vs/
