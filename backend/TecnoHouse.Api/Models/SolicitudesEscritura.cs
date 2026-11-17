@@ -53,3 +53,10 @@ public sealed record CrearProductoRequest(
     bool Activo);
 
 public sealed record CrearTecnicoRequest(Guid PerfilId, string? Especialidad, bool Disponible);
+
+// No tiene campo de rol: el rol "gestor_tienda" lo pone el servidor.
+public sealed record CrearGestorRequest(
+    [Required, MinLength(3)] string Nombre,
+    [Required, EmailAddress] string Correo,
+    string? Telefono,
+    [Required, MinLength(8)] string Contrasena);
