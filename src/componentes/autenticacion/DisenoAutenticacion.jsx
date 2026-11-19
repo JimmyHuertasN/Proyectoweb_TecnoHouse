@@ -22,17 +22,20 @@ const DisenoAutenticacion = ({ antetitulo, titulo, descripcion, children }) => {
 
             <main className="flex flex-1 items-center bg-gradient-to-b from-superficie to-fondo">
                 <div className="contenedor grid items-center gap-12 py-10 sm:py-16 lg:grid-cols-[1fr_30rem] lg:gap-16">
-                    <aside className="hidden lg:block" aria-label="Qué puedes hacer con tu cuenta">
-                        <p className="antetitulo">Tu cuenta de TecnoHouse</p>
-                        <p className="max-w-md text-3xl leading-tight font-bold tracking-tight text-white">Todo lo de tu reparación, en un solo lugar.</p>
-                        <ul className="mt-8 space-y-5">
-                            {VENTAJAS_CUENTA.map(({ icono: Icono, texto }) => (
-                                <li key={texto} className="flex items-start gap-3.5 text-slate-300">
-                                    <Icono size={20} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
-                                    {texto}
-                                </li>
-                            ))}
-                        </ul>
+                    <aside className="relative hidden lg:block" aria-label="Qué puedes hacer con tu cuenta">
+                        <img src="/tecnohouse-marca.svg" alt="" aria-hidden="true" className="marca-fondo-autenticacion pointer-events-none absolute top-1/2 right-0 z-0 w-72 -translate-y-1/2" />
+                        <div className="relative z-10">
+                            <p className="antetitulo">Tu cuenta de TecnoHouse</p>
+                            <p className="max-w-md text-3xl leading-tight font-bold tracking-tight text-white">Todo lo de tu reparación, en un solo lugar.</p>
+                            <ul className="mt-8 space-y-5">
+                                {VENTAJAS_CUENTA.map(({ icono: Icono, texto }) => (
+                                    <li key={texto} className="flex items-start gap-3.5 text-slate-300">
+                                        <Icono size={20} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
+                                        {texto}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </aside>
 
                     <section className="mx-auto w-full max-w-[30rem] rounded-2xl border border-borde bg-tarjeta p-6 shadow-2xl shadow-black/40 sm:p-9" aria-labelledby={idTitulo}>

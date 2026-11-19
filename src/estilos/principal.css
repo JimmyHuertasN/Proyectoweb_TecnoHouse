@@ -215,6 +215,51 @@
         animation: entrada-notificacion 220ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
     }
 
+    .logo-marca {
+        position: relative;
+        display: grid;
+        width: 1.65em;
+        height: 1.65em;
+        flex: none;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid rgb(148 163 184 / 22%);
+        border-radius: 0.42em;
+        background: linear-gradient(145deg, rgb(30 41 59 / 96%), rgb(7 13 23 / 98%));
+        box-shadow: 0 3px 10px rgb(2 8 23 / 28%), inset 0 1px rgb(255 255 255 / 10%);
+        transform: perspective(500px) rotateX(var(--logo-rotate-x, 0deg)) rotateY(var(--logo-rotate-y, 0deg));
+        transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+        transform-style: preserve-3d;
+    }
+
+    .logo-enlace:hover .logo-marca {
+        border-color: rgb(0 170 255 / 52%);
+        box-shadow: 0 5px 16px rgb(0 170 255 / 20%), inset 0 1px rgb(255 255 255 / 14%);
+    }
+
+    .logo-reflejo {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at var(--logo-x, 50%) var(--logo-y, 50%), rgb(255 255 255 / 34%), transparent 58%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+    }
+
+    .logo-enlace:hover .logo-reflejo {
+        opacity: 0.8;
+    }
+
+    .marca-fondo-autenticacion {
+        opacity: 0.09;
+        filter: blur(0.2px);
+    }
+
+    :root[data-tema="claro"] .marca-fondo-autenticacion {
+        opacity: 0.2;
+        filter: brightness(0.72) saturate(1.15) drop-shadow(0 2px 3px rgb(0 95 158 / 12%));
+    }
+
     @keyframes entrada-notificacion {
         from {
             opacity: 0;
@@ -230,6 +275,11 @@
     @media (prefers-reduced-motion: reduce) {
         .notificacion-entrada {
             animation: none;
+        }
+
+        .logo-marca,
+        .logo-reflejo {
+            transition: none;
         }
     }
 
