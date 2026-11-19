@@ -258,6 +258,35 @@ El 13 de noviembre de 2026 se rediseñó la presentación del sitio sin cambiar 
 
 La animación de entrada de las secciones se extrajo al hook `useAnimacionEntrada.js` y se desactiva con `prefers-reduced-motion`.
 
+## 18. Rol de gestor de tienda
+
+Nuevo rol `gestor_tienda` ("Gestor de tienda") con su panel en `/gestor-tienda`: resumen, productos, inventario, pedidos, reportes y perfil. Administra la tienda sin acceso a reparaciones, usuarios ni estadísticas generales. El detalle completo (permisos, scripts, cuenta de prueba y verificaciones) está en [GESTOR_TIENDA.md](./GESTOR_TIENDA.md).
+
+**Páginas compartidas:** productos (`GestionProductos.jsx`) y pedidos (`PedidosTienda.jsx`) se movieron de `paginas/admin/` a `paginas/gestionTienda/`, junto con las nuevas `Inventario.jsx` y `ReportesTienda.jsx`. El administrador las ve en su panel y el gestor en el suyo; `rutaTienda` (`utilidades/rutas.js`) arma los enlaces según el rol. `FormularioProducto.jsx` pasó a `componentes/panel/tienda/`.
+
+**Solo del gestor:** `paginas/gestor/ResumenGestor.jsx` y `PerfilGestor.jsx`. El formulario de datos personales se extrajo a `componentes/panel/FormularioDatosPersonales.jsx`, que también usa el perfil del cliente.
+
+**Solo del administrador:** `paginas/admin/GestionGestores.jsx` para crear gestores, editar sus datos y dar o retirar el acceso.
+
+**Base de datos:**
+
+- `supabase/pedidos.sql` no estaba en el repositorio; se reconstruyó desde la base en uso.
+- `rol_gestor_tienda.sql` agrega el valor del enum y `permisos_tienda.sql` concentra los permisos de la tienda para administrador y gestor.
+- El stock ya no se escribe directamente: se cambia con `ajustar_stock_producto` (suma o resta) y `fijar_stock_producto` (cantidad exacta, solo si nadie la cambió antes). Así dos personas no se pisan.
+- Un producto que aparece en pedidos no se puede borrar: se desactiva.
+
+**API:** `POST /api/gestores` crea la cuenta con la API administrativa de Supabase Auth; la clave secreta queda solo en el servidor.
+
+## 19. Gestor de tienda junto con la pasarela Wompi
+
+Se unió `main` (pedidos con datos de entrega, checkout de Wompi, webhook, consulta de respaldo y **Mis pedidos**) con la rama del gestor de tienda. Ambas partes se conservan.
+
+- **Pedidos del personal:** la lista de pedidos de tienda trae también los pagos. El panel muestra el estado del pedido y el del pago por separado y marca los pagos aprobados que necesitan revisión. Las etiquetas de pago están en `src/datos/estadosPago.js`, que también usan **Mis pedidos** y su detalle.
+- **API:** `GET /api/pedidos/{id}` y `GET /api/pedidos/mis-pedidos` aceptan al personal de tienda (administrador o gestor) con `es_personal_tienda()`, la misma función de las políticas RLS. Iniciar un pago y consultar su estado siguen siendo solo del comprador.
+- **Base de datos:** `supabase/pagos.sql` versiona las tablas `pagos` y `wompi_eventos`, que solo existían en la base, deja al gestor leer los pagos de pedidos y quita la escritura directa. `pagos_wompi.sql` ahora también crea el trigger `pagos_confirma_pedido`.
+- **Stock:** el trigger de pagos y `cambiar_estado_pedido` solo descuentan al pasar de `pendiente` a `confirmado`, así que nunca se descuenta dos veces. Detalle en [GESTOR_TIENDA.md](./GESTOR_TIENDA.md#pagos-en-línea-wompi).
+- **Configuración:** el frontend lee la dirección del API de `VITE_API_URL` (antes `VITE_TECNOHOUSE_API_URL`).
+
 ## Nota de implementación
 
 Esta guía describe el código y los cambios observables en el historial revisado; no confirma que el proyecto esté desplegado ni que cada script SQL ya se haya ejecutado en la instancia de Supabase. Para habilitar los módulos conectados a datos, hay que aplicar las migraciones pertinentes y configurar Auth, almacenamiento y políticas en el proyecto de Supabase utilizado.

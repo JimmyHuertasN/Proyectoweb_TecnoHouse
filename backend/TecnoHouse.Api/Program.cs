@@ -49,6 +49,7 @@ builder.Services
         options.RequireHttpsMetadata = true;
     });
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient<SupabaseAuthAdmin>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());

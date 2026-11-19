@@ -6,6 +6,7 @@ import Aviso from "../../componentes/Aviso.jsx";
 import BotonPagarWompi from "../../componentes/tienda/BotonPagarWompi.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
+import { visualPago } from "../../datos/estadosPago.js";
 import { formatearFechaHora, formatearPesos } from "../../utilidades/formato.js";
 
 const DetallePedidoCliente = () => {
@@ -70,7 +71,7 @@ const DetallePedidoCliente = () => {
                         </dl>
                     </section>
 
-                    <p className="flex items-center gap-2 text-sm text-slate-400"><PackageCheck size={17} aria-hidden="true" />Estado del pago: {pedido.estadoPago ?? "Sin intentos"}</p>
+                    <p className="flex items-center gap-2 text-sm text-slate-400"><PackageCheck size={17} aria-hidden="true" />Estado del pago: {visualPago(pedido.estadoPago).etiqueta}</p>
                 </div>
             )}
         </>
