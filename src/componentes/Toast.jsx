@@ -14,10 +14,12 @@ const Toast = ({ notificaciones, alCerrar }) => (
             const Icono = configuracion.icono;
             return (
                 <div key={notificacion.id} role={notificacion.tipo === "error" ? "alert" : "status"} aria-live={configuracion.vivo}
-                    className={`pointer-events-auto flex items-start gap-3 rounded-xl border p-4 shadow-xl shadow-black/30 ${configuracion.estilo}`}>
-                    <Icono className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-                    <p className="flex-1 text-sm leading-relaxed">{notificacion.mensaje}</p>
-                    <button type="button" className="-m-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg hover:bg-white/10" onClick={() => alCerrar(notificacion.id)} aria-label="Cerrar notificación">
+                    className={`notificacion-entrada pointer-events-auto flex items-start gap-3 rounded-xl border p-3.5 shadow-lg shadow-black/25 ring-1 ring-white/5 backdrop-blur-xl sm:p-4 ${configuracion.estilo}`}>
+                    <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.07]">
+                        <Icono className="size-[18px]" aria-hidden="true" />
+                    </span>
+                    <p className="flex-1 pt-1 text-sm leading-relaxed">{notificacion.mensaje}</p>
+                    <button type="button" className="-m-1 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-current/70 transition hover:bg-white/10 hover:text-current" onClick={() => alCerrar(notificacion.id)} aria-label="Cerrar notificación">
                         <X className="size-4" aria-hidden="true" />
                     </button>
                 </div>

@@ -210,6 +210,29 @@
         @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-red-500/40 bg-gradient-to-b from-red-500/10 to-red-500/[0.03] px-5 py-2.5 text-sm font-semibold text-red-300 shadow-sm shadow-red-950/30 transition duration-200 hover:-translate-y-0.5 hover:border-red-400/60 hover:from-red-500/15 hover:to-red-500/[0.06] hover:shadow-md hover:shadow-red-950/40 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-sm;
     }
 
+    /* Entrada discreta para avisos y menús de notificaciones. */
+    .notificacion-entrada {
+        animation: entrada-notificacion 220ms cubic-bezier(0.2, 0.7, 0.25, 1) both;
+    }
+
+    @keyframes entrada-notificacion {
+        from {
+            opacity: 0;
+            transform: translateY(-0.35rem) scale(0.99);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .notificacion-entrada {
+            animation: none;
+        }
+    }
+
     /* Enlace de texto con flecha o subrayado (ej. "Ver todos los servicios"). */
     .enlace {
         @apply inline-flex items-center gap-1.5 font-semibold text-sky-300 underline-offset-4 transition hover:text-white hover:underline;

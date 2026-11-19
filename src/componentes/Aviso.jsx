@@ -12,8 +12,10 @@ const Aviso = ({ texto, tipo = "info" }) => {
     const { icono: Icono, estilo } = TIPOS[tipo] ?? TIPOS.info;
 
     return (
-        <p className={`mb-5 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm leading-relaxed ${estilo}`} role={tipo === "error" ? "alert" : "status"}>
-            <Icono size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+        <p className={`notificacion-entrada mb-5 flex items-start gap-3 rounded-xl border px-4 py-3.5 text-sm leading-relaxed shadow-sm shadow-black/10 ring-1 ring-white/[0.03] ${estilo}`} role={tipo === "error" ? "alert" : "status"}>
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.06]">
+                <Icono size={17} aria-hidden="true" />
+            </span>
             <span>{texto}</span>
         </p>
     );
