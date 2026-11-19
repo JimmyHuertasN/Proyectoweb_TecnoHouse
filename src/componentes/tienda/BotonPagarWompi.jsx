@@ -5,6 +5,13 @@ import { iniciarPago } from "../../api/pagos.js";
 import { cargarWidgetWompi } from "../../api/wompiWidget.js";
 import Aviso from "../Aviso.jsx";
 
+/*
+    Wompi bloquea su checkout (error 403) si la dirección de regreso es local, como
+    http://localhost:5173. En desarrollo no se envía: al cerrar el widget, este botón
+    ya lleva a la página de resultado. Con un dominio público sí se envía.
+*/
+const esDireccionLocal = (url = "") => /^https?:\/\/(localhost|127\.0\.0\.1)([:/]|$)/i.test(url);
+
 const BotonPagarWompi = ({ idPedido, alAbrirWidget, alCerrarWidget, alFallarWidget }) => {
     const navigate = useNavigate();
     const [preparando, setPreparando] = useState(false);
@@ -30,7 +37,7 @@ const BotonPagarWompi = ({ idPedido, alAbrirWidget, alCerrarWidget, alFallarWidg
                 amountInCents: pago.amountInCents,
                 reference: pago.reference,
                 publicKey: pago.publicKey,
-                redirectUrl: pago.redirectUrl,
+                ...(esDireccionLocal(pago.redirectUrl) ? {} : { redirectUrl: pago.redirectUrl }),
                 signature: { integrity: pago.integritySignature },
                 customerData: {
                     fullName: pago.customerData.fullName,
