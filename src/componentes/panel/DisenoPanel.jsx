@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeftOpen } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import Logotipo from "../Logotipo.jsx";
 import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
@@ -11,12 +11,30 @@ import MenuLateral from "./MenuLateral.jsx";
 */
 const DisenoPanel = ({ menu }) => {
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const [panelVisible, setPanelVisible] = useState(true);
     // Función fija: el menú lateral la usa dentro de un useEffect.
     const cerrarMenu = useCallback(() => setMenuAbierto(false), []);
 
     return (
         <div className="min-h-screen bg-fondo lg:flex">
-            <MenuLateral menu={menu} abierto={menuAbierto} alCerrar={cerrarMenu} />
+            {panelVisible ? (
+                <MenuLateral
+                    menu={menu}
+                    abierto={menuAbierto}
+                    alCerrar={cerrarMenu}
+                    alOcultar={() => setPanelVisible(false)}
+                />
+            ) : (
+                <button
+                    type="button"
+                    onClick={() => setPanelVisible(true)}
+                    className="fixed left-5 top-3 z-30 hidden size-11 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-superficie text-slate-300 shadow-lg transition hover:bg-white/10 hover:text-white lg:flex"
+                    aria-label="Mostrar menú del panel"
+                    title="Mostrar menú del panel"
+                >
+                    <PanelLeftOpen size={20} aria-hidden="true" />
+                </button>
+            )}
 
             <div className="min-w-0 flex-1">
                 {/* Barra superior solo para celulares y tabletas. */}

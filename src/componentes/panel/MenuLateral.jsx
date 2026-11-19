@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ExternalLink, LogOut, X } from "lucide-react";
+import { ExternalLink, LogOut, PanelLeftClose, X } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import CampanaNotificaciones from "./CampanaNotificaciones.jsx";
 import BotonTema from "../BotonTema.jsx";
@@ -21,7 +21,7 @@ const CLASE_ENLACE_PIE = "flex min-h-11 items-center gap-3 rounded-lg px-3 text-
     En pantallas grandes el menú queda fijo a la izquierda. En celulares se
     oculta fuera de la pantalla y se desliza cuando "abierto" es true.
 */
-const MenuLateral = ({ menu, abierto, alCerrar }) => {
+const MenuLateral = ({ menu, abierto, alCerrar, alOcultar }) => {
     const { usuario } = useSesion();
 
     useEffect(() => {
@@ -52,6 +52,9 @@ const MenuLateral = ({ menu, abierto, alCerrar }) => {
                     <div className="hidden lg:block">
                         <CampanaNotificaciones enMenuLateral />
                     </div>
+                    <button type="button" onClick={alOcultar} className="hidden size-10 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/5 hover:text-white lg:flex" aria-label="Ocultar menú del panel" title="Ocultar menú del panel">
+                        <PanelLeftClose size={20} aria-hidden="true" />
+                    </button>
                     <button type="button" onClick={alCerrar} className="flex size-11 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-white/5 hover:text-white lg:hidden" aria-label="Cerrar menú">
                         <X size={22} aria-hidden="true" />
                     </button>
