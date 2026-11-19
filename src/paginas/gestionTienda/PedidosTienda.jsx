@@ -284,7 +284,7 @@ const PedidosTienda = () => {
                                                     <td className="sticky right-0 z-10 min-w-44 bg-fondo px-4 py-3 shadow-[-8px_0_12px_-12px_rgba(0,0,0,0.9)]">
                                                         <div className="flex flex-col items-stretch gap-2">
                                                             {(estado?.siguientes ?? []).map((siguiente) => (
-                                                                <button key={siguiente} type="button" disabled={Boolean(ocupadoId)} onClick={() => cambiarEstado(pedido, siguiente)} className={`min-h-10 rounded-lg px-3 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-50 ${siguiente === "cancelado" ? "border border-red-500/30 text-red-300 hover:bg-red-500/10" : "boton-secundario"}`}>
+                                                                <button key={siguiente} type="button" disabled={Boolean(ocupadoId)} onClick={() => cambiarEstado(pedido, siguiente)} className={`min-h-10 rounded-lg px-3 text-xs font-semibold transition duration-200 active:scale-[0.98] disabled:cursor-wait disabled:opacity-50 ${siguiente === "cancelado" ? "border border-red-500/30 bg-red-500/[0.04] text-red-300 shadow-sm shadow-red-950/30 hover:-translate-y-0.5 hover:border-red-400/50 hover:bg-red-500/10 hover:shadow-md active:translate-y-0" : "boton-secundario"}`}>
                                                                     {ETIQUETAS_ACCION[siguiente]}
                                                                 </button>
                                                             ))}
