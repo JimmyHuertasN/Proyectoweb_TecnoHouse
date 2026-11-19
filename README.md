@@ -17,6 +17,9 @@ TecnoHouse ordena ese proceso:
 - El **cliente** registra sus equipos, pide una reparación con fotos, aprueba o rechaza la cotización y sigue cada paso en línea.
 - El **técnico** recibe las solicitudes, diagnostica, cotiza y avanza el servicio hasta terminarlo.
 - El **administrador** supervisa los servicios, gestiona técnicos y clientes, administra la tienda y consulta los indicadores del negocio.
+- El **gestor de tienda** atiende la tienda: productos, inventario, pedidos y reportes, sin acceso a las reparaciones.
+
+En la tienda, el cliente arma su carrito, registra el pedido con los datos de entrega y lo paga en línea con Wompi.
 
 ## Servicios que ofrece el negocio
 
@@ -45,22 +48,38 @@ Durante todo el proceso, cliente y técnico pueden escribirse en la conversació
 
 ## Capturas
 
-**Tienda**: catálogo con categorías, buscador y carrito.
+**Tienda**: catálogo con categorías, buscador, filtro de disponibles y orden.
 
 ![Tienda](docs/capturas/tienda.png)
+
+**Carrito**: el cliente revisa sus productos, escribe los datos de entrega (departamento y ciudad se eligen de una lista) y confirma el pedido. Después lo paga en el checkout de Wompi.
+
+![Carrito con los datos de entrega](docs/capturas/carrito.png)
+
+**Detalle de un pedido**: productos, total, datos de entrega y estado del pago, en el panel del cliente.
+
+![Detalle de un pedido en el panel del cliente](docs/capturas/detalle-pedido.png)
 
 **Reparaciones**: cómo pedir una reparación y servicios que ofrece el negocio.
 
 ![Servicios de reparación](docs/capturas/reparaciones.png)
 
-**Panel del técnico**: detalle de un servicio con su progreso, el próximo paso, la falla reportada y la conversación con el cliente.
+**Panel del técnico**: detalle de un servicio con su progreso, el próximo paso, la falla reportada, la conversación con el cliente, el diagnóstico y la cotización.
 
-![Detalle de un servicio en el panel del técnico](docs/capturas/servicio-tecnico.png)
+<p align="center">
+  <img src="docs/capturas/servicio-tecnico.png" alt="Detalle de un servicio en el panel del técnico" width="700">
+</p>
 
-**Panel del administrador**: dashboard con ingresos, clientes, técnicos, servicios por estado y tasa de cotizaciones aprobadas.
+**Panel del administrador**: dashboard con ingresos de reparaciones y de la tienda, clientes, técnicos, servicios por estado, cotizaciones aprobadas, inventario y pedidos.
 
 <p align="center">
   <img src="docs/capturas/dashboard.png" alt="Dashboard del administrador" width="700">
+</p>
+
+**Panel del gestor de tienda**: pedidos con su estado y el del pago por separado, filtros y acciones. Avisa cuando un pago aprobado necesita revisión.
+
+<p align="center">
+  <img src="docs/capturas/gestor-pedidos.png" alt="Pedidos en el panel del gestor de tienda" width="700">
 </p>
 
 ## Funcionalidades
@@ -74,7 +93,7 @@ Durante todo el proceso, cliente y técnico pueden escribirse en la conversació
 | `/tienda` | Catálogo con categorías, buscador, filtro de disponibles y orden por precio, nombre o fecha. |
 | `/tienda/:id` | Detalle del producto, productos relacionados y consulta por WhatsApp. |
 
-La tienda tiene un carrito lateral que se guarda en el navegador y envía el pedido por WhatsApp con la lista de productos y el total. No permite pedir más unidades que el stock disponible. Cada producto admite hasta ocho fotos; en la ficha se puede cambiar entre ellas y ampliar la imagen con la lupa.
+La tienda tiene un carrito lateral que se guarda en el navegador y no permite pedir más unidades que el stock disponible. Para confirmar el pedido hay que iniciar sesión (el carrito se conserva) y escribir los datos de entrega. TecnoHouse calcula el total, y el cliente puede pagarlo en el checkout de Wompi o avisar por WhatsApp. Cada producto admite hasta ocho fotos; en la ficha se puede cambiar entre ellas y ampliar la imagen con la lupa.
 
 ### Cuentas
 
@@ -87,6 +106,7 @@ La tienda tiene un carrito lateral que se guarda en el navegador y envía el ped
 - Resumen de sus solicitudes activas.
 - Registro de dispositivos: computadores, celulares y consolas.
 - Solicitudes de reparación con fotos, seguimiento del estado, conversación con el técnico, cotización y calificación.
+- Mis pedidos: estado del pedido y del pago, detalle con los datos de entrega y pago o nuevo intento con Wompi.
 - Perfil.
 
 ### Panel del técnico (`/tecnico`)
@@ -129,6 +149,7 @@ Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
 | Íconos | lucide-react |
 | Compilación | Vite |
 | Backend | ASP.NET Core y Supabase: API, autenticación, PostgreSQL, almacenamiento y Realtime |
+| Pagos | Wompi (checkout embebido, en Sandbox para desarrollo) |
 | Revisión de código | oxlint |
 
 ## Arquitectura
