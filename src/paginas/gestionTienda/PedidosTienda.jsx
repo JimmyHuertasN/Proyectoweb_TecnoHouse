@@ -253,7 +253,7 @@ const PedidosTienda = () => {
                                         <th scope="col" className="px-4 py-3">Estado</th>
                                         <th scope="col" className="px-4 py-3">Pago</th>
                                         <th scope="col" className="px-4 py-3">Fecha</th>
-                                        <th scope="col" className="px-4 py-3">Acciones</th>
+                                        <th scope="col" className="sticky right-0 z-20 min-w-44 bg-tarjeta px-4 py-3 shadow-[-8px_0_12px_-12px_rgba(0,0,0,0.9)]">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-borde">
@@ -280,9 +280,9 @@ const PedidosTienda = () => {
                                                             )}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-slate-400">{formatearFechaHora(pedido.creadoEn)}</td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex flex-wrap gap-2">
+                                                    <td className="max-w-36 px-4 py-3 text-xs leading-5 whitespace-normal text-slate-400">{formatearFechaHora(pedido.creadoEn)}</td>
+                                                    <td className="sticky right-0 z-10 min-w-44 bg-fondo px-4 py-3 shadow-[-8px_0_12px_-12px_rgba(0,0,0,0.9)]">
+                                                        <div className="flex flex-col items-stretch gap-2">
                                                             {(estado?.siguientes ?? []).map((siguiente) => (
                                                                 <button key={siguiente} type="button" disabled={Boolean(ocupadoId)} onClick={() => cambiarEstado(pedido, siguiente)} className={`min-h-10 rounded-lg px-3 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-50 ${siguiente === "cancelado" ? "border border-red-500/30 text-red-300 hover:bg-red-500/10" : "boton-secundario"}`}>
                                                                     {ETIQUETAS_ACCION[siguiente]}
