@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle, Package, ShoppingBag } from "lucide-react";
+import { FileText, MessageCircle, Package, ShoppingBag } from "lucide-react";
 import Aviso from "../../componentes/Aviso.jsx";
 import BotonPagarWompi from "../../componentes/tienda/BotonPagarWompi.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
@@ -86,6 +86,14 @@ const FilaPedido = ({ pedido }) => {
                         <BotonPagarWompi idPedido={pedido.pedidoId} />
                     </div>
                 )}
+                {/* El detalle muestra los datos de entrega y el estado del pago. */}
+                <Link
+                    to={`/cliente/pedidos/${encodeURIComponent(pedido.pedidoId)}`}
+                    aria-label={`Ver detalle del pedido #${pedido.numero}`}
+                    className="boton-secundario"
+                >
+                    <FileText size={17} aria-hidden="true" /> Ver detalle
+                </Link>
                 {whatsappConfigurado && (
                     <a
                         href={enlaceWhatsApp(`Hola, necesito ayuda con mi pedido #${pedido.numero} de TecnoHouse.`)}
