@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ExternalLink, Minus, Package, Plus, Star } from "lucide-react";
-import { actualizarProducto, borrarProducto, crearProducto, obtenerProductosAdmin, toggleActivo } from "../../api/productos.js";
+import { actualizarProducto, ajustarStock, borrarProducto, crearProducto, obtenerTodosLosProductos, toggleActivo } from "../../api/productos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import ImagenProducto from "../../componentes/ImagenProducto.jsx";
 import BarraFiltros from "../../componentes/panel/BarraFiltros.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
-import FormularioProducto from "../../componentes/panel/admin/FormularioProducto.jsx";
+import FormularioProducto from "../../componentes/panel/tienda/FormularioProducto.jsx";
 import ResultadosPaginados from "../../componentes/panel/ResultadosPaginados.jsx";
 import ResumenInventario from "../../componentes/panel/ResumenInventario.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
@@ -111,12 +112,24 @@ const GestionProductos = () => {
     const toast = useToast();
     const confirmar = useConfirmar();
     const paginado = useFiltroPaginado(productos, cumpleFiltrosProducto, FILTROS_VACIOS);
+    // El inventario enlaza aquí con ?editar=<id> para abrir directamente el formulario de ese producto.
+    const [parametros] = useSearchParams();
+    const productoPorEditar = useRef(parametros.get("editar"));
 
     useEffect(() => {
         let vigente = true;
 
-        obtenerProductosAdmin()
-            .then((lista) => vigente && setProductos(lista))
+        obtenerTodosLosProductos()
+            .then((lista) => {
+                if (!vigente) return;
+                setProductos(lista);
+                const elegido = lista.find((producto) => producto.id === productoPorEditar.current);
+                if (elegido) {
+                    // Se usa una sola vez: al recargar la lista después de guardar no se vuelve a abrir.
+                    productoPorEditar.current = null;
+                    setFormulario({ producto: elegido });
+                }
+            })
             .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar los productos."))
             .finally(() => vigente && setCargando(false));
 
@@ -135,27 +148,42 @@ const GestionProductos = () => {
     // Envía la lista de archivos nuevos y conserva las fotos seleccionadas en el formulario.
     const guardar = async (valores, archivos) => {
         const { producto } = formulario;
-        if (producto) {
-            await actualizarProducto(producto.id, valores, archivos, producto.imagenesRutas ?? (producto.imagenRuta ? [producto.imagenRuta] : []));
-        } else {
-            await crearProducto(valores, archivos);
+        const cerrar = () => {
+            setFormulario(null);
+            recargar();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+
+        try {
+            if (producto) {
+                // producto.stock es el valor que se veía al abrir el formulario: si otro lo cambió, la base avisa.
+                await actualizarProducto(producto.id, valores, archivos, producto.imagenesRutas ?? (producto.imagenRuta ? [producto.imagenRuta] : []), producto.stock);
+            } else {
+                await crearProducto(valores, archivos);
+            }
+        } catch (errorApi) {
+            // Si lo demás sí se guardó, se cierra el formulario para ver el stock real antes de corregirlo.
+            if (!errorApi.datosGuardados) throw errorApi;
+            cerrar();
+            toast.error(errorApi.message);
+            return;
         }
 
-        setFormulario(null);
-        recargar();
+        cerrar();
         toast.exito(producto ? `Se guardaron los cambios de ${valores.nombre.trim()}.` : `Se creó ${valores.nombre.trim()}.`);
-        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    // "mensajeExito" puede ser un texto o una función que recibe lo que devolvió la acción.
     const ejecutar = async (producto, accion, mensajeExito) => {
         setOcupadoId(producto.id);
         try {
-            await accion();
-            recargar();
-            toast.exito(mensajeExito);
+            const resultado = await accion();
+            toast.exito(typeof mensajeExito === "function" ? mensajeExito(resultado) : mensajeExito);
         } catch (errorApi) {
             toast.error(errorApi.message);
         } finally {
+            // También tras un error: la lista puede estar desactualizada (otro gestor cambió el stock).
+            recargar();
             setOcupadoId("");
         }
     };
@@ -177,15 +205,14 @@ const GestionProductos = () => {
             return undefined;
         });
 
-    const ajustarStock = (producto, cambio) => {
-        const nuevoStock = producto.stock + cambio;
-        return ejecutar(producto, () => actualizarProducto(producto.id, { stock: nuevoStock }), `Stock de ${producto.nombre}: ${nuevoStock}.`);
-    };
+    // La base suma o resta sobre el stock real, así no se pisa un cambio hecho por otra persona.
+    const cambiarStock = (producto, cambio) =>
+        ejecutar(producto, () => ajustarStock(producto.id, cambio), (stock) => `Stock de ${producto.nombre}: ${stock}.`);
 
     const borrar = async (producto) => {
         const aceptado = await confirmar({
             titulo: "Borrar producto",
-            mensaje: `¿Borrar ${producto.nombre}? Se elimina de la tienda junto con su imagen. No se puede deshacer. Si solo quieres ocultarlo, usa Desactivar.`,
+            mensaje: `¿Borrar ${producto.nombre}? Se elimina de la tienda junto con sus fotos y no se puede deshacer. Si ya aparece en pedidos no se podrá borrar: en ese caso usa Desactivar.`,
         });
         if (aceptado) await ejecutar(producto, () => borrarProducto(producto.id), `Se borró ${producto.nombre}.`);
     };
@@ -256,7 +283,7 @@ const GestionProductos = () => {
                                             alEditar={abrirFormulario}
                                             alAlternar={alternar}
                                             alBorrar={borrar}
-                                            alAjustarStock={ajustarStock}
+                                            alAjustarStock={cambiarStock}
                                         />
                                     ))}
                                 </tbody>

@@ -1,13 +1,13 @@
 -- =====================================================================
 -- catalogo.sql
--- Catálogo de productos y repuestos: tabla, vista pública, bucket de imágenes
--- y reglas de seguridad (RLS).
+-- Catálogo de productos y repuestos: tabla, vista pública y bucket de imágenes.
 --
 -- Quién puede qué:
 --   - Visitante sin sesión (anon):  leer productos_activos.
 --   - Cliente o técnico:            leer productos_activos. No pueden escribir.
---   - Administrador:                leer, crear, editar y borrar en productos
---                                   y subir o borrar imágenes del bucket.
+--   - Personal de tienda (administrador y gestor de tienda): leer, crear,
+--     editar y borrar productos y sus imágenes. Esas reglas están en
+--     permisos_tienda.sql, que se ejecuta después de este archivo.
 --
 -- Requiere la función public.rol_actual() que ya existe en el proyecto
 -- (la usan fotos_servicio.sql, mensajes_servicio.sql y crear_tecnico.sql).
@@ -52,30 +52,9 @@ comment on column public.productos.imagenes_rutas is 'Rutas de las fotos del pro
 
 alter table public.productos enable row level security;
 
--- Supabase da permisos por defecto a anon y authenticated: se quitan y se dejan solo los necesarios.
-revoke all on public.productos from anon, authenticated;
-grant select, insert, update, delete on public.productos to authenticated;
-
-drop policy if exists "productos_admin_select" on public.productos;
-create policy "productos_admin_select"
-on public.productos for select to authenticated
-using (public.rol_actual() = 'admin');
-
-drop policy if exists "productos_admin_insert" on public.productos;
-create policy "productos_admin_insert"
-on public.productos for insert to authenticated
-with check (public.rol_actual() = 'admin');
-
-drop policy if exists "productos_admin_update" on public.productos;
-create policy "productos_admin_update"
-on public.productos for update to authenticated
-using (public.rol_actual() = 'admin')
-with check (public.rol_actual() = 'admin');
-
-drop policy if exists "productos_admin_delete" on public.productos;
-create policy "productos_admin_delete"
-on public.productos for delete to authenticated
-using (public.rol_actual() = 'admin');
+-- Los visitantes solo leen la vista pública. Los permisos del personal de tienda
+-- (y la regla de que el stock se cambia solo con funciones) están en permisos_tienda.sql.
+revoke all on public.productos from anon;
 
 -- ---------------------------------------------------------------------
 -- 2. Vista pública: solo los productos activos
@@ -97,8 +76,8 @@ comment on view public.productos_activos is 'Productos del catálogo con activo 
 
 -- ---------------------------------------------------------------------
 -- 3. Storage: bucket público para leer imágenes
--- Cualquiera puede ver una imagen si conoce su URL; solo el administrador sube,
--- cambia o borra archivos.
+-- Cualquiera puede ver una imagen si conoce su URL; solo el personal de tienda sube,
+-- cambia o borra archivos (políticas en permisos_tienda.sql).
 -- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('productos', 'productos', true, 3145728, array['image/jpeg', 'image/png', 'image/webp'])
@@ -106,27 +85,6 @@ on conflict (id) do update
 set public = true,
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
-
-drop policy if exists "productos_storage_admin_select" on storage.objects;
-create policy "productos_storage_admin_select"
-on storage.objects for select to authenticated
-using (bucket_id = 'productos' and public.rol_actual() = 'admin');
-
-drop policy if exists "productos_storage_admin_insert" on storage.objects;
-create policy "productos_storage_admin_insert"
-on storage.objects for insert to authenticated
-with check (bucket_id = 'productos' and public.rol_actual() = 'admin');
-
-drop policy if exists "productos_storage_admin_update" on storage.objects;
-create policy "productos_storage_admin_update"
-on storage.objects for update to authenticated
-using (bucket_id = 'productos' and public.rol_actual() = 'admin')
-with check (bucket_id = 'productos' and public.rol_actual() = 'admin');
-
-drop policy if exists "productos_storage_admin_delete" on storage.objects;
-create policy "productos_storage_admin_delete"
-on storage.objects for delete to authenticated
-using (bucket_id = 'productos' and public.rol_actual() = 'admin');
 
 -- ---------------------------------------------------------------------
 -- 4. Datos de ejemplo (8 productos)

@@ -102,9 +102,21 @@ La tienda tiene un carrito lateral que se guarda en el navegador y envía el ped
 - **Servicios**: listado con filtros, búsqueda y paginación, detalle, reasignación de técnico y exportación a CSV.
 - **Técnicos**: creación de cuentas, edición, disponibilidad y activación o desactivación.
 - **Clientes**: listado y detalle con sus dispositivos y servicios.
+- **Gestores de tienda**: crear cuentas de gestor, editar su nombre y teléfono, y dar o retirar el acceso.
 - **Tienda**: productos con imagen, precio, categoría y stock, ajuste rápido de stock y aviso de productos por reponer.
-- **Pedidos**: pedidos de la tienda por estado.
+- **Inventario**, **Pedidos** y **Reportes de tienda**: las mismas páginas del gestor de tienda.
 - **Estadísticas**: tendencias mensuales, problemas frecuentes, servicios por tipo de dispositivo y técnicos mejor calificados.
+
+### Panel del gestor de tienda (`/gestor-tienda`)
+
+Rol `gestor_tienda` ("Gestor de tienda"): administra la tienda sin ver reparaciones, usuarios ni estadísticas generales. Detalle de permisos, scripts y pruebas en [docs/GESTOR_TIENDA.md](./docs/GESTOR_TIENDA.md).
+
+- **Resumen**: productos activos e inactivos, agotados, pocas unidades, valor del inventario, pedidos pendientes y confirmados, pedidos recientes e ingresos de pedidos entregados en el periodo.
+- **Productos**: crear, editar, activar o desactivar productos con hasta ocho fotos.
+- **Inventario**: existencias con filtros, ajuste rápido o cantidad exacta y stock por categoría.
+- **Pedidos**: búsqueda, filtros por estado y fecha, detalle, cambio de estado y contacto por WhatsApp. Muestra el estado del pago en línea aparte del estado del pedido y marca los pagos aprobados que necesitan revisión.
+- **Reportes**: ingresos, pedidos por estado, productos más vendidos y por reponer, con descarga en CSV.
+- **Mi perfil**: nombre y teléfono.
 
 Todos los paneles reciben avisos en tiempo real en el menú de notificaciones.
 
@@ -126,7 +138,9 @@ La aplicación es una SPA. Supabase Auth administra las sesiones y la API ASP.NE
 | Camino | Módulos |
 |---|---|
 | API ASP.NET (`src/api/backend.js`) | Leer y actualizar perfiles; listar y crear dispositivos; listar, ver y crear solicitudes; reseñas públicas |
-| Supabase directo | Registro, inicio de sesión y contraseñas (Supabase Auth); editar y eliminar dispositivos; cotizaciones y calificación; tienda; paneles del técnico y del administrador; fotos, chat y notificaciones |
+| Supabase directo | Registro, inicio de sesión y contraseñas (Supabase Auth); editar y eliminar dispositivos; cotizaciones y calificación; tienda; paneles del técnico, del administrador y del gestor de tienda; fotos, chat y notificaciones |
+
+La API también crea las cuentas de gestor de tienda (`POST /api/gestores`) con la API administrativa de Supabase Auth: la clave secreta solo existe en el servidor.
 
 Las vistas públicas (`tecnicos_publicos`, `resenas_publicas` y `productos_activos`) exponen solo los campos que el sitio necesita mostrar.
 
@@ -138,10 +152,11 @@ src/
 │   ├── portada/        Ilustración de la portada
 │   ├── reparaciones/   Secciones de la página de reparaciones
 │   ├── tienda/         Encabezado, tarjetas y carrito de la tienda
-│   └── panel/          Piezas comunes de los tres paneles
+│   └── panel/          Piezas comunes de los paneles
 │       ├── cliente/    Solo del panel del cliente
 │       ├── tecnico/    Solo del panel del técnico
-│       └── admin/      Solo del panel del administrador
+│       ├── admin/      Solo del panel del administrador
+│       └── tienda/     Gestión de la tienda (administrador y gestor)
 ├── contexto/           Sesión, tienda, avisos y confirmaciones compartidos por la app
 ├── datos/              Datos fijos: servicios, estados, menús, categorías y contacto
 ├── hooks/              Lógica reutilizable de las páginas
@@ -150,7 +165,9 @@ src/
 │   ├── tienda/         Catálogo y detalle de producto
 │   ├── cliente/        Panel del cliente (/cliente)
 │   ├── tecnico/        Panel del técnico (/tecnico)
-│   └── admin/          Panel del administrador (/admin)
+│   ├── admin/          Panel del administrador (/admin)
+│   ├── gestor/         Panel del gestor de tienda (/gestor-tienda)
+│   └── gestionTienda/  Productos, inventario, pedidos y reportes (administrador y gestor)
 ├── utilidades/         Filtros, formatos, reportes, CSV, PDF, inventario y WhatsApp
 └── Aplicacion.jsx      Rutas de la aplicación
 supabase/               Scripts SQL de tablas, vistas, funciones y políticas
@@ -180,7 +197,8 @@ Requisitos: Node.js 20.19 o superior, un proyecto de Supabase y, para la API, el
 3. Inicia la API y el frontend, inicia sesión como cliente y crea un pedido con los datos de entrega completos.
 4. En el resumen del pedido, pulsa **Pagar con Wompi**. Debe abrirse el checkout embebido sobre TecnoHouse y mostrar los datos de envío. La respuesta del backend puede inspeccionarse en la pestaña Network; solo contiene la llave pública y la firma calculada por el backend.
 5. Cierra el widget sin pagar. La app debe navegar a `/pago/resultado/{idPedido}` y mostrar el último estado guardado por la API. Vuelve al detalle del pedido y pulsa de nuevo **Pagar con Wompi**: el backend crea otro intento con una referencia nueva.
-6. Puedes completar un pago de sandbox desde el widget. La confirmación del estado en la app depende de que esté desplegado el webhook de Wompi que actualiza `pagos`; la redirección o el callback del navegador no confirman el pago.
+6. Puedes completar un pago de sandbox desde el widget. La redirección o el callback del navegador no confirman el pago: lo hace el webhook (`POST /api/pagos/wompi/webhook`) o, si Wompi no puede llegar a la API (por ejemplo, en `localhost`), la consulta de respaldo que la API hace cada 5 minutos a los pagos que llevan más de 10 minutos pendientes.
+7. Un pago aprobado confirma el pedido y descuenta el stock una sola vez, aunque el aviso llegue repetido o el personal de tienda ya lo haya confirmado a mano. Cancelar un pedido pagado devuelve las unidades, pero no reembolsa el dinero: eso se gestiona aparte (ver [docs/GESTOR_TIENDA.md](./docs/GESTOR_TIENDA.md)).
 
 Cada integrante configura sus propios secretos de la API; la contraseña de la base de datos nunca se guarda en el repositorio. Vite no vigila la carpeta `backend/`, así que Visual Studio puede estar abierto mientras corre `npm run dev`.
 
@@ -208,10 +226,16 @@ Se hace una sola vez por proyecto.
 | `supabase/notificaciones.sql` | Crea los avisos privados de cada usuario. Requiere los dos scripts anteriores. |
 | `supabase/crear_tecnico.sql` | Permite que el administrador cree técnicos desde la aplicación. |
 | `supabase/catalogo.sql` | Crea/actualiza la tabla de productos, la vista pública `productos_activos` y el bucket de imágenes de la tienda. Incluye la migración de una imagen a varias rutas por producto. |
-| `supabase/pedidos.sql` | Crea las tablas de pedidos y sus productos, con funciones para registrar pedidos y cambiar su estado; al confirmar descuenta el stock y al cancelar un pedido confirmado lo devuelve. |
-| `supabase/datos_prueba.sql` | Opcional, solo para desarrollo. Crea un admin, tres técnicos, dos clientes y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo. |
+| `supabase/pedidos.sql` | Crea las tablas de pedidos y sus productos y la función `crear_pedido`, que copia nombres y precios del catálogo. Se reconstruyó desde la base en uso porque no estaba en el repositorio. |
+| `supabase/rol_gestor_tienda.sql` | Agrega el rol `gestor_tienda`. Va solo, en su propio *Run*: el valor nuevo debe quedar guardado antes de usarse. |
+| `supabase/permisos_tienda.sql` | Permisos de la tienda para el administrador y el gestor (productos, imágenes, pedidos), cambios de stock sin pisar los de otros, `cambiar_estado_pedido` y las funciones para administrar gestores. |
+| `supabase/pagos.sql` | Crea las tablas `pagos` y `wompi_eventos` y sus permisos: solo lectura con RLS (el gestor ve los pagos de pedidos, nunca los de cotizaciones). Se reconstruyó desde la base en uso porque no estaba en el repositorio. |
+| `supabase/pagos_wompi.sql` | Registra intentos de pago (`registrar_pago_wompi_pedido`) y el trigger que confirma el pedido y descuenta el stock al aprobarse el pago. |
+| `supabase/pedidos_lectura_rls.sql` | Permite a cada comprador leer sus pedidos, sus productos y sus pagos. |
+| `supabase/datos_prueba.sql` | Opcional, solo para desarrollo. Crea un admin, tres técnicos, dos clientes, un gestor de tienda y servicios en distintos estados. Los correos y la contraseña están al inicio del archivo. |
+| `supabase/gestor_prueba.sql` | Opcional, solo para desarrollo. Crea solo la cuenta de prueba del gestor en una base que ya tiene datos. |
 
-Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base.
+Los scripts de fotos, técnicos y catálogo usan la función `public.rol_actual()`, que ya debe existir en la base. Volver a ejecutar `catalogo.sql` o `pedidos.sql` no le quita permisos al gestor: esos permisos solo están en `permisos_tienda.sql`.
 
 Si el proyecto de Supabase ya estaba configurado antes de habilitar varias fotos por producto, vuelve a ejecutar `supabase/catalogo.sql` para agregar la columna `imagenes_rutas` y actualizar la vista pública. El script conserva la ruta de la foto que ya tenía cada producto.
 
@@ -221,11 +245,12 @@ Si el proyecto de Supabase ya estaba configurado antes de habilitar varias fotos
 
 - **API ASP.NET**: abre `backend/TecnoHouse.Api.sln` en Visual Studio y configura sus secretos locales según `backend/README.md`. La API usa el JWT de Supabase y RLS para autorizar las solicitudes.
 - **Cuentas**: Supabase Auth. Hay que confirmar el correo antes de iniciar sesión.
-- **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico` o `admin`). Un trigger crea el perfil con rol `cliente` al registrarse; los técnicos los crea el administrador desde la aplicación y el rol `admin` se asigna desde la base de datos.
+- **Perfiles y roles**: tabla `perfiles` (`cliente`, `tecnico`, `admin` o `gestor_tienda`). Un trigger crea el perfil con rol `cliente` al registrarse; los técnicos y los gestores de tienda los crea el administrador desde la aplicación y el rol `admin` se asigna desde la base de datos.
 - **Dispositivos**: tabla `dispositivos`.
 - **Servicios**: tabla `servicios`, con sus cotizaciones, fotos (`fotos_servicio`), mensajes (`mensajes_servicio`) y avisos (`notificaciones`).
 - **Productos**: tabla `productos`. La tienda lee la vista pública `productos_activos`; las fotos se guardan en el bucket `productos` y sus rutas en `imagenes_rutas`.
-- **Pedidos**: tablas `pedidos` y `pedido_items`. `crear_pedido` registra el pedido usando los precios vigentes de los productos; `cambiar_estado_pedido` permite al administrador avanzar o cancelar pedidos y gestiona el stock al confirmar o cancelar.
+- **Pedidos**: tablas `pedidos` y `pedido_items`. `crear_pedido` registra el pedido usando los precios vigentes de los productos; `cambiar_estado_pedido` permite al administrador y al gestor avanzar o cancelar pedidos y gestiona el stock al confirmar o cancelar.
+- **Pagos**: tablas `pagos` (un registro por intento de pago en Wompi) y `wompi_eventos` (avisos recibidos por el webhook). Solo la API cambia el estado de un pago.
 - **Contacto público**: completa `src/datos/contacto.js` con los datos verificados del negocio antes de publicar el sitio.
 
 ## Pendiente
@@ -242,6 +267,7 @@ También falta contenido real del negocio:
 | Documento | Contenido |
 |---|---|
 | [GUIA_CAMBIOS_PROYECTO.md](./docs/GUIA_CAMBIOS_PROYECTO.md) | Evolución del proyecto y dónde está cada parte del código. |
+| [GESTOR_TIENDA.md](./docs/GESTOR_TIENDA.md) | Rol de gestor de tienda: permisos, rutas, scripts, cuenta de prueba y verificaciones. |
 | [VALIDACION_FINAL_Y_GUION_DEMO.md](./docs/VALIDACION_FINAL_Y_GUION_DEMO.md) | Checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios. |
 | [INFORME_REVISION_EXPOSOTWARE.md](./docs/INFORME_REVISION_EXPOSOTWARE.md) | Avances, riesgos y recomendaciones para la presentación. |
 | [INFORME_LINEA_BASE_TECNICA.md](./docs/INFORME_LINEA_BASE_TECNICA.md) | Diagnóstico técnico inicial: entorno, comandos y hallazgos. |

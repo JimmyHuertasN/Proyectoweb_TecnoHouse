@@ -15,6 +15,10 @@
 --   tecnico   laura.mendez@tecnohouse.test Consolas (no disponible)
 --   cliente   maria.lopez@tecnohouse.test  Cotización pendiente, solicitud sin técnico
 --   cliente   pedro.gomez@tecnohouse.test  Servicio en reparación y uno ya calificado
+--   gestor_tienda gestor.tienda@tecnohouse.test  Panel de la tienda (productos, inventario y pedidos)
+--
+-- Requiere rol_gestor_tienda.sql ejecutado antes (en otro "Run"). Para crear solo
+-- la cuenta del gestor en una base que ya tiene estos datos, usa gestor_prueba.sql.
 -- =====================================================================
 
 -- Crea una cuenta de Supabase Auth ya confirmada (sin enviar correo) y su perfil.
@@ -61,11 +65,13 @@ select pg_temp.crear_usuario_prueba('b0000000-0000-4000-8000-000000000002', 'car
 select pg_temp.crear_usuario_prueba('b0000000-0000-4000-8000-000000000003', 'laura.mendez@tecnohouse.test', 'Laura Méndez', '303 333 3333');
 select pg_temp.crear_usuario_prueba('c0000000-0000-4000-8000-000000000001', 'maria.lopez@tecnohouse.test', 'María López', '310 444 4444');
 select pg_temp.crear_usuario_prueba('c0000000-0000-4000-8000-000000000002', 'pedro.gomez@tecnohouse.test', 'Pedro Gómez', '311 555 5555');
+select pg_temp.crear_usuario_prueba('d0000000-0000-4000-8000-000000000001', 'gestor.tienda@tecnohouse.test', 'Gestor de Tienda TecnoHouse', '304 666 6666');
 
 -- ---------------------------------------------------------------------
--- 2. Roles (el admin y los técnicos se asignan aquí, nunca desde el registro)
+-- 2. Roles (el admin, los técnicos y el gestor se asignan aquí, nunca desde el registro)
 -- ---------------------------------------------------------------------
 update public.perfiles set rol = 'admin' where id = 'a0000000-0000-4000-8000-000000000001';
+update public.perfiles set rol = 'gestor_tienda' where id = 'd0000000-0000-4000-8000-000000000001';
 update public.perfiles set rol = 'tecnico'
 where id in ('b0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000003');
 
