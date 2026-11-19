@@ -1,10 +1,11 @@
 /*
     productos.js
-    Catálogo de productos y repuestos (supabase/catalogo.sql).
+    Catálogo de productos y repuestos (supabase/catalogo.sql y permisos_tienda.sql).
 
-    El público lee la vista "productos_activos". Solo el administrador puede leer
-    todos los productos, crearlos, editarlos o borrarlos, y subir sus imágenes
-    al bucket público "productos".
+    El público lee la vista "productos_activos". El personal de tienda (administrador
+    y gestor de tienda) lee todos los productos, los crea, edita y borra, y sube sus
+    imágenes al bucket público "productos". El stock solo cambia con las funciones
+    ajustar_stock_producto y fijar_stock_producto, que no pisan cambios de otros.
 */
 import { normalizarTexto } from "../utilidades/filtros.js";
 import { obtenerCliente, verificar } from "./supabase.js";
@@ -18,11 +19,11 @@ export const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"]
 const EXTENSIONES = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 // Incluye la columna nueva que contiene todas las fotos para las consultas actuales.
 const COLUMNAS_PUBLICAS = "id, nombre, descripcion, categoria, precio, stock, imagen_ruta, imagenes_rutas, creado_en";
-const COLUMNAS_ADMIN = `${COLUMNAS_PUBLICAS}, activo`;
+const COLUMNAS_GESTION = `${COLUMNAS_PUBLICAS}, activo`;
 // Mantiene disponibles los productos si la base aún expone el esquema de una sola foto.
 const COLUMNAS_ANTERIORES = "id, nombre, descripcion, categoria, precio, stock, imagen_ruta, creado_en";
-const COLUMNAS_ADMIN_ANTERIORES = `${COLUMNAS_ANTERIORES}, activo`;
-const SIN_PERMISO = "No se pudo guardar el cambio. Revisa los permisos del administrador.";
+const COLUMNAS_GESTION_ANTERIORES = `${COLUMNAS_ANTERIORES}, activo`;
+const SIN_PERMISO = "No se pudo guardar el cambio. Tu cuenta no tiene permiso para administrar la tienda.";
 
 const consultarProductos = async (consultaActual, consultaAnterior) => {
     try {
@@ -60,13 +61,12 @@ const aProducto = (fila) => {
     };
 };
 
-/* Datos del formulario → columnas de la tabla. Solo incluye lo que se envió. */
-const aFila = ({ nombre, descripcion, categoria, precio, stock, activo }) => ({
+/* Datos del formulario → columnas de la tabla. Solo incluye lo que se envió. El stock va aparte (ver fijarStock). */
+const aFila = ({ nombre, descripcion, categoria, precio, activo }) => ({
     ...(nombre !== undefined && { nombre: nombre.trim() }),
     ...(descripcion !== undefined && { descripcion: descripcion.trim() }),
     ...(categoria !== undefined && { categoria: categoria.trim() }),
     ...(precio !== undefined && { precio: Number(precio) }),
-    ...(stock !== undefined && { stock: Number(stock) }),
     ...(activo !== undefined && { activo }),
 });
 
@@ -86,12 +86,12 @@ export const obtenerProductos = async () => {
     return filas.map(aProducto);
 };
 
-/* Todos los productos, activos o no. Solo el administrador obtiene filas. */
-export const obtenerProductosAdmin = async () => {
+/* Todos los productos, activos o no. Solo el personal de tienda obtiene filas. */
+export const obtenerTodosLosProductos = async () => {
     const cliente = obtenerCliente();
     const filas = await consultarProductos(
-        () => cliente.from("productos").select(COLUMNAS_ADMIN).order("nombre"),
-        () => cliente.from("productos").select(COLUMNAS_ADMIN_ANTERIORES).order("nombre")
+        () => cliente.from("productos").select(COLUMNAS_GESTION).order("nombre"),
+        () => cliente.from("productos").select(COLUMNAS_GESTION_ANTERIORES).order("nombre")
     );
     return filas.map(aProducto);
 };
@@ -158,8 +158,9 @@ export const crearProducto = async (datos, archivos = []) => {
         const fila = verificar(
             await obtenerCliente()
                 .from("productos")
-                .insert({ id, ...aFila(datos), imagen_ruta: imagenesRutas[0] ?? null, imagenes_rutas: imagenesRutas })
-                .select(COLUMNAS_ADMIN)
+                // Un producto nuevo todavía no tiene ventas: su stock inicial se guarda junto con él.
+                .insert({ id, ...aFila(datos), stock: Number(datos.stock), imagen_ruta: imagenesRutas[0] ?? null, imagenes_rutas: imagenesRutas })
+                .select(COLUMNAS_GESTION)
                 .single()
         );
         return aProducto(fila);
@@ -169,8 +170,22 @@ export const crearProducto = async (datos, archivos = []) => {
     }
 };
 
-/* Actualiza datos y fotos; guarda primero las nuevas y limpia las que se quitaron tras confirmar el cambio. */
-export const actualizarProducto = async (id, datos, archivos = [], imagenesAnteriores = []) => {
+/* Suma o resta unidades sobre el stock que haya en la base en ese momento. Devuelve el stock nuevo. */
+export const ajustarStock = async (id, cambio) =>
+    verificar(await obtenerCliente().rpc("ajustar_stock_producto", { p_producto_id: id, p_cambio: cambio }));
+
+/*
+    Pone una cantidad exacta. "stockAnterior" es el valor que se estaba viendo: si alguien
+    (otro gestor o un pedido confirmado) lo cambió mientras tanto, la base rechaza el cambio.
+*/
+export const fijarStock = async (id, stock, stockAnterior) =>
+    verificar(await obtenerCliente().rpc("fijar_stock_producto", { p_producto_id: id, p_stock: stock, p_stock_anterior: stockAnterior }));
+
+/*
+    Actualiza datos y fotos; guarda primero las nuevas y limpia las que se quitaron tras confirmar el cambio.
+    Si el stock del formulario es distinto al que tenía el producto, se guarda al final con fijarStock.
+*/
+export const actualizarProducto = async (id, datos, archivos = [], imagenesAnteriores = [], stockAnterior = null) => {
     // Cuenta fotos conservadas y nuevas antes de subir archivos innecesarios.
     if (datos.imagenesRutas && datos.imagenesRutas.length + archivos.length > MAXIMO_IMAGENES_PRODUCTO) {
         throw new Error(`Puedes guardar máximo ${MAXIMO_IMAGENES_PRODUCTO} fotos por producto.`);
@@ -179,8 +194,9 @@ export const actualizarProducto = async (id, datos, archivos = [], imagenesAnter
     const imagenesSubidas = await subirImagenesProducto(archivos, datos.nombre ?? "producto", id);
     const imagenesRutas = datos.imagenesRutas ? [...datos.imagenesRutas, ...imagenesSubidas] : undefined;
 
+    let fila;
     try {
-        const filas = exigirFilas(
+        [fila] = exigirFilas(
             verificar(
                 await obtenerCliente()
                     .from("productos")
@@ -189,22 +205,36 @@ export const actualizarProducto = async (id, datos, archivos = [], imagenesAnter
                         ...(imagenesRutas && { imagenes_rutas: imagenesRutas, imagen_ruta: imagenesRutas[0] ?? null }),
                     })
                     .eq("id", id)
-                    .select(COLUMNAS_ADMIN)
+                    .select(COLUMNAS_GESTION)
             )
         );
-        // Borra las fotos retiradas solo después de confirmar que la fila se actualizó.
-        if (imagenesRutas) await quitarImagenes(imagenesAnteriores.filter((ruta) => !imagenesRutas.includes(ruta)));
-        return aProducto(filas[0]);
     } catch (error) {
         await quitarImagenes(imagenesSubidas);
         throw error;
     }
+
+    // Borra las fotos retiradas solo después de confirmar que la fila se actualizó.
+    if (imagenesRutas) await quitarImagenes(imagenesAnteriores.filter((ruta) => !imagenesRutas.includes(ruta)));
+
+    const stockNuevo = datos.stock === undefined ? null : Number(datos.stock);
+    if (stockNuevo !== null && stockAnterior !== null && stockNuevo !== stockAnterior) {
+        try {
+            fila.stock = await fijarStock(id, stockNuevo, stockAnterior);
+        } catch (error) {
+            const errorStock = new Error(`Se guardaron los demás datos, pero no el stock. ${error.message}`);
+            // Avisa a la página que el producto sí cambió y que debe recargarlo.
+            errorStock.datosGuardados = true;
+            throw errorStock;
+        }
+    }
+    return aProducto(fila);
 };
 
 export const toggleActivo = async (id, activo) => {
     exigirFilas(verificar(await obtenerCliente().from("productos").update({ activo }).eq("id", id).select("id")));
 };
 
+/* La base no deja borrar un producto que aparece en pedidos: responde con un mensaje que sugiere desactivarlo. */
 export const borrarProducto = async (id) => {
     const [fila] = exigirFilas(
         verificar(await obtenerCliente().from("productos").delete().eq("id", id).select("imagen_ruta, imagenes_rutas"))
