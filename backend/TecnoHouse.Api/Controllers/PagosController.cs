@@ -251,7 +251,8 @@ public sealed class PagosController(
                 select pago.estado, pago.referencia, pago.monto_centavos, pago.metodo_pago
                 from public.pagos as pago
                 where pago.pedido_id = p.id
-                order by pago.creado_en desc, pago.id desc
+                -- Si el pedido tiene un pago aprobado se muestra ese; si no, el intento más reciente.
+                order by (pago.estado = 'APPROVED'::public.estado_pago) desc, pago.creado_en desc, pago.id desc
                 limit 1
             ) as pa on true
             where p.id = @pedido_id

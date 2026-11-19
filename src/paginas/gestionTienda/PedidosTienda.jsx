@@ -242,13 +242,13 @@ const PedidosTienda = () => {
 
                     <ResultadosPaginados id="pedidos" paginado={paginado}>
                         <div role="region" aria-label="Lista de pedidos" tabIndex={0} className="overflow-x-auto rounded-xl border border-borde focus-visible:outline-2 focus-visible:outline-marca">
-                            <table className="w-full min-w-[70rem] text-left text-sm">
+                            {/* El ancho mínimo cabe en pantallas de 1280 px con el menú lateral; en pantallas menores la tabla se desplaza. */}
+                            <table className="w-full min-w-[56rem] text-left text-sm">
                                 <caption className="sr-only">Pedidos registrados en la tienda</caption>
                                 <thead className="bg-tarjeta text-xs tracking-wide text-slate-400 uppercase">
                                     <tr>
                                         <th scope="col" className="px-4 py-3">Pedido</th>
                                         <th scope="col" className="px-4 py-3">Cliente</th>
-                                        <th scope="col" className="px-4 py-3">Teléfono</th>
                                         <th scope="col" className="px-4 py-3">Total</th>
                                         <th scope="col" className="px-4 py-3">Estado</th>
                                         <th scope="col" className="px-4 py-3">Pago</th>
@@ -264,12 +264,14 @@ const PedidosTienda = () => {
                                             <Fragment key={pedido.id}>
                                                 <tr className="bg-fondo/60">
                                                     <td className="px-4 py-3">
-                                                        <button type="button" aria-expanded={expandido} aria-controls={`detalle-pedido-${pedido.id}`} onClick={() => setPedidoAbierto(expandido ? "" : pedido.id)} className="inline-flex min-h-10 items-center gap-2 font-semibold text-marca hover:underline">
+                                                        <button type="button" aria-expanded={expandido} aria-controls={`detalle-pedido-${pedido.id}`} onClick={() => setPedidoAbierto(expandido ? "" : pedido.id)} className="inline-flex min-h-10 items-center gap-2 font-semibold whitespace-nowrap text-marca hover:underline">
                                                             {codigoPedido(pedido.numero)}<ChevronDown size={16} className={expandido ? "rotate-180 transition-transform" : "transition-transform"} aria-hidden="true" />
                                                         </button>
                                                     </td>
-                                                    <td className="px-4 py-3 font-medium text-white">{pedido.clienteNombre}</td>
-                                                    <td className="px-4 py-3 tabular-nums">{pedido.clienteTelefono}</td>
+                                                    <td className="px-4 py-3">
+                                                        <p className="font-medium text-white">{pedido.clienteNombre}</p>
+                                                        <p className="text-xs whitespace-nowrap text-slate-400 tabular-nums">{pedido.clienteTelefono}</p>
+                                                    </td>
                                                     <td className="px-4 py-3 font-semibold tabular-nums">{formatearPesos(pedido.total)}</td>
                                                     <td className="px-4 py-3"><EtiquetaEstadoPedido estado={pedido.estado} /></td>
                                                     <td className="px-4 py-3">
@@ -293,7 +295,7 @@ const PedidosTienda = () => {
                                                     </td>
                                                 </tr>
                                                 <tr hidden={!expandido}>
-                                                    <td colSpan={8} className="bg-tarjeta/50 px-4 py-5">
+                                                    <td colSpan={7} className="bg-tarjeta/50 px-4 py-5">
                                                         <DetallePedido pedido={pedido} />
                                                     </td>
                                                 </tr>

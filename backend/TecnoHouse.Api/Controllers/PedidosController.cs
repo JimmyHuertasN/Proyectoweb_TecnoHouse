@@ -186,7 +186,8 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
                                 select pa.estado::text
                                 from public.pagos pa
                                 where pa.pedido_id = p.id
-                                order by pa.creado_en desc, pa.id desc
+                                -- Si el pedido tiene un pago aprobado se muestra ese; si no, el intento más reciente.
+                                order by (pa.estado = 'APPROVED'::public.estado_pago) desc, pa.creado_en desc, pa.id desc
                                 limit 1
                             )
                         )
@@ -256,7 +257,8 @@ public sealed class PedidosController(TecnoHouseDbContext db) : ControllerBase
                     select pa.estado::text
                     from public.pagos pa
                     where pa.pedido_id = p.id
-                    order by pa.creado_en desc, pa.id desc
+                    -- Si el pedido tiene un pago aprobado se muestra ese; si no, el intento más reciente.
+                    order by (pa.estado = 'APPROVED'::public.estado_pago) desc, pa.creado_en desc, pa.id desc
                     limit 1
                 )
             )::text

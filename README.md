@@ -76,7 +76,7 @@ Durante todo el proceso, cliente y técnico pueden escribirse en la conversació
   <img src="docs/capturas/dashboard.png" alt="Dashboard del administrador" width="700">
 </p>
 
-**Panel del gestor de tienda**: pedidos con su estado y el del pago por separado, filtros y acciones. Avisa cuando un pago aprobado necesita revisión.
+**Panel del gestor de tienda**: pedidos con su estado y el del pago por separado, filtros y acciones. Cada pedido se despliega con sus productos, el pago en línea, la entrega y el contacto por WhatsApp. Avisa cuando un pago aprobado necesita revisión.
 
 <p align="center">
   <img src="docs/capturas/gestor-pedidos.png" alt="Pedidos en el panel del gestor de tienda" width="700">
