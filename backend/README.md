@@ -9,7 +9,7 @@ Solución ASP.NET Core para abrir en Visual Studio: `TecnoHouse.Api.sln`.
 - Mapeo de las relaciones y enums que ya aparecen en la base de datos.
 - Controladores con GET y POST para esas tablas, además de GET de solo lectura para las vistas públicas.
 - `POST /api/pedidos`, que obtiene la identidad del JWT, valida productos activos y cantidades, y delega precio, stock y total a `public.crear_pedido`.
-- `GET /api/pedidos/{id}` y `GET /api/pedidos/mis-pedidos`, que respetan propietario/admin, filtran datos de pago y permiten paginar la lista.
+- `GET /api/pedidos/{id}` y `GET /api/pedidos/mis-pedidos`, que respetan al propietario y al personal de tienda (administrador o gestor), filtran datos de pago y permiten paginar la lista.
 - Validación del JWT de Supabase y paso de la identidad a PostgreSQL para que sigan aplicando las políticas RLS existentes.
 - Scalar en desarrollo para explorar la API.
 
@@ -34,11 +34,25 @@ dotnet user-secrets set "Supabase:Url" "https://<ref>.supabase.co"
 dotnet user-secrets set "ConnectionStrings:TecnoHouse" "Host=<host>;Port=5432;Database=postgres;Username=<usuario-copiado>;Password=<contraseña>;SSL Mode=Require;Trust Server Certificate=true"
 ```
 
-Los endpoints implementados son `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos` y `/api/productos`. `/api/notificaciones` es solo `GET`: las notificaciones las crea la base de datos, no el cliente. Cada `POST` recibe un DTO con los campos que el cliente puede enviar (`Models/SolicitudesEscritura.cs`); el dueño (`clienteId`, `autorId`) sale del claim `sub` del token, y en `POST /api/servicios` el estado inicial es `solicitado` y el técnico queda vacío. `GET /api/servicios/{id}` devuelve un servicio con su dispositivo. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`. Los endpoints de pedidos son específicos: POST delega el cálculo del total a `crear_pedido`; GET filtra por usuario autenticado o administrador.
+Los endpoints implementados son `POST /api/gestores` (ver abajo) y `GET` y `POST` bajo `/api/perfiles`, `/api/tecnicos`, `/api/dispositivos`, `/api/servicios`, `/api/diagnosticos`, `/api/cotizaciones`, `/api/cotizacion-items`, `/api/calificaciones`, `/api/mensajes-servicio`, `/api/servicio-fotos` y `/api/productos`. `/api/notificaciones` es solo `GET`: las notificaciones las crea la base de datos, no el cliente. Cada `POST` recibe un DTO con los campos que el cliente puede enviar (`Models/SolicitudesEscritura.cs`); el dueño (`clienteId`, `autorId`) sale del claim `sub` del token, y en `POST /api/servicios` el estado inicial es `solicitado` y el técnico queda vacío. `GET /api/servicios/{id}` devuelve un servicio con su dispositivo. El perfil actual también usa `PUT /api/perfiles/{id}`. Las vistas públicas usan `GET /api/tecnicos-publicos`, `/api/resenas-publicas` y `/api/productos-activos`.
+
+Los endpoints de pedidos son específicos: POST delega el cálculo del total a `crear_pedido`; GET filtra por usuario autenticado o personal de tienda.
 
 En `TecnoHouse.Api.http` hay solicitudes para comprobar que el precio enviado no altera el total del catálogo y que una llamada sin token devuelve `401`. Esas solicitudes crean pedidos reales; ejecútalas en desarrollo o staging.
 
 El archivo `supabase/pedidos_lectura_rls.sql` añade lectura RLS para pedidos, ítems y pagos propios. Las consultas cruzadas de otro cliente se ocultan como `404`.
+
+## Crear gestores de tienda
+
+`POST /api/gestores` crea la cuenta de un gestor de tienda con la API administrativa de Supabase Auth (cuenta ya confirmada) y luego le da el rol `gestor_tienda` con `conceder_rol_gestor` (`supabase/permisos_tienda.sql`). Antes revisa en la base que quien llama sea administrador. Si el rol no se puede asignar, borra la cuenta recién creada.
+
+Necesita la clave secreta del proyecto (**Settings → API Keys**, `service_role` o `sb_secret_...`) solo en el servidor:
+
+```powershell
+dotnet user-secrets set "Supabase:ServiceRoleKey" "<clave-secreta>"
+```
+
+Sin esa clave el endpoint responde 503 con un mensaje claro, y el administrador puede seguir usando **Dar acceso** con una cuenta de cliente que ya exista. Nunca pongas esta clave en React, en `.env` ni en variables `VITE_*`.
 
 ## Datos pendientes de confirmar
 

@@ -1,6 +1,6 @@
 namespace TecnoHouse.Api.Models;
 
-public enum RolUsuario { cliente, tecnico, admin }
+public enum RolUsuario { cliente, tecnico, admin, gestor_tienda }
 public enum EstadoServicio { solicitado, asignado, en_diagnostico, cotizado, aprobado, en_reparacion, finalizado, calificado }
 public enum EstadoCotizacion { pendiente, aprobada, rechazada }
 public enum GravedadServicio { baja, media, alta }

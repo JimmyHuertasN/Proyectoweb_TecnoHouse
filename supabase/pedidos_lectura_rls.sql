@@ -1,6 +1,8 @@
 -- Permite a cada usuario autenticado leer sus pedidos y líneas, y a la API
 -- consultar el estado de pago solo para pagos vinculados a esos pedidos.
--- Las políticas administrativas existentes siguen dando acceso a admin.
+-- Las políticas del personal de tienda (permisos_tienda.sql y pagos.sql) siguen
+-- dando acceso al administrador y al gestor de tienda.
+-- Orden: después de pagos.sql y pagos_wompi.sql.
 begin;
 
 alter table public.pedidos enable row level security;

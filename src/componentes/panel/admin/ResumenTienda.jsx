@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { obtenerPedidos } from "../../../api/pedidos.js";
-import { obtenerProductosAdmin } from "../../../api/productos.js";
+import { obtenerTodosLosProductos } from "../../../api/productos.js";
 import { ESTADOS_PEDIDO } from "../../../datos/estadosPedido.js";
 import { stockPorCategoria } from "../../../utilidades/inventario.js";
 import Aviso from "../../Aviso.jsx";
@@ -27,7 +27,7 @@ const ResumenTienda = ({ recargas }) => {
     useEffect(() => {
         let vigente = true;
 
-        Promise.all([obtenerProductosAdmin(), obtenerPedidos()])
+        Promise.all([obtenerTodosLosProductos(), obtenerPedidos()])
             .then(([productos, pedidos]) => vigente && setDatos({ productos, pedidos }))
             .catch((errorApi) => vigente && setError(errorApi.message || "No se pudieron cargar los datos de la tienda."));
 

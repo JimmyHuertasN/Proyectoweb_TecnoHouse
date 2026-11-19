@@ -7,6 +7,7 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import EstadoVacio from "../../componentes/panel/EstadoVacio.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { obtenerMisPedidos } from "../../api/pedidos.js";
+import { visualPago } from "../../datos/estadosPago.js";
 import { enlaceWhatsApp, whatsappConfigurado } from "../../utilidades/whatsapp.js";
 import { formatearFechaHora, formatearPesos } from "../../utilidades/formato.js";
 
@@ -19,14 +20,6 @@ const ESTADOS_PEDIDO = {
     cancelado: { etiqueta: "Cancelado", clases: "bg-slate-500/20 text-slate-300" },
 };
 
-const ESTADOS_PAGO = {
-    PENDING: { etiqueta: "Pendiente", clases: "bg-amber-500/15 text-amber-300" },
-    APPROVED: { etiqueta: "Aprobado", clases: "bg-emerald-500/15 text-emerald-300" },
-    DECLINED: { etiqueta: "Rechazado", clases: "bg-red-500/15 text-red-300" },
-    VOIDED: { etiqueta: "Anulado", clases: "bg-slate-500/20 text-slate-300" },
-    ERROR: { etiqueta: "Error", clases: "bg-red-500/15 text-red-300" },
-};
-
 const EtiquetaEstado = ({ etiqueta, clases }) => (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${clases}`}>{etiqueta}</span>
 );
@@ -36,9 +29,7 @@ const FilaPedido = ({ pedido }) => {
     const estadoPago = pedido.estadoPago ? String(pedido.estadoPago).toUpperCase() : null;
     const visualPedido = ESTADOS_PEDIDO[estadoPedido]
         ?? { etiqueta: pedido.estadoPedido || "Desconocido", clases: "bg-slate-500/20 text-slate-300" };
-    const visualPago = estadoPago
-        ? ESTADOS_PAGO[estadoPago] ?? { etiqueta: estadoPago, clases: "bg-slate-500/20 text-slate-300" }
-        : { etiqueta: "Sin iniciar", clases: "bg-slate-500/20 text-slate-300" };
+    const etiquetaPago = visualPago(estadoPago);
     const puedePagar = estadoPedido === "pendiente"
         && (estadoPago === null || ["PENDING", "DECLINED", "ERROR"].includes(estadoPago));
 
@@ -84,7 +75,7 @@ const FilaPedido = ({ pedido }) => {
                 </div>
                 <div className="rounded-lg border border-white/5 bg-fondo p-3">
                     <dt className="mb-2 text-xs text-slate-400">Estado del pago</dt>
-                    <dd><EtiquetaEstado {...visualPago} /></dd>
+                    <dd><EtiquetaEstado {...etiquetaPago} /></dd>
                 </div>
             </dl>
 

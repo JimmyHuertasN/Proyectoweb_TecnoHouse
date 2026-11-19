@@ -47,7 +47,7 @@ const FormularioProducto = ({ producto = null, categorias, alGuardar, alCancelar
     const [valores, setValores] = useState(() => aValores(producto));
     // Los archivos nuevos se mantienen separados de las fotos ya guardadas.
     const [archivos, setArchivos] = useState([]);
-    // Solo se guardan las rutas existentes que el administrador decide conservar.
+    // Solo se guardan las rutas existentes que quien edita decide conservar.
     const [imagenesRutas, setImagenesRutas] = useState(() => producto?.imagenesRutas ?? (producto?.imagenRuta ? [producto.imagenRuta] : []));
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
