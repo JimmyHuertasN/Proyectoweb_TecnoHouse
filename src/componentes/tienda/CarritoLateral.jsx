@@ -163,7 +163,8 @@ const CarritoLateral = () => {
         try {
             const pedido = await crearPedido({ lineas, entrega: datosEntrega });
             // Se presenta el total calculado por el API, nunca el estimado del carrito.
-            setPedidoRegistrado(pedido);
+            // Las líneas se guardan antes de vaciar el carrito: el mensaje de WhatsApp las necesita.
+            setPedidoRegistrado({ ...pedido, lineas });
             vaciar();
         } catch (errorApi) {
             setError(errorApi.message || "No se pudo registrar el pedido. Intenta nuevamente.");
