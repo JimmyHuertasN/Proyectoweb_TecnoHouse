@@ -17,24 +17,29 @@ const DisenoPanel = ({ menu }) => {
 
     return (
         <div className="min-h-screen bg-fondo lg:flex">
-            {panelVisible ? (
-                <MenuLateral
-                    menu={menu}
-                    abierto={menuAbierto}
-                    alCerrar={cerrarMenu}
-                    alOcultar={() => setPanelVisible(false)}
-                />
-            ) : (
-                <button
-                    type="button"
-                    onClick={() => setPanelVisible(true)}
-                    className="fixed left-5 top-3 z-30 hidden size-11 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-superficie text-slate-300 shadow-lg transition hover:bg-white/10 hover:text-white lg:flex"
-                    aria-label="Mostrar menú del panel"
-                    title="Mostrar menú del panel"
-                >
-                    <PanelLeftOpen size={20} aria-hidden="true" />
-                </button>
-            )}
+            {/* El menú siempre está montado: así puede deslizarse al ocultarlo y al mostrarlo. */}
+            <MenuLateral
+                menu={menu}
+                abierto={menuAbierto}
+                visibleEscritorio={panelVisible}
+                alCerrar={cerrarMenu}
+                alOcultar={() => setPanelVisible(false)}
+            />
+
+            {/* Botón para volver a mostrar el menú: aparece cuando el menú termina de salir. */}
+            <button
+                type="button"
+                onClick={() => setPanelVisible(true)}
+                tabIndex={panelVisible ? -1 : 0}
+                aria-hidden={panelVisible}
+                className={`group fixed top-3 left-5 z-30 hidden size-11 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-superficie text-slate-300 shadow-lg transition duration-300 ease-out hover:bg-white/10 hover:text-white motion-reduce:transition-none lg:flex ${
+                    panelVisible ? "pointer-events-none -translate-x-4 opacity-0" : "translate-x-0 opacity-100 delay-200"
+                }`}
+                aria-label="Mostrar menú del panel"
+                title="Mostrar menú del panel"
+            >
+                <PanelLeftOpen size={20} aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none" />
+            </button>
 
             <div className="min-w-0 flex-1">
                 {/* Barra superior solo para celulares y tabletas. */}
