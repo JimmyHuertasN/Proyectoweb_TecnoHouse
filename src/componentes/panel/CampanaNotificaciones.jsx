@@ -35,12 +35,12 @@ const CampanaNotificaciones = ({ enMenuLateral = false }) => {
             <button
                 type="button"
                 onClick={() => setAbiertas((anterior) => !anterior)}
-                className="relative flex size-11 cursor-pointer items-center justify-center rounded-xl border border-slate-700/80 bg-gradient-to-b from-white/[0.07] to-white/[0.02] text-slate-300 shadow-sm shadow-black/20 transition duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:text-white hover:shadow-md hover:shadow-black/30 active:translate-y-0 active:scale-[0.97]"
+                className={`relative flex cursor-pointer items-center justify-center border border-slate-700/80 bg-gradient-to-b from-white/[0.07] to-white/[0.02] text-slate-300 shadow-sm shadow-black/20 transition duration-200 hover:-translate-y-0.5 hover:border-slate-500 hover:text-white hover:shadow-md hover:shadow-black/30 active:translate-y-0 active:scale-[0.97] ${enMenuLateral ? "size-9 rounded-lg" : "size-11 rounded-xl"}`}
                 aria-label={noLeidas ? `Notificaciones, ${noLeidas} sin leer` : "Notificaciones"}
                 aria-expanded={abiertas}
                 aria-controls="menu-notificaciones"
             >
-                <Bell size={19} aria-hidden="true" />
+                <Bell size={enMenuLateral ? 17 : 19} aria-hidden="true" />
                 {noLeidas > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 flex min-w-5 items-center justify-center rounded-full border-2 border-superficie bg-gradient-to-b from-rose-400 to-red-600 px-1 text-[10px] font-bold leading-4 text-white shadow-md shadow-red-950/40">
                         {noLeidas > 99 ? "99+" : noLeidas}

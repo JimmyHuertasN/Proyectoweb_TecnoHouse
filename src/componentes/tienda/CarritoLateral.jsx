@@ -83,15 +83,23 @@ const CarritoLateral = () => {
     const [error, setError] = useState("");
     const [guardando, setGuardando] = useState(false);
     const [pedidoRegistrado, setPedidoRegistrado] = useState(null);
+    const [checkoutActivo, setCheckoutActivo] = useState(false);
 
     const cerrarPanel = useCallback(() => {
         setPedidoRegistrado(null);
+        setCheckoutActivo(false);
         setError("");
         setErroresCampos({});
         cerrarCarrito();
     }, [cerrarCarrito]);
 
-    // Al abrir: foco en cerrar, Escape cierra y el fondo no se desplaza.
+    const abrirCheckout = () => {
+        // Wompi usa el scroll del documento para mover su modal y su contenido embebido.
+        document.body.style.overflow = "";
+        setCheckoutActivo(true);
+    };
+
+    // Al abrir: foco en cerrar y Escape cierra el carrito.
     useEffect(() => {
         if (!carritoAbierto) return undefined;
 
@@ -99,14 +107,27 @@ const CarritoLateral = () => {
         botonCerrar.current?.focus();
         const cerrarConEscape = (evento) => evento.key === "Escape" && cerrarPanel();
         window.addEventListener("keydown", cerrarConEscape);
-        document.body.style.overflow = "hidden";
-
         return () => {
             window.removeEventListener("keydown", cerrarConEscape);
-            document.body.style.overflow = "";
             if (focoAnterior instanceof HTMLElement && focoAnterior.isConnected) focoAnterior.focus();
         };
     }, [carritoAbierto, cerrarPanel]);
+
+    // El carrito bloquea el fondo, pero el checkout de Wompi necesita su propio scroll de página.
+    useEffect(() => {
+        if (!carritoAbierto) return undefined;
+        if (!checkoutActivo) document.body.style.overflow = "hidden";
+        const observadorCheckout = checkoutActivo ? new MutationObserver(() => {
+            const modalWompi = document.querySelector(".waybox-backdrop");
+            if (!modalWompi || modalWompi.hasAttribute("hidden")) setCheckoutActivo(false);
+        }) : null;
+        observadorCheckout?.observe(document.body, { attributes: true, childList: true, subtree: true, attributeFilter: ["class", "hidden"] });
+
+        return () => {
+            observadorCheckout?.disconnect();
+            document.body.style.overflow = "";
+        };
+    }, [carritoAbierto, checkoutActivo]);
 
     const iniciarSesionParaComprar = () => {
         navegar("/login", { state: { desde: "/tienda" } });
@@ -206,7 +227,12 @@ const CarritoLateral = () => {
                         <h3 className="mt-4 text-lg font-semibold text-white">Pedido {codigoPedido(pedidoRegistrado.numero)} registrado</h3>
                         <p className="mt-2 text-slate-300">Total confirmado por TecnoHouse: {formatearPesos(pedidoRegistrado.total)}</p>
                         <div className="mt-6 w-full">
-                            <BotonPagarWompi idPedido={pedidoRegistrado.id} alCerrarWidget={cerrarPanel} />
+                            <BotonPagarWompi
+                                idPedido={pedidoRegistrado.id}
+                                alAbrirWidget={abrirCheckout}
+                                alCerrarWidget={cerrarPanel}
+                                alFallarWidget={() => setCheckoutActivo(false)}
+                            />
                         </div>
                         <Link to={`/cliente/pedidos/${encodeURIComponent(pedidoRegistrado.id)}`} onClick={cerrarPanel} className="enlace mt-4 min-h-11 text-sm">
                             Ver detalle del pedido

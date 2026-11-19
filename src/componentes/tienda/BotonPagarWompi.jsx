@@ -5,7 +5,7 @@ import { iniciarPago } from "../../api/pagos.js";
 import { cargarWidgetWompi } from "../../api/wompiWidget.js";
 import Aviso from "../Aviso.jsx";
 
-const BotonPagarWompi = ({ idPedido, alCerrarWidget }) => {
+const BotonPagarWompi = ({ idPedido, alAbrirWidget, alCerrarWidget, alFallarWidget }) => {
     const navigate = useNavigate();
     const [preparando, setPreparando] = useState(false);
     const [error, setError] = useState("");
@@ -50,6 +50,7 @@ const BotonPagarWompi = ({ idPedido, alCerrarWidget }) => {
             if (pago.expirationTime) configuracion.expirationTime = pago.expirationTime;
 
             const checkout = new window.WidgetCheckout(configuracion);
+            alAbrirWidget?.();
             checkout.open(() => {
                 // El resultado del widget es informativo; el backend confirma el estado del pago.
                 if (navegando.current) return;
@@ -61,6 +62,7 @@ const BotonPagarWompi = ({ idPedido, alCerrarWidget }) => {
         } catch (errorPago) {
             bloqueado.current = false;
             setPreparando(false);
+            alFallarWidget?.();
             setError(errorPago.message || "No se pudo preparar el pago con Wompi.");
         }
     };
