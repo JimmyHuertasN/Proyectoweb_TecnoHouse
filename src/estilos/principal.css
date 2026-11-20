@@ -28,6 +28,36 @@
     --color-aviso-exito: #0b211c;
     --color-aviso-error: #271416;
     --color-aviso-informacion: #10202d;
+    /* Curva de salida fuerte para entradas y cambios de estado (genera la clase ease-fuerte). */
+    --ease-fuerte: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/*
+    Colores de las series de los gráficos, en orden fijo (nunca se reasignan por posición).
+    Validados con el script de la skill dataviz contra la tarjeta oscura (#101826) y la clara (#fff):
+    separación para daltonismo (deutan/protan) >= 9, vecinos distinguibles a simple vista >= 18
+    y contraste >= 3:1 en oscuro. En claro, verde, amarillo y rosa quedan bajo 3:1: por eso cada
+    gráfico lleva leyenda con valores y una tabla para lectores de pantalla.
+    1 azul (marca, reparaciones) · 2 verde (tienda) · 3 naranja · 4 violeta · 5 amarillo · 6 rosa.
+*/
+:root {
+    --grafico-1: #1a9be6;
+    --grafico-2: #199e70;
+    --grafico-3: #d95926;
+    --grafico-4: #9085e9;
+    --grafico-5: #c98500;
+    --grafico-6: #d55181;
+    --grafico-otros: #6b7689;
+}
+
+:root[data-tema="claro"] {
+    --grafico-1: #0077c2;
+    --grafico-2: #1baf7a;
+    --grafico-3: #eb6834;
+    --grafico-4: #6250d6;
+    --grafico-5: #eda100;
+    --grafico-6: #e87ba4;
+    --grafico-otros: #9aa3b2;
 }
 
 /*
@@ -169,7 +199,7 @@
 
     /* Separación vertical entre secciones del sitio público. */
     .seccion {
-        @apply scroll-mt-32 py-16 sm:py-20;
+        @apply scroll-mt-32 py-12 sm:py-16 lg:py-20;
     }
 
     .titulo-seccion {
@@ -195,6 +225,13 @@
 
     .campo {
         @apply min-h-11 w-full rounded-lg border border-slate-700 bg-fondo px-3.5 py-2.5 text-white transition placeholder:text-slate-500 hover:border-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/20 focus:outline-none;
+    }
+
+    /* Evita el autozoom de Safari al enfocar campos en teléfonos y mantiene legible el texto. */
+    @media (max-width: 639px) {
+        .campo {
+            font-size: 16px;
+        }
     }
 
     /* Los botones miden al menos 44 px de alto para tocarlos con comodidad. */
@@ -272,7 +309,121 @@
         }
     }
 
+    /*
+        Anillo suave alrededor del paso actual en la ilustración de la portada.
+        Se expande con transform y se apaga con opacity: no obliga a redibujar en cada cuadro.
+    */
+    .paso-pulso {
+        border: 1.5px solid var(--color-marca);
+        opacity: 0;
+        animation: pulso-paso 1.9s var(--ease-fuerte) infinite;
+        pointer-events: none;
+    }
+
+    @keyframes pulso-paso {
+        from {
+            opacity: 0.5;
+            transform: scale(1);
+        }
+
+        to {
+            opacity: 0;
+            transform: scale(1.7);
+        }
+    }
+
+    /* Entrada escalonada de los pasos de la ilustración (el retraso lo pone cada <li>). */
+    .paso-entrada {
+        animation: entrada-paso 400ms var(--ease-fuerte) both;
+    }
+
+    @keyframes entrada-paso {
+        from {
+            opacity: 0;
+            transform: translateY(0.375rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /*
+        Chat del celular de la portada. Al cambiar de paso, el mensaje anterior se desvanece
+        rápido (150 ms), aparecen los puntos de "escribiendo…" y luego entra el nuevo mensaje.
+        Los mensajes usan transiciones (no keyframes) para que un cambio a mitad de camino
+        retome desde donde va.
+    */
+    .mensaje-chat {
+        opacity: 0;
+        translate: 0 0.25rem;
+        transition:
+            opacity 150ms var(--ease-fuerte),
+            translate 150ms var(--ease-fuerte);
+    }
+
+    .mensaje-chat-visible {
+        opacity: 1;
+        translate: 0 0;
+        transition-duration: 400ms;
+        transition-delay: 650ms;
+    }
+
+    /* El primer mensaje, al cargar la página, ya está ahí: sin espera ni transición. */
+    .mensaje-chat-inicial {
+        transition: none;
+    }
+
+    .mensaje-escribiendo {
+        animation: escribiendo 750ms linear both;
+    }
+
+    .punto-escribiendo {
+        animation: punto-escribiendo 900ms ease-in-out infinite;
+    }
+
+    @keyframes escribiendo {
+        0% {
+            opacity: 0;
+        }
+
+        20%,
+        73% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+
+    @keyframes punto-escribiendo {
+        0%,
+        100% {
+            opacity: 0.35;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
     @media (prefers-reduced-motion: reduce) {
+        .paso-entrada,
+        .punto-escribiendo {
+            animation: none;
+        }
+
+        .mensaje-escribiendo {
+            display: none;
+        }
+
+        .paso-pulso {
+            animation: none;
+        }
+
         .notificacion-entrada {
             animation: none;
         }
@@ -288,22 +439,190 @@
         @apply inline-flex items-center gap-1.5 font-semibold text-sky-300 underline-offset-4 transition hover:text-white hover:underline;
     }
 
+    /*
+        Gráficos de ingresos (componentes/panel/graficos). Al cambiar de vista el gráfico entra con
+        un fundido corto; luego cada uno se dibuja: la línea del área se traza de izquierda a derecha,
+        las columnas crecen desde la base y el anillo se dibuja en un barrido. Solo transform,
+        opacity y el trazo del SVG; todo ocurre una vez, al aparecer.
+    */
+    .vista-grafico-entrada {
+        animation: entrada-paso 250ms var(--ease-fuerte) both;
+    }
+
+    .grafico-trazo {
+        animation: trazar-grafico 900ms var(--ease-fuerte) backwards;
+    }
+
+    .grafico-relleno {
+        animation: aparicion-suave 500ms var(--ease-fuerte) 300ms backwards;
+    }
+
+    .grafico-barra {
+        transform-box: fill-box;
+        transform-origin: bottom;
+        animation: crecer-barra 600ms var(--ease-fuerte) backwards;
+    }
+
+    .grafico-arco {
+        animation-name: trazar-grafico;
+        animation-timing-function: linear;
+        animation-fill-mode: backwards;
+    }
+
+    @keyframes trazar-grafico {
+        from {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+        }
+
+        to {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes crecer-barra {
+        from {
+            transform: scaleY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .grafico-trazo,
+        .grafico-relleno,
+        .grafico-barra,
+        .grafico-arco {
+            animation: none;
+        }
+    }
+
     /* Tarjeta que reacciona al pasar el mouse (técnicos y productos). */
     .tarjeta-elevable {
         @apply rounded-2xl border border-borde bg-tarjeta transition duration-200 hover:-translate-y-0.5 hover:border-slate-500;
     }
 
-    /* Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada. */
+    /*
+        Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada.
+        La sección (fondo y bordes) queda fija; lo que aparece es su contenido: cada bloque
+        directo del .contenedor sube un poco y se desvanece con una curva que frena al final.
+        Las listas directas del .contenedor (servicios, pasos, productos, técnicos, reseñas...)
+        no entran como bloque: entra cada uno de sus ítems.
+        Los retrasos se van acortando y tienen tope, así la entrada completa dura poco
+        aunque la lista sea larga.
+    */
     @media (prefers-reduced-motion: no-preference) {
-        [data-animacion-entrada] {
+        [data-animacion-entrada] > .contenedor > :not(ul, ol) {
             opacity: 0;
-            transform: translateY(0.75rem);
-            transition: opacity 400ms ease, transform 400ms ease;
+            transform: translate3d(0, 0.75rem, 0);
+            transition:
+                opacity 500ms var(--ease-fuerte) var(--retraso-entrada, 0ms),
+                transform 600ms var(--ease-fuerte) var(--retraso-entrada, 0ms);
         }
 
-        [data-animacion-entrada].entrada-visible {
+        [data-animacion-entrada] > .contenedor > :nth-child(2) {
+            --retraso-entrada: 50ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :nth-child(3) {
+            --retraso-entrada: 90ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :nth-child(n + 4) {
+            --retraso-entrada: 120ms;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :not(ul, ol) {
             opacity: 1;
             transform: none;
+        }
+
+        /*
+            Ítems de las listas: se usa una animación (no una transición) para que también entren
+            los que llegan después, cuando la API responde con la sección ya visible.
+            "backwards" solo aplica el estado inicial durante el retraso; al terminar, el ítem vuelve
+            a sus propios estilos y no bloquea efectos como el hover de .tarjeta-elevable.
+        */
+        [data-animacion-entrada]:not(.entrada-visible) > .contenedor > :is(ul, ol) > li {
+            opacity: 0;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :is(ul, ol) > li {
+            animation: entrada-item 500ms var(--ease-fuerte) backwards;
+            animation-delay: calc(var(--retraso-entrada, 0ms) + var(--retraso-item, 0ms));
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(2) {
+            --retraso-item: 50ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(3) {
+            --retraso-item: 90ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(4) {
+            --retraso-item: 120ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(5) {
+            --retraso-item: 145ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(6) {
+            --retraso-item: 165ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(7) {
+            --retraso-item: 180ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(8) {
+            --retraso-item: 195ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(n + 9) {
+            --retraso-item: 210ms;
+        }
+
+        @keyframes entrada-item {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 0.625rem, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+    }
+
+    /*
+        Con "reducir movimiento" no hay desplazamiento ni escalonado, pero el contenido sigue
+        apareciendo con un fundido corto en vez de saltar de golpe. El !important y la mayor
+        especificidad ganan a la regla global que anula transiciones y animaciones (más abajo).
+    */
+    @media (prefers-reduced-motion: reduce) {
+        [data-animacion-entrada] > .contenedor > :not(ul, ol) {
+            opacity: 0;
+            transition: opacity 200ms ease-out !important;
+        }
+
+        [data-animacion-entrada]:not(.entrada-visible) > .contenedor > :is(ul, ol) > li {
+            opacity: 0;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :not(ul, ol) {
+            opacity: 1;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :is(ul, ol) > li {
+            animation: aparicion-suave 200ms ease-out backwards !important;
+        }
+    }
+
+    @keyframes aparicion-suave {
+        from {
+            opacity: 0;
         }
     }
 

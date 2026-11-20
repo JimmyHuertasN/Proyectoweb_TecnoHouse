@@ -188,6 +188,7 @@ public sealed class WompiEventoProcesador(TecnoHouseDbContext db, ILogger<WompiE
 
     public async Task<IReadOnlyList<string>> ListarReferenciasPendientesAsync(
         int minutosMinimos,
+        int intervaloReconsultaMinutos,
         int limite,
         CancellationToken cancellationToken)
     {
@@ -196,15 +197,40 @@ public sealed class WompiEventoProcesador(TecnoHouseDbContext db, ILogger<WompiE
         {
             await using var comando = db.Database.GetDbConnection().CreateCommand();
             comando.CommandText = """
-                select referencia
-                from public.pagos
-                where estado = 'PENDING'::public.estado_pago
-                  and proveedor = 'wompi'
-                  and creado_en < now() - make_interval(mins => @minutos)
-                order by creado_en
-                limit @limite;
+                with candidatos as materialized (
+                    select id, referencia, creado_en, wompi_ultima_consulta_en
+                    from public.pagos
+                    where estado = 'PENDING'::public.estado_pago
+                      and proveedor = 'wompi'
+                      and creado_en < now() - make_interval(mins => @minutos_minimos)
+                      and (
+                          wompi_ultima_consulta_en is null
+                          or wompi_ultima_consulta_en <= now() - make_interval(mins => @intervalo_reconsulta)
+                      )
+                    order by wompi_ultima_consulta_en asc nulls first, creado_en, id
+                    limit @limite
+                    for update skip locked
+                ), numerados as (
+                    select id, referencia,
+                           row_number() over (
+                               order by wompi_ultima_consulta_en asc nulls first, creado_en, id
+                           ) as orden
+                    from candidatos
+                ), marcados as (
+                    update public.pagos as pago
+                    set wompi_ultima_consulta_en = statement_timestamp()
+                        + ((numerados.orden - 1)::double precision * interval '1 microsecond')
+                    from numerados
+                    where pago.id = numerados.id
+                    returning pago.id
+                )
+                select numerados.referencia
+                from numerados
+                join marcados using (id)
+                order by numerados.orden;
                 """;
-            comando.Parameters.Add(new NpgsqlParameter("minutos", NpgsqlDbType.Integer) { Value = minutosMinimos });
+            comando.Parameters.Add(new NpgsqlParameter("minutos_minimos", NpgsqlDbType.Integer) { Value = minutosMinimos });
+            comando.Parameters.Add(new NpgsqlParameter("intervalo_reconsulta", NpgsqlDbType.Integer) { Value = intervaloReconsultaMinutos });
             comando.Parameters.Add(new NpgsqlParameter("limite", NpgsqlDbType.Integer) { Value = limite });
 
             var referencias = new List<string>();

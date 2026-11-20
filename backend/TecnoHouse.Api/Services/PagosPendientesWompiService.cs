@@ -23,7 +23,10 @@ public sealed class PagosPendientesWompiService(
             {
                 try
                 {
-                    await RevisarAsync(configuracion.PendingMinAgeMinutes, stoppingToken);
+                    await RevisarAsync(
+                        configuracion.PendingMinAgeMinutes,
+                        configuracion.ReconciliationIntervalMinutes,
+                        stoppingToken);
                 }
                 catch (Exception error) when (error is not OperationCanceledException)
                 {
@@ -36,13 +39,20 @@ public sealed class PagosPendientesWompiService(
         }
     }
 
-    private async Task RevisarAsync(int minutosMinimos, CancellationToken cancellationToken)
+    private async Task RevisarAsync(
+        int minutosMinimos,
+        int intervaloReconsultaMinutos,
+        CancellationToken cancellationToken)
     {
         IReadOnlyList<string> referencias;
         await using (var scope = scopes.CreateAsyncScope())
         {
             referencias = await scope.ServiceProvider.GetRequiredService<WompiEventoProcesador>()
-                .ListarReferenciasPendientesAsync(minutosMinimos, LimitePorRevision, cancellationToken);
+                .ListarReferenciasPendientesAsync(
+                    minutosMinimos,
+                    intervaloReconsultaMinutos,
+                    LimitePorRevision,
+                    cancellationToken);
         }
 
         foreach (var referencia in referencias)

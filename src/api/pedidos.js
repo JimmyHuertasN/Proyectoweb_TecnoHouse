@@ -4,7 +4,8 @@
     (/api/pedidos). El personal de tienda (administrador y gestor) los lee todos con
     Supabase y cambia su estado con cambiar_estado_pedido (supabase/permisos_tienda.sql).
 */
-import { pedidosEntregadosEnRango, sumarTotales } from "../utilidades/reportesTienda.js";
+import { mesesEnRango } from "../utilidades/reportes.js";
+import { ingresosTiendaPorMes, pedidosEntregadosEnRango, sumarTotales } from "../utilidades/reportesTienda.js";
 import { llamarApi } from "./backend.js";
 import { obtenerCliente, verificar } from "./supabase.js";
 
@@ -101,11 +102,15 @@ export const cambiarEstadoPedido = async (id, estado) => {
 export const obtenerDetalleMiPedido = (id) =>
     llamarApi(`/api/pedidos/${encodeURIComponent(id)}`);
 
-/* Ingresos de pedidos entregados en el rango, con la misma regla de fechas que los reportes de tienda. */
+/*
+    Ingresos de pedidos entregados en el rango, con la misma regla de fechas que los reportes de tienda:
+    el total del periodo y cuánto entró cada mes ("meses" de mesesEnRango).
+*/
 export const obtenerIngresosTienda = async (desde = "", hasta = "") => {
     const filas = verificar(
         await obtenerCliente().from("pedidos").select("estado, total, actualizado_en").eq("estado", "entregado")
     );
     const pedidos = filas.map((fila) => ({ estado: fila.estado, total: Number(fila.total), actualizadoEn: fila.actualizado_en }));
-    return sumarTotales(pedidosEntregadosEnRango(pedidos, desde, hasta));
+    const entregados = pedidosEntregadosEnRango(pedidos, desde, hasta);
+    return { total: sumarTotales(entregados), porMes: ingresosTiendaPorMes(entregados, mesesEnRango(desde, hasta)) };
 };

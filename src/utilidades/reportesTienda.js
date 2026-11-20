@@ -10,6 +10,7 @@
 */
 import { ESTADOS_PEDIDO } from "../datos/estadosPedido.js";
 import { estaEnRango } from "./filtros.js";
+import { agruparPorMes } from "./reportes.js";
 
 export const pedidosEntregadosEnRango = (pedidos, desde = "", hasta = "") =>
     pedidos.filter((pedido) => pedido.estado === "entregado" && estaEnRango(pedido.actualizadoEn, desde, hasta));
@@ -39,6 +40,21 @@ export const productosMasVendidos = (pedidosEntregados) => {
         }
     }
     return [...ventas.values()].sort((ventaA, ventaB) => ventaB.unidades - ventaA.unidades || ventaB.ingresos - ventaA.ingresos);
+};
+
+/* Ingresos de cada mes ("meses" de mesesEnRango) según la fecha de entrega de los pedidos. */
+export const ingresosTiendaPorMes = (pedidosEntregados, meses) =>
+    agruparPorMes(pedidosEntregados, meses, (pedido) => pedido.actualizadoEn, (pedido) => pedido.total);
+
+/*
+    De qué productos vienen los ingresos: los "maximo" que más ingresaron y el resto sumado en
+    "Otros productos", para que el gráfico circular no pase de maximo + 1 partes.
+*/
+export const ingresosPorProducto = (pedidosEntregados, maximo = 5) => {
+    const ordenados = [...productosMasVendidos(pedidosEntregados)].sort((ventaA, ventaB) => ventaB.ingresos - ventaA.ingresos);
+    const principales = ordenados.slice(0, maximo).map((venta) => ({ clave: String(venta.clave), nombre: venta.nombre, valor: venta.ingresos }));
+    const otros = ordenados.slice(maximo).reduce((suma, venta) => suma + venta.ingresos, 0);
+    return otros > 0 ? [...principales, { clave: "otros", nombre: "Otros productos", valor: otros, esOtros: true }] : principales;
 };
 
 /* Nombre de archivo para un CSV con el periodo, por ejemplo "ingresos-tienda_2026-05-01_2026-11-16.csv". */

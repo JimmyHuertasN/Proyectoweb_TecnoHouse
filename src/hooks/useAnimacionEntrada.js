@@ -21,7 +21,8 @@ const useAnimacionEntrada = (contenido) => {
                 entrada.target.classList.add("entrada-visible");
                 observador.unobserve(entrada.target);
             });
-        }, { threshold: 0.08 });
+        // Se activa cuando la sección ya subió un 10 % dentro de la pantalla, para que la entrada se vea.
+        }, { threshold: 0, rootMargin: "0px 0px -10% 0px" });
 
         elementos.forEach((elemento) => observador.observe(elemento));
         return () => observador.disconnect();

@@ -5,6 +5,7 @@ import { obtenerTodosLosProductos } from "../../api/productos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
+import VisorIngresos from "../../componentes/panel/graficos/VisorIngresos.jsx";
 import SelectorRangoFechas from "../../componentes/panel/admin/SelectorRangoFechas.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { useRangoFechas } from "../../hooks/useRangoFechas.js";
@@ -12,8 +13,12 @@ import { descargarCsv, generarCsv } from "../../utilidades/csv.js";
 import { estaEnRango } from "../../utilidades/filtros.js";
 import { codigoPedido, formatearFecha, formatearPesos } from "../../utilidades/formato.js";
 import { POCAS_UNIDADES, productosPorReponer } from "../../utilidades/inventario.js";
+import { COLORES_GRAFICO, colorearPartes } from "../../utilidades/graficos.js";
+import { mesesEnRango } from "../../utilidades/reportes.js";
 import {
     contarPedidosPorEstado,
+    ingresosPorProducto,
+    ingresosTiendaPorMes,
     nombreArchivoReporte,
     pedidosEntregadosEnRango,
     productosMasVendidos,
@@ -89,6 +94,7 @@ const ReportesTienda = () => {
     const masVendidos = productosMasVendidos(entregados);
     const porReponer = productosPorReponer(datos.productos);
     const ingresos = sumarTotales(entregados);
+    const meses = mesesEnRango(desde, hasta);
     const descargar = (reporte, columnas, filas) => descargarCsv(nombreArchivoReporte(reporte, desde, hasta), generarCsv(columnas, filas));
 
     return (
@@ -108,11 +114,26 @@ const ReportesTienda = () => {
                         entregados.map((pedido) => [codigoPedido(pedido.numero), pedido.clienteNombre, formatearFecha(pedido.actualizadoEn), pedido.total])
                     ) : undefined}
                 >
-                    <div className="grid gap-4 sm:grid-cols-3">
-                        <p><span className="block text-3xl font-semibold text-white tabular-nums">{formatearPesos(ingresos)}</span><span className="text-sm text-slate-400">Ingresos</span></p>
-                        <p><span className="block text-3xl font-semibold text-white tabular-nums">{entregados.length}</span><span className="text-sm text-slate-400">Pedidos entregados</span></p>
-                        <p><span className="block text-3xl font-semibold text-white tabular-nums">{formatearPesos(entregados.length ? ingresos / entregados.length : 0)}</span><span className="text-sm text-slate-400">Valor promedio por pedido</span></p>
-                    </div>
+                    <VisorIngresos
+                        id="reportes-tienda-ingresos"
+                        titulo="Ingresos por pedidos entregados"
+                        descripciones={{
+                            actual: "Totales del periodo: ingresos, pedidos entregados y valor promedio por pedido.",
+                            area: "Tendencia de los ingresos mes a mes, según la fecha de entrega. Pasa el cursor para ver cada mes.",
+                            barras: "Ingreso de cada mes sobre una escala en pesos, con el detalle al pasar el cursor.",
+                            circular: "De qué productos vienen los ingresos: los cinco que más ingresaron y el resto sumado.",
+                        }}
+                        actual={
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <p><span className="block text-3xl font-semibold text-white tabular-nums">{formatearPesos(ingresos)}</span><span className="text-sm text-slate-400">Ingresos</span></p>
+                                <p><span className="block text-3xl font-semibold text-white tabular-nums">{entregados.length}</span><span className="text-sm text-slate-400">Pedidos entregados</span></p>
+                                <p><span className="block text-3xl font-semibold text-white tabular-nums">{formatearPesos(entregados.length ? ingresos / entregados.length : 0)}</span><span className="text-sm text-slate-400">Valor promedio por pedido</span></p>
+                            </div>
+                        }
+                        categorias={meses}
+                        series={[{ clave: "tienda", nombre: "Ingresos", color: COLORES_GRAFICO[1], valores: ingresosTiendaPorMes(entregados, meses).map((mes) => mes.valor) }]}
+                        partes={colorearPartes(ingresosPorProducto(entregados))}
+                    />
                 </Reporte>
 
                 <Reporte

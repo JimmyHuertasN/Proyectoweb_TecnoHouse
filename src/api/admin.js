@@ -76,20 +76,31 @@ export const obtenerMetricas = async (desde = "", hasta = "") => {
 };
 
 /*
-    Ingresos de cada mes del rango: cotizaciones aprobadas de servicios ya terminados, en el mes en que
-    se solicitó el servicio (la base de datos no guarda la fecha de finalización).
+    Ingresos de cada mes del rango, en el mes en que se solicitó el servicio (la base de datos no guarda
+    la fecha de finalización). "total" son las cotizaciones aprobadas de servicios ya terminados (lo
+    realizado); "porCobrar", las aprobadas de servicios que siguen en curso. Mismas reglas que
+    calcularIngresos, repartidas por mes.
 */
 export const obtenerIngresosPorMes = async (desde = "", hasta = "") => {
     const cotizaciones = verificar(
         await obtenerCliente().from("cotizaciones").select("total, servicio:servicios(estado, creado_en)").eq("estado", "aprobada")
     );
-    const realizadas = cotizaciones.filter(
-        (cotizacion) => cotizacion.servicio && ESTADOS_FINALES.includes(cotizacion.servicio.estado) && estaEnRango(cotizacion.servicio.creado_en, desde, hasta)
-    );
+    const enRango = cotizaciones.filter((cotizacion) => cotizacion.servicio && estaEnRango(cotizacion.servicio.creado_en, desde, hasta));
+    const realizadas = enRango.filter((cotizacion) => ESTADOS_FINALES.includes(cotizacion.servicio.estado));
+    const enCurso = enRango.filter((cotizacion) => !ESTADOS_FINALES.includes(cotizacion.servicio.estado));
 
-    return agruparPorMes(realizadas, mesesEnRango(desde, hasta), (cotizacion) => cotizacion.servicio.creado_en, (cotizacion) => Number(cotizacion.total)).map(
-        ({ clave, etiqueta, nombreCompleto, valor }) => ({ mes: clave, etiqueta, nombreCompleto, total: valor })
-    );
+    const meses = mesesEnRango(desde, hasta);
+    const fecha = (cotizacion) => cotizacion.servicio.creado_en;
+    const valor = (cotizacion) => Number(cotizacion.total);
+    const porCobrar = agruparPorMes(enCurso, meses, fecha, valor);
+
+    return agruparPorMes(realizadas, meses, fecha, valor).map(({ clave, etiqueta, nombreCompleto, valor: total }, indice) => ({
+        mes: clave,
+        etiqueta,
+        nombreCompleto,
+        total,
+        porCobrar: porCobrar[indice].valor,
+    }));
 };
 
 /*

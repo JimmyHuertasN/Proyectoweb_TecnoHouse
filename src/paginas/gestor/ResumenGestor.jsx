@@ -8,13 +8,16 @@ import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import SelectorRangoFechas from "../../componentes/panel/admin/SelectorRangoFechas.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import TarjetaMetrica from "../../componentes/panel/TarjetaMetrica.jsx";
+import VisorIngresos from "../../componentes/panel/graficos/VisorIngresos.jsx";
 import EtiquetaEstadoPedido from "../../componentes/panel/tienda/EtiquetaEstadoPedido.jsx";
 import { useSesion } from "../../contexto/ContextoSesion.js";
 import { ESTADOS_PEDIDO } from "../../datos/estadosPedido.js";
 import { useRangoFechas } from "../../hooks/useRangoFechas.js";
 import { codigoPedido, formatearFechaHora, formatearPesos, primerNombre } from "../../utilidades/formato.js";
 import { resumenInventario } from "../../utilidades/inventario.js";
-import { pedidosEntregadosEnRango, sumarTotales } from "../../utilidades/reportesTienda.js";
+import { COLORES_GRAFICO, colorearPartes } from "../../utilidades/graficos.js";
+import { mesesEnRango } from "../../utilidades/reportes.js";
+import { ingresosPorProducto, ingresosTiendaPorMes, pedidosEntregadosEnRango, sumarTotales } from "../../utilidades/reportesTienda.js";
 import { rutaTienda } from "../../utilidades/rutas.js";
 
 const PEDIDOS_RECIENTES = 5;
@@ -52,6 +55,7 @@ const ResumenGestor = () => {
     const inventario = datos && resumenInventario(datos.productos);
     const contarPedidos = (estado) => datos.pedidos.filter((pedido) => pedido.estado === estado).length;
     const entregados = datos ? pedidosEntregadosEnRango(datos.pedidos, rango.desde, rango.hasta) : [];
+    const meses = mesesEnRango(rango.desde, rango.hasta);
 
     return (
         <>
@@ -82,11 +86,28 @@ const ResumenGestor = () => {
 
                         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
                             <article className="tarjeta border-marca/40 bg-gradient-to-br from-marca/10 to-tarjeta lg:col-span-1">
-                                <h3 className="text-sm font-medium text-slate-400">Ingresos por pedidos entregados</h3>
-                                <p className="mt-3 text-4xl font-semibold tracking-tight text-white tabular-nums">{formatearPesos(sumarTotales(entregados))}</p>
-                                <p className="mt-2 text-sm text-slate-400">
-                                    {entregados.length} {entregados.length === 1 ? "pedido entregado" : "pedidos entregados"} en el periodo. Pendientes y confirmados no cuentan hasta entregarse.
-                                </p>
+                                <VisorIngresos
+                                    id="gestor-ingresos-tienda"
+                                    titulo="Ingresos por pedidos entregados"
+                                    encabezado={<h3 className="text-sm font-medium text-slate-400">Ingresos por pedidos entregados</h3>}
+                                    descripciones={{
+                                        actual: "Total del periodo y cuántos pedidos se entregaron.",
+                                        area: "Tendencia mes a mes, según la fecha de entrega.",
+                                        barras: "Ingreso de cada mes; pasa el cursor para ver el detalle.",
+                                        circular: "De qué productos vienen los ingresos: los cinco principales y el resto.",
+                                    }}
+                                    actual={
+                                        <>
+                                            <p className="text-4xl font-semibold tracking-tight text-white tabular-nums">{formatearPesos(sumarTotales(entregados))}</p>
+                                            <p className="mt-2 text-sm text-slate-400">
+                                                {entregados.length} {entregados.length === 1 ? "pedido entregado" : "pedidos entregados"} en el periodo. Pendientes y confirmados no cuentan hasta entregarse.
+                                            </p>
+                                        </>
+                                    }
+                                    categorias={meses}
+                                    series={[{ clave: "tienda", nombre: "Ingresos", color: COLORES_GRAFICO[1], valores: ingresosTiendaPorMes(entregados, meses).map((mes) => mes.valor) }]}
+                                    partes={colorearPartes(ingresosPorProducto(entregados))}
+                                />
                             </article>
                             <TarjetaMetrica icono={ESTADOS_PEDIDO[0].icono} titulo="Pedidos pendientes" valor={contarPedidos("pendiente")} detalle="Esperan confirmación" />
                             <TarjetaMetrica icono={ESTADOS_PEDIDO[1].icono} titulo="Pedidos confirmados" valor={contarPedidos("confirmado")} detalle="Por entregar" />
