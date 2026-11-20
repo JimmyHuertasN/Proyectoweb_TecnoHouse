@@ -383,17 +383,97 @@
         @apply rounded-2xl border border-borde bg-tarjeta transition duration-200 hover:-translate-y-0.5 hover:border-slate-500;
     }
 
-    /* Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada. */
+    /*
+        Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada.
+        La sección (fondo y bordes) queda fija; lo que aparece es su contenido: cada bloque
+        directo del .contenedor sube y se desvanece con una curva que frena al final,
+        escalonado para que no llegue todo de golpe.
+        Las listas directas del .contenedor (servicios, pasos, productos, técnicos, reseñas...)
+        no entran como bloque: entra cada uno de sus ítems, uno tras otro.
+    */
     @media (prefers-reduced-motion: no-preference) {
-        [data-animacion-entrada] {
+        [data-animacion-entrada] > .contenedor > :not(ul, ol) {
             opacity: 0;
-            transform: translateY(0.75rem);
-            transition: opacity 400ms ease, transform 400ms ease;
+            transform: translate3d(0, 1.5rem, 0);
+            transition:
+                opacity 800ms cubic-bezier(0.25, 0.1, 0.25, 1) var(--retraso-entrada, 0ms),
+                transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) var(--retraso-entrada, 0ms);
         }
 
-        [data-animacion-entrada].entrada-visible {
+        [data-animacion-entrada] > .contenedor > :nth-child(2) {
+            --retraso-entrada: 110ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :nth-child(3) {
+            --retraso-entrada: 220ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :nth-child(n + 4) {
+            --retraso-entrada: 330ms;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :not(ul, ol) {
             opacity: 1;
             transform: none;
+        }
+
+        /*
+            Ítems de las listas: se usa una animación (no una transición) para que también entren
+            los que llegan después, cuando la API responde con la sección ya visible.
+            "backwards" solo aplica el estado inicial durante el retraso; al terminar, el ítem vuelve
+            a sus propios estilos y no bloquea efectos como el hover de .tarjeta-elevable.
+        */
+        [data-animacion-entrada]:not(.entrada-visible) > .contenedor > :is(ul, ol) > li {
+            opacity: 0;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :is(ul, ol) > li {
+            animation: entrada-item 900ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            animation-delay: calc(var(--retraso-entrada, 0ms) + var(--retraso-item, 0ms));
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(2) {
+            --retraso-item: 80ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(3) {
+            --retraso-item: 160ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(4) {
+            --retraso-item: 240ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(5) {
+            --retraso-item: 320ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(6) {
+            --retraso-item: 400ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(7) {
+            --retraso-item: 480ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(8) {
+            --retraso-item: 560ms;
+        }
+
+        [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(n + 9) {
+            --retraso-item: 640ms;
+        }
+
+        @keyframes entrada-item {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 1.25rem, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
         }
     }
 
