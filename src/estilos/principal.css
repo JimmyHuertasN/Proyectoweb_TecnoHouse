@@ -279,7 +279,90 @@
         }
     }
 
+    /* Anillo suave alrededor del paso actual en la ilustración de la portada. */
+    .paso-pulso {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-marca) 45%, transparent);
+        animation: pulso-paso 1.9s ease-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes pulso-paso {
+        from {
+            box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-marca) 45%, transparent);
+        }
+
+        to {
+            box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-marca) 0%, transparent);
+        }
+    }
+
+    /* Entrada escalonada de los pasos de la ilustración (el retraso lo pone cada <li>). */
+    .paso-entrada {
+        animation: entrada-paso 500ms ease-out both;
+    }
+
+    @keyframes entrada-paso {
+        from {
+            opacity: 0;
+            transform: translateY(0.375rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /*
+        Chat del celular de la portada: primero se ven los puntos de "escribiendo…"
+        y luego entra el mensaje del técnico.
+    */
+    .mensaje-escribiendo {
+        animation: ocultar-escribiendo 200ms ease-out 550ms both;
+    }
+
+    .punto-escribiendo {
+        animation: punto-escribiendo 900ms ease-in-out infinite;
+    }
+
+    .mensaje-entrada {
+        animation: entrada-paso 400ms ease-out 650ms both;
+    }
+
+    @keyframes ocultar-escribiendo {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+
+    @keyframes punto-escribiendo {
+        0%,
+        100% {
+            opacity: 0.35;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
     @media (prefers-reduced-motion: reduce) {
+        .paso-entrada,
+        .mensaje-entrada,
+        .punto-escribiendo {
+            animation: none;
+        }
+
+        .mensaje-escribiendo {
+            display: none;
+        }
+
+        .paso-pulso {
+            animation: none;
+            box-shadow: none;
+        }
+
         .notificacion-entrada {
             animation: none;
         }
