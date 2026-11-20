@@ -33,6 +33,34 @@
 }
 
 /*
+    Colores de las series de los gráficos, en orden fijo (nunca se reasignan por posición).
+    Validados con el script de la skill dataviz contra la tarjeta oscura (#101826) y la clara (#fff):
+    separación para daltonismo (deutan/protan) >= 9, vecinos distinguibles a simple vista >= 18
+    y contraste >= 3:1 en oscuro. En claro, verde, amarillo y rosa quedan bajo 3:1: por eso cada
+    gráfico lleva leyenda con valores y una tabla para lectores de pantalla.
+    1 azul (marca, reparaciones) · 2 verde (tienda) · 3 naranja · 4 violeta · 5 amarillo · 6 rosa.
+*/
+:root {
+    --grafico-1: #1a9be6;
+    --grafico-2: #199e70;
+    --grafico-3: #d95926;
+    --grafico-4: #9085e9;
+    --grafico-5: #c98500;
+    --grafico-6: #d55181;
+    --grafico-otros: #6b7689;
+}
+
+:root[data-tema="claro"] {
+    --grafico-1: #0077c2;
+    --grafico-2: #1baf7a;
+    --grafico-3: #eb6834;
+    --grafico-4: #6250d6;
+    --grafico-5: #eda100;
+    --grafico-6: #e87ba4;
+    --grafico-otros: #9aa3b2;
+}
+
+/*
     Modo claro: se activa con data-tema="claro" en <html> (ver src/hooks/useTema.js).
     Las escalas de grises y de colores se invierten (50 <-> 950, 300 <-> 700...), así
     las clases de los componentes (text-slate-400, bg-slate-900, text-white...) sirven
@@ -409,6 +437,63 @@
     /* Enlace de texto con flecha o subrayado (ej. "Ver todos los servicios"). */
     .enlace {
         @apply inline-flex items-center gap-1.5 font-semibold text-sky-300 underline-offset-4 transition hover:text-white hover:underline;
+    }
+
+    /*
+        Gráficos de ingresos (componentes/panel/graficos). Al cambiar de vista el gráfico entra con
+        un fundido corto; luego cada uno se dibuja: la línea del área se traza de izquierda a derecha,
+        las columnas crecen desde la base y el anillo se dibuja en un barrido. Solo transform,
+        opacity y el trazo del SVG; todo ocurre una vez, al aparecer.
+    */
+    .vista-grafico-entrada {
+        animation: entrada-paso 250ms var(--ease-fuerte) both;
+    }
+
+    .grafico-trazo {
+        animation: trazar-grafico 900ms var(--ease-fuerte) backwards;
+    }
+
+    .grafico-relleno {
+        animation: aparicion-suave 500ms var(--ease-fuerte) 300ms backwards;
+    }
+
+    .grafico-barra {
+        transform-box: fill-box;
+        transform-origin: bottom;
+        animation: crecer-barra 600ms var(--ease-fuerte) backwards;
+    }
+
+    .grafico-arco {
+        animation-name: trazar-grafico;
+        animation-timing-function: linear;
+        animation-fill-mode: backwards;
+    }
+
+    @keyframes trazar-grafico {
+        from {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+        }
+
+        to {
+            stroke-dasharray: 1;
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes crecer-barra {
+        from {
+            transform: scaleY(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .grafico-trazo,
+        .grafico-relleno,
+        .grafico-barra,
+        .grafico-arco {
+            animation: none;
+        }
     }
 
     /* Tarjeta que reacciona al pasar el mouse (técnicos y productos). */

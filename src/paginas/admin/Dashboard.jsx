@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BriefcaseBusiness, Clock, ThumbsUp, UsersRound, Wrench } from "lucide-react";
-import { obtenerMetricas, obtenerPorcentajeAprobadas, obtenerTiempoPromedio } from "../../api/admin.js";
+import { obtenerIngresosPorMes, obtenerMetricas, obtenerPorcentajeAprobadas, obtenerTiempoPromedio } from "../../api/admin.js";
 import { obtenerIngresosTienda } from "../../api/pedidos.js";
 import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
@@ -33,8 +33,11 @@ const Dashboard = () => {
             obtenerTiempoPromedio(desde, hasta),
             obtenerPorcentajeAprobadas(desde, hasta),
             obtenerIngresosTienda(desde, hasta),
+            obtenerIngresosPorMes(desde, hasta),
         ])
-            .then(([metricas, tiempo, aprobadas, ingresosTienda]) => vigente && setResultado({ clave, datos: { metricas, tiempo, aprobadas, ingresosTienda } }))
+            .then(([metricas, tiempo, aprobadas, ingresosTienda, ingresosPorMes]) =>
+                vigente && setResultado({ clave, datos: { metricas, tiempo, aprobadas, ingresosTienda, ingresosPorMes } })
+            )
             .catch((errorApi) => vigente && setResultado({ clave, error: errorApi.message || "No se pudieron cargar las métricas." }));
 
         return () => {
@@ -64,7 +67,12 @@ const Dashboard = () => {
 
             {datos && (
                 <div aria-busy={actualizando} className={actualizando ? "opacity-60 transition-opacity" : "transition-opacity"}>
-                    <IngresosTotales reparaciones={datos.metricas.ingresos.realizados} tienda={datos.ingresosTienda} />
+                    <IngresosTotales
+                        reparaciones={datos.metricas.ingresos.realizados}
+                        tienda={datos.ingresosTienda.total}
+                        porMesReparaciones={datos.ingresosPorMes.map((mes) => ({ clave: mes.mes, etiqueta: mes.etiqueta, nombreCompleto: mes.nombreCompleto, valor: mes.total }))}
+                        porMesTienda={datos.ingresosTienda.porMes}
+                    />
 
                     <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
                         <TarjetaMetrica
@@ -124,7 +132,7 @@ const Dashboard = () => {
                         </section>
 
                         <div className="lg:col-span-2">
-                            <ResumenIngresos ingresos={datos.metricas.ingresos} />
+                            <ResumenIngresos ingresos={datos.metricas.ingresos} porMes={datos.ingresosPorMes} />
                         </div>
                     </div>
                 </div>

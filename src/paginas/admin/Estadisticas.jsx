@@ -4,10 +4,12 @@ import Aviso from "../../componentes/Aviso.jsx";
 import EncabezadoPagina from "../../componentes/panel/EncabezadoPagina.jsx";
 import GraficoBarras from "../../componentes/panel/GraficoBarras.jsx";
 import GraficoColumnas from "../../componentes/panel/admin/GraficoColumnas.jsx";
+import VisorIngresos from "../../componentes/panel/graficos/VisorIngresos.jsx";
 import SelectorRangoFechas from "../../componentes/panel/admin/SelectorRangoFechas.jsx";
 import Skeleton from "../../componentes/panel/Skeleton.jsx";
 import { useRangoFechas } from "../../hooks/useRangoFechas.js";
 import { formatearPesos } from "../../utilidades/formato.js";
+import { COLORES_GRAFICO, partesPorMes } from "../../utilidades/graficos.js";
 
 const plural = (cantidad, singular, varios) => `${cantidad} ${cantidad === 1 ? singular : varios}`;
 
@@ -95,21 +97,39 @@ const Estadisticas = () => {
                         />
                     </TarjetaGrafico>
 
-                    <TarjetaGrafico
-                        titulo="Ingresos por mes"
-                        descripcion={`Cotizaciones aprobadas de servicios terminados · Total: ${formatearPesos(totalIngresos)}`}
-                    >
-                        <GraficoColumnas
-                            etiquetaAria="Ingresos por mes"
-                            datos={ingresosPorMes.map((mes) => ({
-                                clave: mes.mes,
-                                etiqueta: mes.etiqueta,
-                                valor: mes.total,
-                                textoValor: mes.total === 0 ? "0" : formatoCompacto.format(mes.total),
-                                descripcion: `${mes.nombreCompleto}: ${formatearPesos(mes.total)}`,
-                            }))}
+                    <section className="tarjeta">
+                        <VisorIngresos
+                            id="estadisticas-ingresos-por-mes"
+                            titulo="Ingresos por mes"
+                            encabezado={
+                                <>
+                                    <h2 className="text-lg font-semibold">Ingresos por mes</h2>
+                                    <p className="text-sm text-slate-400">Cotizaciones aprobadas de servicios terminados · Total: {formatearPesos(totalIngresos)}</p>
+                                </>
+                            }
+                            descripciones={{
+                                actual: "Columnas simples con el ingreso de cada mes.",
+                                area: "Tendencia de los ingresos a lo largo del periodo. Pasa el cursor o usa las flechas para ver cada mes.",
+                                barras: "Ingreso de cada mes sobre una escala en pesos, con el detalle al pasar el cursor.",
+                                circular: "Qué parte del total del periodo aportó cada mes.",
+                            }}
+                            categorias={ingresosPorMes.map((mes) => ({ clave: mes.mes, etiqueta: mes.etiqueta, nombreCompleto: mes.nombreCompleto }))}
+                            series={[{ clave: "ingresos", nombre: "Ingresos", color: COLORES_GRAFICO[0], valores: ingresosPorMes.map((mes) => mes.total) }]}
+                            partes={partesPorMes(ingresosPorMes.map((mes) => ({ clave: mes.mes, nombreCompleto: mes.nombreCompleto, valor: mes.total })))}
+                            actual={
+                                <GraficoColumnas
+                                    etiquetaAria="Ingresos por mes"
+                                    datos={ingresosPorMes.map((mes) => ({
+                                        clave: mes.mes,
+                                        etiqueta: mes.etiqueta,
+                                        valor: mes.total,
+                                        textoValor: mes.total === 0 ? "0" : formatoCompacto.format(mes.total),
+                                        descripcion: `${mes.nombreCompleto}: ${formatearPesos(mes.total)}`,
+                                    }))}
+                                />
+                            }
                         />
-                    </TarjetaGrafico>
+                    </section>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
