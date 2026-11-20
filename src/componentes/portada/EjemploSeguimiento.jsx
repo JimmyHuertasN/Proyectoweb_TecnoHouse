@@ -87,8 +87,8 @@ const usePasoAnimado = (contenedor) => {
     // Sin IntersectionObserver no se puede saber si está en pantalla: se anima siempre.
     const [visible, setVisible] = useState(() => !("IntersectionObserver" in window));
     const [paso, setPaso] = useState(() => (prefiereMenosMovimiento() ? PASO_ESTATICO : 0));
-    // Cuenta las vueltas completas; al cambiar, la lista vuelve a hacer su entrada.
-    const [ciclo, setCiclo] = useState(0);
+    // Pasa a true con el primer avance: el mensaje inicial se muestra sin "escribiendo…".
+    const [avanzo, setAvanzo] = useState(false);
 
     useEffect(() => {
         const consulta = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -113,13 +113,13 @@ const usePasoAnimado = (contenedor) => {
         if (!animar || !visible) return undefined;
         const espera = paso === RECORRIDO_COMPLETO ? MS_PAUSA_FINAL : MS_POR_PASO;
         const temporizador = setTimeout(() => {
-            if (paso === RECORRIDO_COMPLETO) setCiclo((anterior) => anterior + 1);
+            setAvanzo(true);
             setPaso(paso === RECORRIDO_COMPLETO ? 0 : paso + 1);
         }, espera);
         return () => clearTimeout(temporizador);
     }, [animar, visible, paso]);
 
-    return { paso, ciclo };
+    return { paso, avanzo };
 };
 
 /*
@@ -128,7 +128,7 @@ const usePasoAnimado = (contenedor) => {
 */
 const EjemploSeguimiento = () => {
     const contenedor = useRef(null);
-    const { paso: pasoActual, ciclo } = usePasoAnimado(contenedor);
+    const { paso: pasoActual, avanzo } = usePasoAnimado(contenedor);
     // Con todo completado se mantiene el último mensaje ("listo").
     const mensajeActual = Math.min(pasoActual, MENSAJES_TECNICO.length - 1);
 
@@ -144,19 +144,19 @@ const EjemploSeguimiento = () => {
                         <span className="rounded-full border border-slate-600 px-2 py-0.5 text-[11px] font-medium text-slate-300">Ejemplo</span>
                     </div>
 
-                    {/* key={ciclo}: en cada vuelta la lista se monta de nuevo y sus pasos entran escalonados. */}
-                    <ol key={ciclo} className="space-y-3.5">
+                    {/* Los pasos entran escalonados solo al cargar; al reiniciar el ciclo vuelven con sus transiciones. */}
+                    <ol className="space-y-3.5">
                         {PASOS_EJEMPLO.map((texto, indice) => {
                             const estado = estadoDelPaso(indice, pasoActual);
                             return (
-                                <li key={texto} className="paso-entrada flex items-center gap-3 text-sm" style={{ animationDelay: `${indice * 90}ms` }}>
+                                <li key={texto} className="paso-entrada flex items-center gap-3 text-sm" style={{ animationDelay: `${indice * 50}ms` }}>
                                     {/* El check y el punto siempre existen; solo se cruzan con opacidad para no mover nada. */}
-                                    <span className={`relative flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors duration-500 ease-out ${ESTILO_PUNTO[estado]}`}>
-                                        {estado === "actual" && <span key={indice} className="paso-pulso absolute inset-0 rounded-full" />}
-                                        <Check size={12} strokeWidth={3} className={`absolute transition duration-500 ease-out ${estado === "hecho" ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} />
-                                        <span className={`size-1.5 rounded-full bg-marca transition duration-500 ease-out ${estado === "actual" ? "scale-100 opacity-100" : "scale-0 opacity-0"}`} />
+                                    <span className={`relative flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 ease-fuerte ${ESTILO_PUNTO[estado]}`}>
+                                        {estado === "actual" && <span key={indice} className="paso-pulso absolute -inset-px rounded-full" />}
+                                        <Check size={12} strokeWidth={3} className={`absolute transition-[opacity,scale] duration-300 ease-fuerte ${estado === "hecho" ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} />
+                                        <span className={`size-1.5 rounded-full bg-marca transition-[opacity,scale] duration-300 ease-fuerte ${estado === "actual" ? "scale-100 opacity-100" : "scale-50 opacity-0"}`} />
                                     </span>
-                                    <span className={`transition-colors duration-500 ease-out ${ESTILO_TEXTO[estado]}`}>{texto}</span>
+                                    <span className={`transition-colors duration-300 ease-fuerte ${ESTILO_TEXTO[estado]}`}>{texto}</span>
                                 </li>
                             );
                         })}
@@ -210,21 +210,25 @@ const EjemploSeguimiento = () => {
                         <span className="mx-auto rounded-full bg-slate-800 px-1.5 py-0.5 text-[7px] leading-none text-slate-400 sm:text-[8px]">Hoy</span>
                         {/*
                             Todos los mensajes ocupan la misma celda de la cuadrícula: la burbuja toma el
-                            tamaño del más largo y no cambia al alternarlos. Al cambiar de paso (key) la
-                            burbuja se monta de nuevo: primero "escribiendo…" y luego entra el mensaje.
+                            tamaño del más largo y no cambia al alternarlos. Al cambiar de paso, el mensaje
+                            anterior se desvanece rápido, aparecen los puntos de "escribiendo…" y luego
+                            entra el nuevo (ver .mensaje-chat y .mensaje-escribiendo en principal.css).
                         */}
-                        <div key={mensajeActual} className="grid max-w-[88%] rounded-xl rounded-bl-sm bg-slate-800 px-2 py-1.5 text-[8px] leading-snug text-slate-100 sm:text-[9.5px]">
+                        <div className="grid max-w-[88%] rounded-xl rounded-bl-sm bg-slate-800 px-2 py-1.5 text-[8px] leading-snug text-slate-100 sm:text-[9.5px]">
                             {MENSAJES_TECNICO.map((mensaje, indice) => (
-                                <p key={mensaje} className={`col-start-1 row-start-1 ${indice === mensajeActual ? "mensaje-entrada" : "invisible"}`}>
+                                <p key={mensaje} className={`mensaje-chat col-start-1 row-start-1 ${indice === mensajeActual ? "mensaje-chat-visible" : ""} ${avanzo ? "" : "mensaje-chat-inicial"}`}>
                                     {mensaje}
                                     <span className="mt-0.5 block text-right text-[6.5px] leading-none text-slate-400 sm:text-[7.5px]">9:41</span>
                                 </p>
                             ))}
-                            <span className="mensaje-escribiendo col-start-1 row-start-1 flex items-center gap-[3px] self-center">
+                            {/* key: se monta de nuevo en cada mensaje para repetir la animación de los puntos. */}
+                            {avanzo && (
+                            <span key={mensajeActual} className="mensaje-escribiendo col-start-1 row-start-1 flex items-center gap-[3px] self-center">
                                 <span className="punto-escribiendo size-[4px] rounded-full bg-slate-400" />
                                 <span className="punto-escribiendo size-[4px] rounded-full bg-slate-400 [animation-delay:150ms]" />
                                 <span className="punto-escribiendo size-[4px] rounded-full bg-slate-400 [animation-delay:300ms]" />
                             </span>
+                            )}
                         </div>
                     </div>
 

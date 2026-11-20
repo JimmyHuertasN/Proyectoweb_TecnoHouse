@@ -28,6 +28,8 @@
     --color-aviso-exito: #0b211c;
     --color-aviso-error: #271416;
     --color-aviso-informacion: #10202d;
+    /* Curva de salida fuerte para entradas y cambios de estado (genera la clase ease-fuerte). */
+    --ease-fuerte: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /*
@@ -279,26 +281,32 @@
         }
     }
 
-    /* Anillo suave alrededor del paso actual en la ilustración de la portada. */
+    /*
+        Anillo suave alrededor del paso actual en la ilustración de la portada.
+        Se expande con transform y se apaga con opacity: no obliga a redibujar en cada cuadro.
+    */
     .paso-pulso {
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-marca) 45%, transparent);
-        animation: pulso-paso 1.9s ease-out infinite;
+        border: 1.5px solid var(--color-marca);
+        opacity: 0;
+        animation: pulso-paso 1.9s var(--ease-fuerte) infinite;
         pointer-events: none;
     }
 
     @keyframes pulso-paso {
         from {
-            box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-marca) 45%, transparent);
+            opacity: 0.5;
+            transform: scale(1);
         }
 
         to {
-            box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-marca) 0%, transparent);
+            opacity: 0;
+            transform: scale(1.7);
         }
     }
 
     /* Entrada escalonada de los pasos de la ilustración (el retraso lo pone cada <li>). */
     .paso-entrada {
-        animation: entrada-paso 500ms ease-out both;
+        animation: entrada-paso 400ms var(--ease-fuerte) both;
     }
 
     @keyframes entrada-paso {
@@ -314,23 +322,50 @@
     }
 
     /*
-        Chat del celular de la portada: primero se ven los puntos de "escribiendo…"
-        y luego entra el mensaje del técnico.
+        Chat del celular de la portada. Al cambiar de paso, el mensaje anterior se desvanece
+        rápido (150 ms), aparecen los puntos de "escribiendo…" y luego entra el nuevo mensaje.
+        Los mensajes usan transiciones (no keyframes) para que un cambio a mitad de camino
+        retome desde donde va.
     */
+    .mensaje-chat {
+        opacity: 0;
+        translate: 0 0.25rem;
+        transition:
+            opacity 150ms var(--ease-fuerte),
+            translate 150ms var(--ease-fuerte);
+    }
+
+    .mensaje-chat-visible {
+        opacity: 1;
+        translate: 0 0;
+        transition-duration: 400ms;
+        transition-delay: 650ms;
+    }
+
+    /* El primer mensaje, al cargar la página, ya está ahí: sin espera ni transición. */
+    .mensaje-chat-inicial {
+        transition: none;
+    }
+
     .mensaje-escribiendo {
-        animation: ocultar-escribiendo 200ms ease-out 550ms both;
+        animation: escribiendo 750ms linear both;
     }
 
     .punto-escribiendo {
         animation: punto-escribiendo 900ms ease-in-out infinite;
     }
 
-    .mensaje-entrada {
-        animation: entrada-paso 400ms ease-out 650ms both;
-    }
+    @keyframes escribiendo {
+        0% {
+            opacity: 0;
+        }
 
-    @keyframes ocultar-escribiendo {
-        to {
+        20%,
+        73% {
+            opacity: 1;
+        }
+
+        100% {
             opacity: 0;
             visibility: hidden;
         }
@@ -349,7 +384,6 @@
 
     @media (prefers-reduced-motion: reduce) {
         .paso-entrada,
-        .mensaje-entrada,
         .punto-escribiendo {
             animation: none;
         }
@@ -360,7 +394,6 @@
 
         .paso-pulso {
             animation: none;
-            box-shadow: none;
         }
 
         .notificacion-entrada {
@@ -386,30 +419,31 @@
     /*
         Aparición suave al entrar en pantalla. La activa el hook useAnimacionEntrada.
         La sección (fondo y bordes) queda fija; lo que aparece es su contenido: cada bloque
-        directo del .contenedor sube y se desvanece con una curva que frena al final,
-        escalonado para que no llegue todo de golpe.
+        directo del .contenedor sube un poco y se desvanece con una curva que frena al final.
         Las listas directas del .contenedor (servicios, pasos, productos, técnicos, reseñas...)
-        no entran como bloque: entra cada uno de sus ítems, uno tras otro.
+        no entran como bloque: entra cada uno de sus ítems.
+        Los retrasos se van acortando y tienen tope, así la entrada completa dura poco
+        aunque la lista sea larga.
     */
     @media (prefers-reduced-motion: no-preference) {
         [data-animacion-entrada] > .contenedor > :not(ul, ol) {
             opacity: 0;
-            transform: translate3d(0, 1.5rem, 0);
+            transform: translate3d(0, 0.75rem, 0);
             transition:
-                opacity 800ms cubic-bezier(0.25, 0.1, 0.25, 1) var(--retraso-entrada, 0ms),
-                transform 1000ms cubic-bezier(0.16, 1, 0.3, 1) var(--retraso-entrada, 0ms);
+                opacity 500ms var(--ease-fuerte) var(--retraso-entrada, 0ms),
+                transform 600ms var(--ease-fuerte) var(--retraso-entrada, 0ms);
         }
 
         [data-animacion-entrada] > .contenedor > :nth-child(2) {
-            --retraso-entrada: 110ms;
+            --retraso-entrada: 50ms;
         }
 
         [data-animacion-entrada] > .contenedor > :nth-child(3) {
-            --retraso-entrada: 220ms;
+            --retraso-entrada: 90ms;
         }
 
         [data-animacion-entrada] > .contenedor > :nth-child(n + 4) {
-            --retraso-entrada: 330ms;
+            --retraso-entrada: 120ms;
         }
 
         [data-animacion-entrada].entrada-visible > .contenedor > :not(ul, ol) {
@@ -428,52 +462,82 @@
         }
 
         [data-animacion-entrada].entrada-visible > .contenedor > :is(ul, ol) > li {
-            animation: entrada-item 900ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            animation: entrada-item 500ms var(--ease-fuerte) backwards;
             animation-delay: calc(var(--retraso-entrada, 0ms) + var(--retraso-item, 0ms));
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(2) {
-            --retraso-item: 80ms;
+            --retraso-item: 50ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(3) {
-            --retraso-item: 160ms;
+            --retraso-item: 90ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(4) {
-            --retraso-item: 240ms;
+            --retraso-item: 120ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(5) {
-            --retraso-item: 320ms;
+            --retraso-item: 145ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(6) {
-            --retraso-item: 400ms;
+            --retraso-item: 165ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(7) {
-            --retraso-item: 480ms;
+            --retraso-item: 180ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(8) {
-            --retraso-item: 560ms;
+            --retraso-item: 195ms;
         }
 
         [data-animacion-entrada] > .contenedor > :is(ul, ol) > li:nth-child(n + 9) {
-            --retraso-item: 640ms;
+            --retraso-item: 210ms;
         }
 
         @keyframes entrada-item {
             from {
                 opacity: 0;
-                transform: translate3d(0, 1.25rem, 0);
+                transform: translate3d(0, 0.625rem, 0);
             }
 
             to {
                 opacity: 1;
                 transform: none;
             }
+        }
+    }
+
+    /*
+        Con "reducir movimiento" no hay desplazamiento ni escalonado, pero el contenido sigue
+        apareciendo con un fundido corto en vez de saltar de golpe. El !important y la mayor
+        especificidad ganan a la regla global que anula transiciones y animaciones (más abajo).
+    */
+    @media (prefers-reduced-motion: reduce) {
+        [data-animacion-entrada] > .contenedor > :not(ul, ol) {
+            opacity: 0;
+            transition: opacity 200ms ease-out !important;
+        }
+
+        [data-animacion-entrada]:not(.entrada-visible) > .contenedor > :is(ul, ol) > li {
+            opacity: 0;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :not(ul, ol) {
+            opacity: 1;
+        }
+
+        [data-animacion-entrada].entrada-visible > .contenedor > :is(ul, ol) > li {
+            animation: aparicion-suave 200ms ease-out backwards !important;
+        }
+    }
+
+    @keyframes aparicion-suave {
+        from {
+            opacity: 0;
         }
     }
 
