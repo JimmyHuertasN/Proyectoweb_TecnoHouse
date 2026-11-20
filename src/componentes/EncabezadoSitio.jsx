@@ -66,10 +66,10 @@ const EncabezadoSitio = ({ children }) => {
 
     return (
         <header className="sticky top-0 z-50 border-b border-white/10 bg-fondo/90 backdrop-blur">
-            <div className="contenedor flex h-16 items-center justify-between gap-4">
-                <Logotipo />
+            <div className="contenedor flex h-16 items-center justify-between gap-4 max-[359px]:gap-1">
+                <Logotipo className="max-[359px]:text-base" />
 
-                <nav aria-label="Navegación principal" className="hidden md:block">
+                <nav aria-label="Navegación principal" className="hidden min-[900px]:block">
                     <ul className="flex gap-7">
                         {ENLACES.map((enlace) => (
                             <li key={enlace.ruta}>
@@ -79,8 +79,8 @@ const EncabezadoSitio = ({ children }) => {
                     </ul>
                 </nav>
 
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="hidden items-center gap-3 md:flex">
+                <div className="flex items-center gap-2 sm:gap-3 max-[359px]:gap-1">
+                    <div className="hidden items-center gap-3 min-[900px]:flex">
                         <AccesoCuenta />
                     </div>
 
@@ -91,7 +91,7 @@ const EncabezadoSitio = ({ children }) => {
                     <button
                         ref={botonMenu}
                         type="button"
-                        className="inline-flex size-11 cursor-pointer items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:border-slate-400 md:hidden"
+                        className="inline-flex size-11 cursor-pointer items-center justify-center rounded-lg border border-slate-700 text-slate-200 transition hover:border-slate-400 min-[900px]:hidden"
                         aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
                         aria-controls="menu-movil"
                         aria-expanded={menuAbierto}
@@ -103,7 +103,7 @@ const EncabezadoSitio = ({ children }) => {
             </div>
 
             {menuAbierto && (
-                <nav ref={menuMovil} id="menu-movil" aria-label="Navegación principal" className="absolute inset-x-0 top-full border-b border-white/10 bg-fondo px-5 pt-2 pb-5 shadow-2xl shadow-black/60 md:hidden">
+                <nav ref={menuMovil} id="menu-movil" aria-label="Navegación principal" className="absolute inset-x-0 top-full border-b border-white/10 bg-fondo px-5 pt-2 pb-5 shadow-2xl shadow-black/60 min-[900px]:hidden">
                     <ul>
                         {ENLACES.map((enlace) => (
                             <li key={enlace.ruta}>

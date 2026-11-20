@@ -138,9 +138,9 @@ const Tienda = () => {
                                     {visibles.length} {visibles.length === 1 ? "producto" : "productos"}
                                     {filtros.categoria !== "todas" && ` en ${filtros.categoria}`}
                                 </p>
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-2.5 max-[380px]:w-full max-[380px]:flex-wrap">
                                     <label htmlFor="tienda-orden" className="text-sm whitespace-nowrap text-slate-400">Ordenar por</label>
-                                    <select id="tienda-orden" className="campo w-auto py-2" value={filtros.orden} onChange={(evento) => cambiarFiltro("orden", evento.target.value)}>
+                                    <select id="tienda-orden" className="campo w-auto py-2 max-[380px]:min-w-0 max-[380px]:flex-1" value={filtros.orden} onChange={(evento) => cambiarFiltro("orden", evento.target.value)}>
                                         {Object.entries(ORDENES).map(([valor, { etiqueta }]) => (
                                             <option key={valor} value={valor}>{etiqueta}</option>
                                         ))}

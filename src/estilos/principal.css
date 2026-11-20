@@ -169,7 +169,7 @@
 
     /* Separación vertical entre secciones del sitio público. */
     .seccion {
-        @apply scroll-mt-32 py-16 sm:py-20;
+        @apply scroll-mt-32 py-12 sm:py-16 lg:py-20;
     }
 
     .titulo-seccion {
@@ -195,6 +195,13 @@
 
     .campo {
         @apply min-h-11 w-full rounded-lg border border-slate-700 bg-fondo px-3.5 py-2.5 text-white transition placeholder:text-slate-500 hover:border-slate-500 focus:border-marca focus:ring-3 focus:ring-marca/20 focus:outline-none;
+    }
+
+    /* Evita el autozoom de Safari al enfocar campos en teléfonos y mantiene legible el texto. */
+    @media (max-width: 639px) {
+        .campo {
+            font-size: 16px;
+        }
     }
 
     /* Los botones miden al menos 44 px de alto para tocarlos con comodidad. */
