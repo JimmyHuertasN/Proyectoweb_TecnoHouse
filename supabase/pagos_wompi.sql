@@ -1,10 +1,21 @@
 -- Registra el proveedor del intento de pago. En la tabla existente, pedido_id
 -- puede ser NULL porque pagos también admite intentos asociados a cotizaciones.
 -- Orden: pedidos.sql → pagos.sql → este archivo → pedidos_lectura_rls.sql
+-- Para bases existentes, volver a ejecutar este script antes de desplegar la API
+-- que usa la marca wompi_ultima_consulta_en; la columna e índice son idempotentes.
 begin;
 
 alter table public.pagos
   add column if not exists proveedor text not null default 'wompi';
+
+-- Recuerda cuándo se consultó Wompi por última vez para alternar los lotes pendientes.
+-- Los intentos no resueltos siguen PENDING, pero dejan de ocupar siempre el primer lote.
+alter table public.pagos
+  add column if not exists wompi_ultima_consulta_en timestamptz;
+
+create index if not exists pagos_wompi_pendientes_revision_idx
+  on public.pagos (wompi_ultima_consulta_en asc nulls first, creado_en, id)
+  where estado = 'PENDING'::public.estado_pago and proveedor = 'wompi';
 
 -- Al aprobar un pago de pedido, confirma el pedido y descuenta inventario de
 -- manera atómica. Si el inventario ya no alcanza o el pedido es terminal,

@@ -43,6 +43,7 @@ create table if not exists public.pagos (
     moneda text not null default 'COP',
     estado public.estado_pago not null default 'PENDING',
     proveedor text not null default 'wompi',
+    wompi_ultima_consulta_en timestamptz,
     wompi_transaction_id text unique,
     metodo_pago text,
     mensaje_estado text,
@@ -69,6 +70,9 @@ create index if not exists pagos_pedido_id_idx on public.pagos (pedido_id);
 create index if not exists pagos_cotizacion_id_idx on public.pagos (cotizacion_id);
 create index if not exists pagos_cliente_id_idx on public.pagos (cliente_id);
 create index if not exists pagos_estado_idx on public.pagos (estado);
+create index if not exists pagos_wompi_pendientes_revision_idx
+    on public.pagos (wompi_ultima_consulta_en asc nulls first, creado_en, id)
+    where estado = 'PENDING'::public.estado_pago and proveedor = 'wompi';
 create index if not exists wompi_eventos_referencia_idx on public.wompi_eventos (referencia);
 create index if not exists wompi_eventos_transaccion_idx on public.wompi_eventos (wompi_transaction_id);
 
