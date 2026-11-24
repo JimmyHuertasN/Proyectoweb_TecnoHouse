@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Camera, ClipboardCheck, ListChecks, MapPin, MessageCircle, MessagesSquare, Phone } from "lucide-react";
+import {
+    ArrowRight,
+    BellRing,
+    BriefcaseBusiness,
+    ChartNoAxesCombined,
+    Check,
+    FileText,
+    LayoutDashboard,
+    MessageCircle,
+    MessagesSquare,
+    NotebookPen,
+    PackageSearch,
+    Phone,
+    PhoneCall,
+    Store,
+    UserRound,
+    UsersRound,
+} from "lucide-react";
 import { obtenerProductos } from "../api/productos.js";
 import EncabezadoSitio from "../componentes/EncabezadoSitio.jsx";
 import ImagenProducto from "../componentes/ImagenProducto.jsx";
@@ -9,7 +26,6 @@ import EjemploSeguimiento from "../componentes/portada/EjemploSeguimiento.jsx";
 import { useSesion } from "../contexto/ContextoSesion.js";
 import { CATEGORIAS_PRODUCTO } from "../datos/categoriasProductos.js";
 import { CONTACTO } from "../datos/contacto.js";
-import { PASOS_SERVICIO } from "../datos/pasosServicio.js";
 import { SERVICIOS } from "../datos/servicios.js";
 import useAnimacionEntrada from "../hooks/useAnimacionEntrada.js";
 import { formatearPesos } from "../utilidades/formato.js";
@@ -18,11 +34,69 @@ import { enlaceWhatsApp, whatsappConfigurado } from "../utilidades/whatsapp.js";
 
 const MAXIMO_PRODUCTOS = 4;
 
-const VENTAJAS_SEGUIMIENTO = [
-    { icono: ListChecks, titulo: "Estado paso a paso", texto: "Desde que recibimos la solicitud hasta la entrega." },
-    { icono: ClipboardCheck, titulo: "Cotización antes de reparar", texto: "Tú decides si apruebas o rechazas el costo." },
-    { icono: MessagesSquare, titulo: "Conversación con el técnico", texto: "Pregunta y recibe respuestas en el mismo servicio." },
-    { icono: Camera, titulo: "Fotos del equipo", texto: "Adjunta imágenes de la falla al crear la solicitud." },
+/*
+    La portada le habla al dueño de un taller de reparaciones (público de Expo Software).
+    El resto del sitio (reparaciones, tienda, paneles) funciona como la demo en vivo de un taller real.
+*/
+
+/* Problemas del día a día de un taller y cómo los resuelve la plataforma. */
+const PROBLEMAS = [
+    {
+        icono: PhoneCall,
+        problema: "Clientes llamando a preguntar “¿ya está mi equipo?”",
+        solucion: "Cada cliente ve el estado de su reparación en línea y recibe notificaciones en cada cambio.",
+    },
+    {
+        icono: NotebookPen,
+        problema: "Órdenes en cuadernos y cotizaciones por mensaje suelto",
+        solucion: "Solicitud, diagnóstico y cotización quedan registrados; el cliente la aprueba desde su cuenta y se descarga en PDF.",
+    },
+    {
+        icono: UsersRound,
+        problema: "No saber qué técnico tiene cada equipo",
+        solucion: "Los técnicos toman solicitudes y el administrador ve y reasigna todos los servicios desde un panel.",
+    },
+    {
+        icono: PackageSearch,
+        problema: "Repuestos y ventas sin control de inventario",
+        solucion: "Catálogo en línea con stock, pedidos y pago con Wompi, con reportes de la tienda.",
+    },
+];
+
+/* Un panel para cada persona del negocio: así se reparte el trabajo en la plataforma. */
+const PANELES = [
+    {
+        icono: LayoutDashboard,
+        rol: "Dueño o administrador",
+        resumen: "La foto completa del negocio.",
+        funciones: ["Ingresos de reparaciones y tienda", "Estadísticas por periodo y exportación CSV", "Gestión de técnicos, clientes y gestores", "Reasignación de servicios"],
+    },
+    {
+        icono: BriefcaseBusiness,
+        rol: "Técnicos",
+        resumen: "Su cola de trabajo, ordenada.",
+        funciones: ["Solicitudes pendientes para tomar", "Diagnóstico con las fotos que envía el cliente", "Cotización por ítems", "Actualización del progreso"],
+    },
+    {
+        icono: UserRound,
+        rol: "Tus clientes",
+        resumen: "Menos llamadas, más confianza.",
+        funciones: ["Solicitan la reparación en línea", "Aprueban o rechazan la cotización", "Chatean con el técnico del servicio", "Califican el servicio al terminar"],
+    },
+    {
+        icono: Store,
+        rol: "Gestor de tienda",
+        resumen: "Repuestos que se venden solos.",
+        funciones: ["Productos, imágenes y precios", "Inventario con productos agotados o por agotarse", "Pedidos y sus estados", "Reportes de ventas"],
+    },
+];
+
+/* Recorrido de una reparación visto desde el taller. */
+const FLUJO_TALLER = [
+    { titulo: "Llega la solicitud", descripcion: "El cliente registra su equipo, describe la falla y adjunta fotos desde su celular." },
+    { titulo: "El técnico diagnostica y cotiza", descripcion: "Registra los hallazgos y arma la cotización por ítems dentro del mismo servicio." },
+    { titulo: "El cliente aprueba en línea", descripcion: "Sin llamadas: acepta o rechaza la cotización y pregunta por el chat." },
+    { titulo: "Entregas y mides", descripcion: "El cliente recibe el aviso de “listo” y tú ves el ingreso reflejado en el dashboard." },
 ];
 
 const telefonoConfigurado = CONTACTO.telefono.replace(/\D/g, "").length >= 7;
@@ -49,29 +123,28 @@ const useProductosDestacados = () => {
     return { productos, cargando };
 };
 
-const PrimeraSeccion = () => {
-    const { usuario } = useSesion();
+const PrimeraSeccion = () => (
+    <section className="overflow-hidden border-b border-white/10 bg-gradient-to-b from-superficie to-fondo">
+        <div className="contenedor grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+            <div>
+                <p className="antetitulo">Software para talleres de reparación</p>
+                <h1 className="text-4xl leading-[1.1] font-extrabold tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
+                    Tu taller organizado. Tus clientes informados.
+                </h1>
+                <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
+                    TecnoHouse reúne en una sola plataforma las solicitudes, los técnicos, las cotizaciones, el seguimiento y la tienda de repuestos de tu negocio. Deja el cuaderno y el teléfono ocupado atrás.
+                </p>
 
-    return (
-        <section className="overflow-hidden border-b border-white/10 bg-gradient-to-b from-superficie to-fondo">
-            <div className="contenedor grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
-                <div>
-                    <p className="antetitulo">Servicio técnico y repuestos en Valledupar</p>
-                    <h1 className="text-4xl leading-[1.1] font-extrabold tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
-                        Reparamos tus equipos. Tú sigues cada paso en línea.
-                    </h1>
-                    <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-                        Servicio técnico para computadores, celulares, consolas y cámaras de seguridad, y una tienda con los repuestos y accesorios que necesitan.
-                    </p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <a href="#demo" className="boton-primario px-6 py-3 text-base">
+                        Ver la demo en vivo <ArrowRight size={18} aria-hidden="true" />
+                    </a>
+                    <a href="#paneles" className="boton-secundario px-6 py-3 text-base">Qué incluye</a>
+                </div>
 
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                        <Link to={rutaSolicitarReparacion(usuario)} className="boton-primario px-6 py-3 text-base">
-                            Solicitar una reparación <ArrowRight size={18} aria-hidden="true" />
-                        </Link>
-                        <Link to="/tienda" className="boton-secundario px-6 py-3 text-base">Ver la tienda</Link>
-                    </div>
-
-                    <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-400" aria-label="Equipos que atendemos">
+                <div className="mt-10">
+                    <p className="text-sm text-slate-400">Pensado para talleres que reparan:</p>
+                    <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-400" aria-label="Tipos de equipos que maneja la plataforma">
                         {SERVICIOS.map(({ id, icono: Icono, titulo }) => (
                             <li key={id} className="flex items-center gap-2">
                                 <Icono size={16} className="text-slate-500" aria-hidden="true" /> {titulo}
@@ -79,36 +152,92 @@ const PrimeraSeccion = () => {
                         ))}
                     </ul>
                 </div>
-
-                <EjemploSeguimiento />
             </div>
-        </section>
-    );
-};
 
-/* Lista abierta, sin tarjetas: cada servicio es una fila con su ícono. */
-const SeccionServicios = () => (
-    <section data-animacion-entrada aria-labelledby="titulo-servicios" className="seccion">
+            <EjemploSeguimiento />
+        </div>
+    </section>
+);
+
+/* Problema → solución: lo primero que reconoce el dueño de un taller. */
+const SeccionProblemas = () => (
+    <section data-animacion-entrada aria-labelledby="titulo-problemas" className="seccion">
         <div className="contenedor grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
             <div>
-                <p className="antetitulo">Reparaciones</p>
-                <h2 id="titulo-servicios" className="titulo-seccion">Qué equipos atendemos</h2>
-                <p className="texto-seccion">Diagnosticamos la falla, te enviamos la cotización y reparamos solo si la apruebas.</p>
-                <Link to="/reparaciones" className="enlace mt-6">
-                    Ver servicios y técnicos <ArrowRight size={16} aria-hidden="true" />
-                </Link>
+                <p className="antetitulo">¿Te suena?</p>
+                <h2 id="titulo-problemas" className="titulo-seccion">Lo que frena a un taller de reparaciones</h2>
+                <p className="texto-seccion">El trabajo técnico sale bien, pero el tiempo se va en llamadas, papeles y cuentas que no cuadran.</p>
             </div>
 
             <ul className="grid gap-x-10 sm:grid-cols-2">
-                {SERVICIOS.map(({ id, icono: Icono, titulo, descripcion }) => (
-                    <li key={id} className="flex gap-4 border-t border-white/10 py-5">
+                {PROBLEMAS.map(({ icono: Icono, problema, solucion }) => (
+                    <li key={problema} className="flex gap-4 border-t border-white/10 py-5">
                         <Icono size={22} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
                         <div>
-                            <h3 className="font-semibold text-white">{titulo}</h3>
-                            <p className="mt-1 text-sm leading-relaxed text-slate-400">{descripcion}</p>
+                            <h3 className="font-semibold text-white">{problema}</h3>
+                            <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                                <Check size={14} strokeWidth={2.5} className="mr-1.5 -mt-0.5 inline text-marca" aria-hidden="true" />
+                                {solucion}
+                            </p>
                         </div>
                     </li>
                 ))}
+            </ul>
+        </div>
+    </section>
+);
+
+/* Un bloque por rol: muestra que la plataforma cubre a todo el negocio, no solo al cliente. */
+const SeccionPaneles = () => (
+    <section id="paneles" data-animacion-entrada aria-labelledby="titulo-paneles" className="seccion border-y border-white/10 bg-superficie">
+        <div className="contenedor">
+            <p className="antetitulo">Qué incluye</p>
+            <h2 id="titulo-paneles" className="titulo-seccion">Un panel para cada persona de tu negocio</h2>
+            <p className="texto-seccion">Cada rol entra con su propia cuenta y ve solo lo que le corresponde.</p>
+
+            <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {PANELES.map(({ icono: Icono, rol, resumen, funciones }) => (
+                    <li key={rol} className="tarjeta">
+                        <Icono size={22} strokeWidth={1.8} className="text-marca" aria-hidden="true" />
+                        <h3 className="mt-4 font-semibold text-white">{rol}</h3>
+                        <p className="mt-1 text-sm text-slate-400">{resumen}</p>
+                        <ul className="mt-4 space-y-2 border-t border-white/10 pt-4">
+                            {funciones.map((funcion) => (
+                                <li key={funcion} className="flex gap-2 text-sm leading-snug text-slate-300">
+                                    <Check size={14} strokeWidth={2.5} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
+                                    {funcion}
+                                </li>
+                            ))}
+                        </ul>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </section>
+);
+
+/* El recorrido de una reparación, contado desde el taller. */
+const SeccionFlujo = () => (
+    <section data-animacion-entrada aria-labelledby="titulo-flujo" className="seccion">
+        <div className="contenedor">
+            <p className="antetitulo">Cómo funciona</p>
+            <h2 id="titulo-flujo" className="titulo-seccion">Una reparación de principio a fin, sin perder el hilo</h2>
+
+            <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                {FLUJO_TALLER.map((paso, indice) => (
+                    <li key={paso.titulo} className="border-t-2 border-slate-700 pt-5">
+                        <p className="text-sm font-semibold text-marca">Paso {indice + 1}</p>
+                        <h3 className="mt-2 font-semibold text-white">{paso.titulo}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-slate-400">{paso.descripcion}</p>
+                    </li>
+                ))}
+            </ol>
+
+            <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-400" aria-label="Herramientas incluidas en el flujo">
+                <li className="flex items-center gap-2"><BellRing size={16} className="text-slate-500" aria-hidden="true" /> Notificaciones en tiempo real</li>
+                <li className="flex items-center gap-2"><MessagesSquare size={16} className="text-slate-500" aria-hidden="true" /> Chat por servicio</li>
+                <li className="flex items-center gap-2"><FileText size={16} className="text-slate-500" aria-hidden="true" /> Cotización en PDF</li>
+                <li className="flex items-center gap-2"><ChartNoAxesCombined size={16} className="text-slate-500" aria-hidden="true" /> Ingresos y estadísticas</li>
             </ul>
         </div>
     </section>
@@ -126,16 +255,16 @@ const ProductoPortada = ({ producto }) => (
     </li>
 );
 
-/* Con productos muestra una selección; sin productos, las categorías que maneja la tienda. */
+/* La tienda como ingreso extra del taller. Con productos muestra la demo; sin ellos, las categorías. */
 const SeccionTienda = ({ productos, cargando }) => (
     <section data-animacion-entrada aria-labelledby="titulo-tienda" className="seccion border-y border-white/10 bg-superficie">
         <div className="contenedor grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
             <div>
-                <p className="antetitulo">Tienda</p>
-                <h2 id="titulo-tienda" className="titulo-seccion">Repuestos y accesorios</h2>
-                <p className="texto-seccion">Arma tu carrito y envíanos el pedido por WhatsApp. Te confirmamos disponibilidad y entrega.</p>
+                <p className="antetitulo">Tienda en línea incluida</p>
+                <h2 id="titulo-tienda" className="titulo-seccion">Vende repuestos y accesorios desde el mismo sistema</h2>
+                <p className="texto-seccion">Publica tu catálogo, controla el stock y recibe pedidos con pago en línea por Wompi. Las ventas se suman a los reportes del negocio.</p>
                 <Link to="/tienda" className="boton-secundario mt-6">
-                    Explorar la tienda <ArrowRight size={16} aria-hidden="true" />
+                    Ver la tienda de ejemplo <ArrowRight size={16} aria-hidden="true" />
                 </Link>
             </div>
 
@@ -153,7 +282,7 @@ const SeccionTienda = ({ productos, cargando }) => (
 
             {!cargando && productos.length === 0 && (
                 <div>
-                    <p className="mb-4 text-sm text-slate-400">En la tienda encuentras:</p>
+                    <p className="mb-4 text-sm text-slate-400">Categorías que trae la tienda:</p>
                     <ul className="grid gap-x-10 sm:grid-cols-2">
                         {CATEGORIAS_PRODUCTO.map((categoria) => (
                             <li key={categoria} className="border-t border-white/10 py-3.5 font-medium text-slate-200">{categoria}</li>
@@ -165,67 +294,56 @@ const SeccionTienda = ({ productos, cargando }) => (
     </section>
 );
 
-/* Los cuatro pasos en una sola línea numerada; el detalle está en la página de reparaciones. */
-const SeccionPasos = () => (
-    <section data-animacion-entrada aria-labelledby="titulo-pasos" className="seccion">
-        <div className="contenedor">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                    <p className="antetitulo">Cómo funciona</p>
-                    <h2 id="titulo-pasos" className="titulo-seccion">De la solicitud a la entrega, en cuatro pasos</h2>
-                </div>
-                <a href="/reparaciones#como-funciona" className="enlace">
-                    Conocer el proceso <ArrowRight size={16} aria-hidden="true" />
-                </a>
-            </div>
-
-            <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-                {PASOS_SERVICIO.map((paso, indice) => (
-                    <li key={paso.titulo} className="border-t-2 border-slate-700 pt-5">
-                        <p className="text-sm font-semibold text-marca">Paso {indice + 1}</p>
-                        <h3 className="mt-2 font-semibold text-white">{paso.titulo}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-400">{paso.descripcion}</p>
-                    </li>
-                ))}
-            </ol>
-        </div>
-    </section>
-);
-
-const SeccionSeguimiento = () => {
+/* La demo: TecnoHouse funcionando como un taller real, para recorrerla desde cada rol. */
+const SeccionDemo = () => {
     const { usuario } = useSesion();
 
     return (
-        <section data-animacion-entrada aria-labelledby="titulo-seguimiento" className="pb-16 sm:pb-20">
+        <section id="demo" data-animacion-entrada aria-labelledby="titulo-demo" className="seccion scroll-mt-20">
             <div className="contenedor">
                 <div className="grid gap-10 rounded-3xl border border-borde bg-gradient-to-br from-tarjeta to-superficie p-6 sm:p-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14">
                     <div>
-                        <p className="antetitulo">Seguimiento en línea</p>
-                        <h2 id="titulo-seguimiento" className="titulo-seccion">Tu reparación, siempre a la vista</h2>
-                        <p className="texto-seccion">Con tu cuenta consultas en qué va cada equipo, sin llamar ni esperar respuesta.</p>
+                        <p className="antetitulo">Demo en vivo</p>
+                        <h2 id="titulo-demo" className="titulo-seccion">Pruébalo como lo usaría tu taller</h2>
+                        <p className="texto-seccion">Este sitio es un taller funcionando con TecnoHouse. Recórrelo como cliente o entra al panel para ver el lado del negocio.</p>
 
                         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                             {usuario ? (
                                 <Link to={rutaInicio(usuario.rol)} className="boton-primario">Ir a mi panel</Link>
                             ) : (
                                 <>
-                                    <Link to="/login" className="boton-primario">Iniciar sesión</Link>
-                                    <Link to="/registro" className="boton-secundario">Crear cuenta</Link>
+                                    <Link to="/login" className="boton-primario">Entrar al panel</Link>
+                                    <Link to="/registro" className="boton-secundario">Crear cuenta de cliente</Link>
                                 </>
                             )}
                         </div>
                     </div>
 
                     <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                        {VENTAJAS_SEGUIMIENTO.map(({ icono: Icono, titulo, texto }) => (
-                            <li key={titulo} className="flex gap-3.5">
-                                <Icono size={20} strokeWidth={1.8} className="mt-0.5 shrink-0 text-marca" aria-hidden="true" />
-                                <div>
-                                    <h3 className="text-sm font-semibold text-white">{titulo}</h3>
-                                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{texto}</p>
-                                </div>
-                            </li>
-                        ))}
+                        <li>
+                            <Link to={rutaSolicitarReparacion(usuario)} className="enlace font-semibold">
+                                Solicitar una reparación <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
+                            <p className="mt-1 text-sm leading-relaxed text-slate-400">Vive el proceso como lo haría uno de tus clientes.</p>
+                        </li>
+                        <li>
+                            <Link to="/reparaciones" className="enlace font-semibold">
+                                Página de servicios <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
+                            <p className="mt-1 text-sm leading-relaxed text-slate-400">Servicios, técnicos, reseñas y ubicación del taller.</p>
+                        </li>
+                        <li>
+                            <Link to="/tienda" className="enlace font-semibold">
+                                Tienda de repuestos <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
+                            <p className="mt-1 text-sm leading-relaxed text-slate-400">Catálogo, carrito y pago en línea.</p>
+                        </li>
+                        <li>
+                            <Link to="/login" className="enlace font-semibold">
+                                Panel del administrador <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
+                            <p className="mt-1 text-sm leading-relaxed text-slate-400">Dashboard, técnicos, inventario y estadísticas.</p>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -233,24 +351,24 @@ const SeccionSeguimiento = () => {
     );
 };
 
-/* Solo muestra los canales que están configurados en datos/contacto.js. */
+/* Contacto comercial. Solo muestra los canales que están configurados en datos/contacto.js. */
 const SeccionContacto = () => (
     <section data-animacion-entrada aria-labelledby="titulo-contacto" className="seccion border-t border-white/10 bg-superficie">
         <div className="contenedor grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
             <div>
-                <p className="antetitulo">Contacto</p>
-                <h2 id="titulo-contacto" className="titulo-seccion">¿No sabes qué necesita tu equipo?</h2>
-                <p className="texto-seccion">Escríbenos y te orientamos antes de que traigas el equipo.</p>
+                <p className="antetitulo">¿Tienes un taller?</p>
+                <h2 id="titulo-contacto" className="titulo-seccion">Llevemos TecnoHouse a tu negocio</h2>
+                <p className="texto-seccion">Escríbenos y te mostramos cómo se adapta a tus servicios, tus técnicos y tu tienda.</p>
             </div>
 
-            <ul className="grid gap-8 sm:grid-cols-3">
+            <ul className="grid gap-8 sm:grid-cols-2">
                 {whatsappConfigurado && (
                     <li>
                         <MessageCircle size={22} className="text-marca" aria-hidden="true" />
                         <h3 className="mt-3 font-semibold text-white">WhatsApp</h3>
                         <p className="mt-1 text-sm text-slate-400">{CONTACTO.whatsapp}</p>
-                        <a href={enlaceWhatsApp("Hola, quiero información sobre TecnoHouse")} target="_blank" rel="noopener noreferrer" className="enlace mt-3 text-sm">
-                            Abrir chat <ArrowRight size={14} aria-hidden="true" />
+                        <a href={enlaceWhatsApp("Hola, tengo un taller de reparaciones y quiero conocer TecnoHouse")} target="_blank" rel="noopener noreferrer" className="enlace mt-3 text-sm">
+                            Agendar una demostración <ArrowRight size={14} aria-hidden="true" />
                         </a>
                     </li>
                 )}
@@ -264,20 +382,12 @@ const SeccionContacto = () => (
                         </a>
                     </li>
                 )}
-                <li>
-                    <MapPin size={22} className="text-marca" aria-hidden="true" />
-                    <h3 className="mt-3 font-semibold text-white">Dirección</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{CONTACTO.direccion}</p>
-                    <a href="/reparaciones#ubicacion" className="enlace mt-3 text-sm">
-                        Ver el mapa <ArrowRight size={14} aria-hidden="true" />
-                    </a>
-                </li>
             </ul>
         </div>
     </section>
 );
 
-/* Página de entrada: presenta el negocio y lleva a reparaciones, a la tienda y a la cuenta. */
+/* Página de entrada: presenta TecnoHouse a dueños de talleres y lleva a la demo en vivo. */
 const Portada = () => {
     const { productos, cargando } = useProductosDestacados();
     useAnimacionEntrada(cargando);
@@ -288,10 +398,11 @@ const Portada = () => {
 
             <main>
                 <PrimeraSeccion />
-                <SeccionServicios />
+                <SeccionProblemas />
+                <SeccionPaneles />
+                <SeccionFlujo />
                 <SeccionTienda productos={productos} cargando={cargando} />
-                <SeccionPasos />
-                <SeccionSeguimiento />
+                <SeccionDemo />
                 <SeccionContacto />
             </main>
 
