@@ -1,0 +1,8 @@
+# Solo se sube el frontend: la API se publica aparte y los secretos nunca salen del equipo.
+backend
+supabase
+docs
+node_modules
+dist
+.env
+.env.*

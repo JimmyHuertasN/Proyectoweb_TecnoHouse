@@ -32,3 +32,5 @@ dist-ssr
 *.sln
 !backend/TecnoHouse.Api.sln
 *.sw?
+.vercel
+.env*
