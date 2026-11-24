@@ -288,6 +288,7 @@ También falta contenido real del negocio:
 | Documento | Contenido |
 |---|---|
 | [GUIA_CAMBIOS_PROYECTO.md](./docs/GUIA_CAMBIOS_PROYECTO.md) | Evolución del proyecto y dónde está cada parte del código. |
+| [DESPLIEGUE.md](./docs/DESPLIEGUE.md) | Publicación en Vercel (frontend) y Railway (API): dónde vive cada secreto, cómo redesplegar, pasos pendientes y reglas para asistentes de IA. |
 | [GESTOR_TIENDA.md](./docs/GESTOR_TIENDA.md) | Rol de gestor de tienda: permisos, rutas, scripts, cuenta de prueba y verificaciones. |
 | [VALIDACION_FINAL_Y_GUION_DEMO.md](./docs/VALIDACION_FINAL_Y_GUION_DEMO.md) | Checklist reproducible, registro de resultados y guion de presentación. Usa siempre una instancia de Supabase de desarrollo y datos ficticios. |
 | [INFORME_REVISION_EXPOSOTWARE.md](./docs/INFORME_REVISION_EXPOSOTWARE.md) | Avances, riesgos y recomendaciones para la presentación. |
