@@ -626,6 +626,168 @@
         }
     }
 
+    /*
+        Flotado lento de las etiquetas e íconos de la escena 3D de la portada. Usa la propiedad
+        "translate" (no "transform") para sumarse a la profundidad que ya tiene cada pieza.
+        Movimiento constante y decorativo: ease-in-out de ida y vuelta, sin "reducir movimiento".
+    */
+    @media (prefers-reduced-motion: no-preference) {
+        .escena-flotar {
+            animation: escena-flotar 5s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
+        }
+    }
+
+    @keyframes escena-flotar {
+        from {
+            translate: 0 0.8cqw;
+        }
+
+        to {
+            translate: 0 -0.8cqw;
+        }
+    }
+
+    /*
+        Vida en las pantallas de la escena 3D: lenta y de poca amplitud, para que se note sin
+        robarle atención al título. Solo scale y opacity (no recalculan el diseño).
+        - escena-barra: las barras del dashboard suben y bajan escalonadas.
+        - escena-resaltar: el borde azul recorre las solicitudes del técnico (retrasos de 0, 2 y 4 s).
+        - escena-progreso: la barra de progreso del cliente avanza y retrocede despacio.
+        - escena-latido: puntos de estado ("En vivo", "En reparación").
+        Con "reducir movimiento" quedan quietas en su estado base.
+    */
+    @media (prefers-reduced-motion: no-preference) {
+        .escena-barra {
+            animation: escena-barra 3.2s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
+        }
+
+        .escena-resaltar {
+            animation: escena-resaltar 6s ease-in-out infinite;
+        }
+
+        .escena-progreso {
+            animation: escena-progreso 7s cubic-bezier(0.77, 0, 0.175, 1) infinite alternate;
+        }
+
+        .escena-latido {
+            animation: escena-latido 2.4s ease-in-out infinite;
+        }
+    }
+
+    /*
+        Escenas que se alternan al azar en las pantallas (EscenaDispositivos.jsx). Se montan de
+        nuevo cada vez que aparecen, por eso usan keyframes de entrada.
+        - escena-trazo / escena-relleno: la línea del gráfico de área se dibuja y luego se llena.
+        - escena-sector: cada sector de la dona crece desde su inicio.
+        - escena-entrar: mensajes del chat y resultados del diagnóstico.
+        - escena-escribir: el mensaje del cliente aparece letra por letra.
+    */
+    @media (prefers-reduced-motion: no-preference) {
+        .escena-trazo {
+            stroke-dasharray: 1;
+            animation: escena-trazo 1.2s var(--ease-fuerte) both;
+        }
+
+        .escena-relleno {
+            animation: aparicion-suave 800ms var(--ease-fuerte) 400ms both;
+        }
+
+        .escena-sector {
+            animation: escena-sector 900ms var(--ease-fuerte) both;
+        }
+
+        .escena-entrar {
+            animation: escena-entrar 350ms var(--ease-fuerte) both;
+        }
+
+        .escena-escribir {
+            animation: escena-escribir 900ms steps(14, end) both;
+        }
+    }
+
+    @keyframes escena-trazo {
+        from {
+            stroke-dashoffset: 1;
+        }
+
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes escena-sector {
+        from {
+            stroke-dasharray: 0 100;
+        }
+    }
+
+    @keyframes escena-entrar {
+        from {
+            opacity: 0;
+            translate: 0 0.6cqw;
+            scale: 0.96;
+        }
+    }
+
+    @keyframes escena-escribir {
+        from {
+            clip-path: inset(0 100% 0 0);
+        }
+
+        to {
+            clip-path: inset(0 0 0 0);
+        }
+    }
+
+    /* Fuera de pantalla no se anima nada de la escena (lo marca EscenaDispositivos.jsx). */
+    [data-escena-pausada] * {
+        animation-play-state: paused;
+    }
+
+    @keyframes escena-barra {
+        from {
+            scale: 1 0.72;
+        }
+
+        to {
+            scale: 1 1;
+        }
+    }
+
+    @keyframes escena-resaltar {
+        0%,
+        40%,
+        100% {
+            opacity: 0;
+        }
+
+        10%,
+        30% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes escena-progreso {
+        from {
+            scale: 0.45 1;
+        }
+
+        to {
+            scale: 0.9 1;
+        }
+    }
+
+    @keyframes escena-latido {
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.35;
+        }
+    }
+
     @media (prefers-reduced-motion: reduce) {
         html {
             scroll-behavior: auto;

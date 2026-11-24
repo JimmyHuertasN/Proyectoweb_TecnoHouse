@@ -23,6 +23,7 @@ import EncabezadoSitio from "../componentes/EncabezadoSitio.jsx";
 import ImagenProducto from "../componentes/ImagenProducto.jsx";
 import PiePagina from "../componentes/PiePagina.jsx";
 import EjemploSeguimiento from "../componentes/portada/EjemploSeguimiento.jsx";
+import EscenaDispositivos from "../componentes/portada/EscenaDispositivos.jsx";
 import { useSesion } from "../contexto/ContextoSesion.js";
 import { CATEGORIAS_PRODUCTO } from "../datos/categoriasProductos.js";
 import { CONTACTO } from "../datos/contacto.js";
@@ -125,7 +126,7 @@ const useProductosDestacados = () => {
 
 const PrimeraSeccion = () => (
     <section className="overflow-hidden border-b border-white/10 bg-gradient-to-b from-superficie to-fondo">
-        <div className="contenedor grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
+        <div className="contenedor grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-[1fr_1.15fr] lg:py-24">
             <div>
                 <p className="antetitulo">Software para talleres de reparación</p>
                 <h1 className="text-4xl leading-[1.1] font-extrabold tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
@@ -154,7 +155,7 @@ const PrimeraSeccion = () => (
                 </div>
             </div>
 
-            <EjemploSeguimiento />
+            <EscenaDispositivos />
         </div>
     </section>
 );
@@ -220,8 +221,14 @@ const SeccionPaneles = () => (
 const SeccionFlujo = () => (
     <section data-animacion-entrada aria-labelledby="titulo-flujo" className="seccion">
         <div className="contenedor">
-            <p className="antetitulo">Cómo funciona</p>
-            <h2 id="titulo-flujo" className="titulo-seccion">Una reparación de principio a fin, sin perder el hilo</h2>
+            <div className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
+                <div>
+                    <p className="antetitulo">Cómo funciona</p>
+                    <h2 id="titulo-flujo" className="titulo-seccion">Una reparación de principio a fin, sin perder el hilo</h2>
+                    <p className="texto-seccion">Así ve tu cliente el avance de su equipo: cada cambio de estado y cada mensaje del técnico le llega al instante.</p>
+                </div>
+                <EjemploSeguimiento />
+            </div>
 
             <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
                 {FLUJO_TALLER.map((paso, indice) => (
